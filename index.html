@@ -2231,6 +2231,10 @@ td.rk3{box-shadow:inset 0 0 0 999px rgba(217,140,74,.13),inset 0 -2px 0 var(--br
 /* tied medal places that miss the three podium boxes keep their metal in the list */
 .list .row .rk.rm1{background:var(--gold-grad)}.list .row .rk.rm2{background:var(--silver-grad)}.list .row .rk.rm3{background:var(--bronze-grad)}
 .list .row .rk:is(.rm1,.rm2,.rm3){background-size:250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-weight:700}
+/* ...and the stat value on the right of that row wears the same metal as its place */
+.list .row .rk.rm1 ~ .v{background:var(--gold-grad)}.list .row .rk.rm2 ~ .v{background:var(--silver-grad)}.list .row .rk.rm3 ~ .v{background:var(--bronze-grad)}
+.list .row .rk:is(.rm1,.rm2,.rm3) ~ .v{background-size:250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-weight:700}
+.list .row .rk:is(.rm1,.rm2,.rm3) ~ .v em.dl{-webkit-text-fill-color:currentColor}
 /* career tables on player cards sort by any column */
 .overlay table thead th{cursor:pointer;user-select:none}
 .overlay table thead th[data-arr]::after{content:attr(data-arr);color:#ffd54a}
@@ -2412,7 +2416,9 @@ const fmtTime = ms => new Intl.DateTimeFormat(undefined, {hour:'numeric', minute
 const dayKey = ms => { const d=new Date(ms); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
 const hIn = s => { const m = /(\d+)'\s*(\d+)/.exec(s||''); return m ? (+m[1])*12 + (+m[2]) : null; };
 const inStr = i => i ? `${Math.floor(i/12)}'${Math.round(i%12)}"` : '–';
-function lastName(n){ const parts = n.replace(/\./g,'').split(' '); while(parts.length>1 && /^(JR|SR|II|III|IV)$/i.test(parts[parts.length-1])) parts.pop(); return parts[parts.length-1]; }
+// Last name for labels and charts, every sport: suffixes (Jr., III) and surname particles (van, St., de) stay attached, so "Anderson Jr." and "van Noy", never "Jr." or "Noy"
+function lastName(n){ const w = String(n||'').trim().split(/\s+/); let i = w.length - 1; if(i < 1) return w[0] || '';
+  while(i > 1 && /^(jr|sr|ii|iii|iv|v)\.?,?$/i.test(w[i])) i--; while(i > 1 && /^(van|von|der|den|de|del|della|di|da|du|dos|la|le|st\.?|ter|ten)$/i.test(w[i-1])) i--; return w.slice(i).join(' '); }
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2600)}
 const dot = ab => `<span class="tdot" style="--c:${T[ab].p};--c2:${T[ab].s}"><img src="${logoUrl(ab)}" alt="" loading="lazy" onload="this.parentNode&&this.parentNode.classList.add('ok')" onerror="this.remove()"></span>`;
 
@@ -2897,10 +2903,15 @@ const STATS = [
  {k:"stl",label:"Steals",abbr:"SPG",blurb:"Disruption at the point of attack and in passing lanes."},
  {k:"blk",label:"Blocks",abbr:"BPG",blurb:"Rim protection."},
  {k:"tpm",label:"3-Pointers",abbr:"3PM",blurb:"Made threes per game."},
- {k:"fgp",label:"FG %",abbr:"FG%",pct:true,min:L=>L.fga>=8,blurb:"Field-goal percentage. Minimum 8 projected attempts per game."},
- {k:"tpp",label:"3P %",abbr:"3P%",pct:true,min:L=>L.tpa>=4,blurb:"Three-point percentage. Minimum 4 projected attempts per game."},
- {k:"ftp",label:"FT %",abbr:"FT%",pct:true,min:L=>L.fta>=3,blurb:"Free-throw percentage. Minimum 3 projected attempts per game."},
- {k:"ts",label:"True Shooting",abbr:"TS%",pct:true,min:L=>L.fga>=10,blurb:"Scoring efficiency including threes and free throws. Minimum 10 FGA per game."},
+ {k:"tpa",label:"3-Point Attempts",abbr:"3PA",blurb:"Three-point attempts per game."},
+ {k:"fgm",label:"Field Goals Made",abbr:"FGM",blurb:"Made field goals per game."},
+ {k:"fga",label:"Field Goal Attempts",abbr:"FGA",blurb:"Field-goal attempts per game: shot volume."},
+ {k:"ftm",label:"Free Throws Made",abbr:"FTM",blurb:"Made free throws per game."},
+ {k:"fta",label:"Free Throw Attempts",abbr:"FTA",blurb:"Free-throw attempts per game: how often he gets to the line."},
+ {k:"fgp",label:"FG %",abbr:"FG%",pct:true,att:L=>L.fga,min:L=>L.fga>=8,blurb:"Field-goal percentage. Minimum 8 projected attempts per game."},
+ {k:"tpp",label:"3P %",abbr:"3P%",pct:true,att:L=>L.tpa,min:L=>L.tpa>=4,blurb:"Three-point percentage. Minimum 4 projected attempts per game."},
+ {k:"ftp",label:"FT %",abbr:"FT%",pct:true,att:L=>L.fta,min:L=>L.fta>=3,blurb:"Free-throw percentage. Minimum 3 projected attempts per game."},
+ {k:"ts",label:"True Shooting",abbr:"TS%",pct:true,att:L=>L.fga+0.44*L.fta,min:L=>L.fga>=10,blurb:"Scoring efficiency including threes and free throws. Minimum 10 FGA per game."},
  {k:"tov",label:"Turnovers",abbr:"TOV",blurb:"Most projected turnovers per game. Usually a byproduct of heavy usage."},
  {k:"min",label:"Minutes",abbr:"MPG",blurb:"Projected minutes on the current depth chart."},
  {k:"pra",label:"Pts+Reb+Ast",abbr:"PRA",blurb:"Combined points, rebounds and assists."},
@@ -2934,7 +2945,11 @@ function leaderPool(s){
 // Leaderboard places, every sport: players showing the same value share the place (1, 2, 2, 4), so a tie shares the medal.
 // The podium is at most three big boxes: within a tie the stronger case (tb: efficiency / workload) gets the box, and the rest of
 // the tie drops into the list with the same shared place and medal colour. The list runs past its cutoff until the tie ends.
-function ldTiers(sorted, shown, cut, tb){
+// Percentage / rate boards pass att: an equal value is broken by total attempts (more attempts ranks higher); only equal attempts still share the place.
+function ldTiers(sorted, shown, cut, tb, att){
+  if(att){ const s0 = shown, grp = []; sorted.forEach((p, i) => grp.push(i && s0(p)===s0(sorted[i-1]) ? grp[i-1] : i)); const idx = new Map(sorted.map((p, i) => [p, i]));
+    sorted = sorted.slice().sort((a, b) => { const ga = grp[idx.get(a)], gb = grp[idx.get(b)]; if(ga!==gb) return ga - gb; return (att(b)||0) - (att(a)||0) || idx.get(a) - idx.get(b); });
+    shown = p => s0(p) + '|' + Math.round(att(p)||0); }
   if(tb){ const grp = []; sorted.forEach((p, i) => grp.push(i && shown(p)===shown(sorted[i-1]) ? grp[i-1] : i)); const idx = new Map(sorted.map((p, i) => [p, i]));
     sorted = sorted.slice().sort((a, b) => { const ga = grp[idx.get(a)], gb = grp[idx.get(b)]; if(ga!==gb) return ga - gb; const d = (tb(b)||0) - (tb(a)||0); return d || idx.get(a) - idx.get(b); }); }
   const rk = []; sorted.forEach((p, i) => rk.push(i && shown(p)===shown(sorted[i-1]) ? rk[i-1] : i+1));
@@ -2950,7 +2965,7 @@ function leadersSection(){
   const sorted = leaderPool(s).sort((a,b)=>v(b)-v(a));
   const max = sorted.length ? v(sorted[0]) || 1 : 1;
   const sub = p => cur ? `${p.C.gp} GP · ${f1(p.C.min)} MPG` : `${f1(p.L.min)} MPG · ${p.gp} GP proj`;
-  const TR = ldTiers(sorted, p => fmtStat(s, v(p)), 40, p => { const L = lineOf(p) || {}; return (L.ts||0)*1e4 + (cur ? (p.C||{}).gp||0 : p.gp||0)*10 + (L.min||0); });   // tie: efficiency, then games, then minutes
+  const TR = ldTiers(sorted, p => fmtStat(s, v(p)), 40, p => { const L = lineOf(p) || {}; return (L.ts||0)*1e4 + (cur ? (p.C||{}).gp||0 : p.gp||0)*10 + (L.min||0); }, s.att && (p => s.att(lineOf(p)) * (cur ? p.C.gp : p.gp)));   // tie: attempts on % boards, then efficiency, then games, then minutes
   const pod = TR.pod.map((p,i)=>`
    <div class="pod${TR.pm(i)}" data-pid="${p.id}">
      <div class="glow" style="background:${T[p.tm].p}"></div>
@@ -4127,9 +4142,9 @@ function openPlayer(id){
   const cur = C ? `<div class="bigstats">
       ${[['pts','PTS'],['reb','REB'],['ast','AST'],['stl','STL'],['blk','BLK'],['tov','TOV']].map(([k,l])=>{ const [mc, mt] = k!=='tov' ? rkTile(k, {pts:'PPG',reb:'RPG',ast:'APG',stl:'SPG',blk:'BPG'}[k]) : ['', '']; return `<div class="${mc}"><b>${f1(C[k])}</b><span>${l}</span><em>${k!=='tov'?mt:(C.ato?f1(C.ato)+' AST/TO':'')}</em></div>`; }).join('')}
     </div>
-    <div class="proj-grid">${[[C.gp,'GP'],[f1(C.min),'MIN'],[pct(C.fgp),'FG%'],[pct(C.tpp),'3P%'],[pct(C.ftp),'FT%'],[pct(C.ts),'TS%']].map(([v,l]) => `<div><b>${v}</b><span>${l}</span></div>`).join('')}</div>`
+    <div class="proj-grid">${[[C.gp,'GP'],[f1(C.min),'MIN'],[`${f1(C.fgm)}-${f1(C.fga)}`,'FGM-FGA'],[pct(C.fgp),'FG%'],[`${f1(C.tpm)}-${f1(C.tpa)}`,'3PM-3PA'],[pct(C.tpp),'3P%'],[`${f1(C.ftm)}-${f1(C.fta)}`,'FTM-FTA'],[pct(C.ftp),'FT%'],[pct(C.ts),'TS%']].map(([v,l]) => `<div><b>${v}</b><span>${l}</span></div>`).join('')}</div>`
     : `<div class="cur-strip" style="padding:22px 36px"><span>No games played yet this season${out?' (injured)':''}.</span></div>`;
-  const projItems = [['pts','PTS'],['reb','REB'],['ast','AST'],['stl','STL'],['blk','BLK'],['tov','TOV'],['min','MIN'],['tpm','3PM'],['fgp','FG%',1],['tpp','3P%',1],['ftp','FT%',1],['ts','TS%',1]];
+  const projItems = [['pts','PTS'],['reb','REB'],['ast','AST'],['stl','STL'],['blk','BLK'],['tov','TOV'],['min','MIN'],['fgm','FGM'],['fga','FGA'],['tpm','3PM'],['tpa','3PA'],['ftm','FTM'],['fta','FTA'],['fgp','FG%',1],['tpp','3P%',1],['ftp','FT%',1],['ts','TS%',1]];
   const proj = `<div class="proj-grid">${projItems.map(([k,l,isPct])=>`<div><b>${isPct?pct(L[k]):f1(L[k])}</b><span>${l}</span>${C?dl(L[k], C[k], isPct):''}</div>`).join('')}</div>`;
   const ed = EDITS[p.id] || {}; const feedTm = (RAW.roster.find(r=>r[1]===p.id)||[p.tm])[0];
   const role = p.starter ? `Starter · ${p.dpos?p.dpos.toUpperCase():''}` : p.dpos ? `${ord(p.drank+1)} on ${p.dpos.toUpperCase()} depth chart` : '';
@@ -4245,14 +4260,14 @@ const tFull = ab => { const t = NF.T[ab]; if(!t) return ab; return sportOf(LGK)=
 const rankTag = ab => { const r = NF.T[ab] && NF.T[ab].rank; return r ? `<i class="rk25">${r}</i>` : ''; };
 /* Wikimedia photos are shown in a circle; official Premier League cutouts are shown like ESPN headshots */
 const socRound = id => { return false; const v = NF && NF.photos && NF.photos[id]; return !!v && !v.startsWith('pl:') && !(STATIC && IMG && IMG.lgh && IMG.lgh[id] && /premierleague/.test(IMG.lgh[id])); };
-function nFace(p, cls=''){ const t = NF.T[p.tm] || {p:'#333'}; const ini = p.name.split(' ').map(s=>s[0]).slice(0,2).join('');
+function nFace(p, cls=''){ const t = NF.T[p.tm] || {p:'#333'}; const ini = p.name.split(' ').filter(w=>!/^(Jr\.?|Sr\.?|II|III|IV)$/i.test(w)).map(s=>s[0]).slice(0,2).join('');
   const hs = lgHead(p.id); return `<span class="nface ${cls}" style="--fc:${t.p}"><em>${esc(p.num||ini)}</em>${hs!=='data:,'?`<img ${socRound(p.id)?'class="ph"':sportOf(LGK)==='soc'?'class="soc"':''} src="${hs}" alt="" loading="lazy" onload="this.parentNode&&this.parentNode.classList.add('hasimg')" onerror="this.remove()">`:''}</span>`; }
 
 /* ---- jerseys drawn per sport (team colors, his name and number) ---- */
 let ljid = 0;
 function lgJersey(p, {mini=false}={}){
   const t = NF.T[p.tm] || {p:'#444', s:'#aaa'}; const pri = t.p, sec = t.s; const ink = lum(pri) > 0.6 ? '#111' : '#fff';
-  const ln = (p.name.split(' ').filter(w=>!/^(Jr\.?|Sr\.?|II|III|IV)$/i.test(w)).slice(-1)[0] || '').toUpperCase(); const num = p.num===''||p.num==null ? '–' : String(p.num);
+  const ln = lastName(p.name).toUpperCase(); const num = p.num===''||p.num==null ? '–' : String(p.num);
   const id = 'lj'+(ljid++); const sp = sportOf(LGK);
   const grad = `<defs><linearGradient id="${id}" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="${pri}"/><stop offset="1" stop-color="${pri}" stop-opacity=".8"/></linearGradient></defs>`;
   const name = (y, fs) => mini ? '' : `<text x="50" y="${y}" text-anchor="middle" font-family="Barlow Condensed,sans-serif" font-weight="600" font-size="${ln.length>8?fs-1.5:fs}" letter-spacing="1.2" ${ln.length>9?'textLength="56" lengthAdjust="spacingAndGlyphs"':''} fill="${ink}">${esc(ln)}</text>`;
@@ -4301,8 +4316,8 @@ const LBL = {gp:['Games',0], cmp:['Completions',0,0,1], att:['Pass att.',0,0,1],
   pgp:['Games',0], gs:['Starts',0], qs:['Quality starts',0,0,1], w:['Wins',0,0,1], l:['Losses',0,1,1], sv:['Saves',0,0,1], hld:['Holds',0,0,1], ip:['Innings',1,0,1], ph:['Hits allowed',0,1,1], er:['Earned runs',0,1,1], phr:['HR allowed',0,1,1], k:['Strikeouts',0,0,1], pbb:['Walks',0,1,1], era:['ERA',2,1], whip:['WHIP',2,1], k9:['K/9',1], bb9:['BB/9',1,1], kbb:['K/BB',2], pwar:['WAR',1,0,1],
   g:['Goals',0,0,1], a:['Assists',0,0,1], ga:['G + A',0,0,1], sh:['Shots',0,0,1], sot:['On target',0,0,1], sotPct:['Shot accuracy %',1], conv:['Conversion %',1], off:['Offsides',0,1,1], fs:['Fouls drawn',0,0,1], fc:['Fouls',0,1,1], yc:['Yellows',0,1,1], rc:['Reds',0,1,1], og:['Own goals',0,1,1], sub:['Sub apps',0],
   gk_sv:['Saves',0,0,1], mv:['Match value',1], starts:['Starts',0], gc:['Goals against',0,1,1], gcpg:['Conceded/app',2,1], svp:['Save %',1], sf:['Shots faced',0,0,1],
-  min:['Minutes',1], reb:['Rebounds',1], ast:['Assists',1], stl:['Steals',1], blk:['Blocks',1], tov:['Turnovers',1,1], fgp:['FG %',1], tpp:['3P %',1], ftp:['FT %',1], tpm:['3PM',1], tpa:['3PA',1], fta:['FTA',1], oreb:['Off. reb',1], dreb:['Def. reb',1], ato:['AST/TO',2]};
-const lblDec = k => (sportOf(LGK)==='cbb' && k==='pts') ? 1 : LBL[k][1];
+  min:['Minutes',1], reb:['Rebounds',1], ast:['Assists',1], stl:['Steals',1], blk:['Blocks',1], tov:['Turnovers',1,1], fgp:['FG %',1], tpp:['3P %',1], ftp:['FT %',1], tpm:['3PM',1], tpa:['3PA',1], ftm:['FTM',1], fta:['FTA',1], oreb:['Off. reb',1], dreb:['Def. reb',1], ato:['AST/TO',2]};
+const lblDec = k => (sportOf(LGK)==='cbb' && ['pts','fgm','fga'].includes(k)) ? 1 : LBL[k][1];   // college lines are per game, so makes / attempts keep a decimal
 // Each position's numbers in the order people look for them; the rest show as secondary
 const PRIMARY = {
   qb:['gp','pyd','ptd','int','cmpPct','ypa','rtg','qbr','cmp','att','sk','lngp'], rb:['gp','ryd','car','ypc','rtd','rec','reyd','retd','scrim','rfd','lngr','fl'],
@@ -4310,7 +4325,7 @@ const PRIMARY = {
   k:['gp','fgm','fga','fgPct','fglng','fg50','xpm','xpa'], pn:['gp','punts','pavg','pnet','pin20'], ol:['gp'],
   bat:['gp','avg','hr','rbi','ops','obp','slg','h','r','sb','d2','d3','bb','so','war'], pit:['pgp','era','w','l','k','ip','whip','sv','hld','k9','bb9','gs','qs','pwar'],
   fw:['gp','mv','g','a','ga','sh','sot','sotPct','conv','fs','off','yc'], mf:['gp','mv','g','a','ga','sh','sot','fs','fc','yc'], df:['gp','mv','starts','g','a','fc','yc','rc','sh'], gk:['gp','mv','sv','gc','gcpg','svp','sf'],
-  bb:['gp','pts','reb','ast','stl','blk','fgp','tpp','ftp','tpm','min','tov']};
+  bb:['gp','pts','reb','ast','stl','blk','fgp','tpp','ftp','tpm','min','tov','fgm','fga','tpa','ftm','fta']};
 const SKIP2 = new Set(['gp','pgp','sub','lngp','lngr','lngrec','fglng','gs','min']);
 function derive(st){ const s = {...st};
   if(s.att) { s.cmpPct = 100*(s.cmp||0)/s.att; s.ypa = (s.pyd||0)/s.att; } if(s.car) s.ypc = (s.ryd||0)/s.car; if(s.rec) s.ypr = (s.reyd||0)/s.rec; if(s.tgt) s.catchPct = 100*(s.rec||0)/s.tgt;
@@ -4716,9 +4731,13 @@ const LEAD = {
     S_('w','Wins','W',0,0,0,1), S_('era','Earned run average','ERA',2,p=>(p.st.ip||0)>=100,1), S_('kbb','Strikeout-to-walk ratio','K/BB',2,p=>(p.st.ip||0)>=100), S_('bb9','Walks per 9','BB/9',1,p=>(p.st.ip||0)>=100,1), S_('whip','WHIP','WHIP',2,p=>(p.st.ip||0)>=100,1), S_('k','Strikeouts (pitching)','K',0,0,0,1), S_('k9','Strikeouts per 9','K/9',1,p=>(p.st.ip||0)>=100), S_('sv','Saves','SV',0,0,0,1), S_('hld','Holds','HLD',0,0,0,1), S_('ip','Innings pitched','IP',1,0,0,1), S_('qs','Quality starts','QS',0,0,0,1), S_('pwar','WAR (pitchers)','WAR',1,0,0,0)],
   soc:[S_('g','Goals','G',0,0,0,1), S_('a','Assists','A',0,0,0,1), S_('ga','Goals + assists','G+A',0,0,0,1), S_('mv','Match value (goals added vs a replacement player)','VALUE',1), S_('sh','Shots','SH',0,0,0,1), S_('sot','Shots on target','SOT',0,0,0,1), S_('sotPct','Shot accuracy (10+ shots)','ACC %',1,p=>(p.st.sh||0)>=10), S_('conv','Conversion rate (10+ shots)','CONV %',1,p=>(p.st.sh||0)>=10),
     S_('fs','Fouls drawn','FD',0,0,0,1), S_('sv','Saves','SV',0,p=>pType(p)==='gk',0,1), S_('svp','Save % (15+ shots faced)','SV %',1,p=>pType(p)==='gk' && (p.st.sf||0)>=15), S_('gcpg','Goals conceded per app (keepers)','GA/APP',2,p=>pType(p)==='gk' && (p.st.gp||0)>=4,1), S_('yc','Yellow cards','YC',0,0,0,1), S_('gp','Appearances','APPS',0)],
-  cbb:[S_('pts','Points per game','PTS',1,0,0,1), S_('reb','Rebounds per game','REB',1,0,0,1), S_('ast','Assists per game','AST',1,0,0,1), S_('stl','Steals per game','STL',1,0,0,1), S_('blk','Blocks per game','BLK',1,0,0,1), S_('tpm','Threes per game','3PM',1,0,0,1), S_('fgp','Field goal % (4+ attempts)','FG%',1,p=>(p.st.fga||0)>=4), S_('tpp','3-point % (2+ attempts)','3P%',1,p=>(p.st.tpa||0)>=2), S_('ftp','Free throw % (2+ attempts)','FT%',1,p=>(p.st.fta||0)>=2), S_('min','Minutes per game','MIN',1)]
+  cbb:[S_('pts','Points per game','PTS',1,0,0,1), S_('reb','Rebounds per game','REB',1,0,0,1), S_('ast','Assists per game','AST',1,0,0,1), S_('stl','Steals per game','STL',1,0,0,1), S_('blk','Blocks per game','BLK',1,0,0,1), S_('tpm','Threes per game','3PM',1,0,0,1), S_('fgp','Field goal % (4+ attempts)','FG%',1,p=>(p.st.fga||0)>=4), S_('tpp','3-point % (2+ attempts)','3P%',1,p=>(p.st.tpa||0)>=2), S_('ftp','Free throw % (2+ attempts)','FT%',1,p=>(p.st.fta||0)>=2), S_('fgm','Field goals made per game','FGM',1,0,0,1), S_('fga','Field goal attempts per game','FGA',1,0,0,1), S_('tpa','3-point attempts per game','3PA',1,0,0,1), S_('ftm','Free throws made per game','FTM',1,0,0,1), S_('fta','Free throw attempts per game','FTA',1,0,0,1), S_('min','Minutes per game','MIN',1)]
 };
 LEAD.cfb = LEAD.nfl; LG_GROUPS.cfb = LG_GROUPS.nfl;
+// Percentage and rate stats, every sport: the sample behind each one, so a tied value goes to the bigger sample (more attempts ranks higher)
+const LD_ATT = {rtg:'att', qbr:'att', cmpPct:'att', ypa:'att', ypc:'car', ypr:'rec', catchPct:'tgt', fgPct:'fga', pavg:'punts', pnet:'punts', avg:'ab', obp:'ab', slg:'ab', ops:'ab', iso:'ab',
+  era:'ip', whip:'ip', k9:'ip', bb9:'ip', kbb:'ip', sotPct:'sh', conv:'sh', svp:'sf', gcpg:'gp', fgp:'fga', tpp:'tpa', ftp:'fta'};
+const ldAttOf = (sp, k) => { const a = typeof k==='string' && LD_ATT[k]; return a ? q => ((q.st||{})[a]||0) * (sp==='cbb' ? ((q.st||{}).gp||0) : 1) : null; };   // college basketball lines are per game
 function lgLeaders(){
   const sp = sportOf(LGK);
   if(sp==='cba') return lgTeamLeaders();
@@ -4735,7 +4754,7 @@ function lgLeaders(){
   const pool = NF.players.filter(p => { if(!inConf(p) || (qual && !qual(p)) || (FBP && !fbPosOk(p, fp))) return false; const v = val(p); return v!=null && (s.asc ? v >= 0 : v > 0) && (!s.q || s.q(p)) && minGp(p); }).sort((a,b)=> s.asc ? val(a)-val(b) : val(b)-val(a));
   const dec = per || mode==='proj' ? Math.max(sp==='mlb' || sp==='soc' ? 2 : 1, s.dec) : cbbAvg && mode==='tot' ? 0 : s.dec; const max = pool.length ? Math.max(...pool.slice(0,40).map(val)) || 1 : 1;
   const sub = p => `${esc(p.pos)} · ${sp==='cbb'?`${p.st.gp||0} GP · ${lgFmt(p.st.min,1)} MPG`:`${gpOf(p)} ${sp==='soc'?'apps':'GP'}`}`;
-  const TR = ldTiers(pool, p => lgFmt(val(p),dec), 40, p => s.cnt && mode==='tot' ? -gpS(p) : gpS(p));   // tied totals: fewer games is the more efficient line; tied rates: the bigger workload
+  const TR = ldTiers(pool, p => lgFmt(val(p),dec), 40, p => s.cnt && mode==='tot' ? -gpS(p) : gpS(p), ldAttOf(sp, s.k));   // tied rates: more attempts first, then the bigger workload; tied totals: fewer games is the more efficient line
   const pod = TR.pod.map((p,i)=>{ const t = NF.T[p.tm]; return `<div class="pod${TR.pm(i)}" data-npid="${p.id}"><div class="glow" style="background:${t.p}"></div><div class="rank">${TR.lab(i)} / ${s.abbr}${per||(cbbAvg&&mode==='pg')?' per game':mode==='proj'?(pre?' pre-season proj':' proj / game'):cbbAvg&&mode==='tot'?' total':''}</div>
     <div class="jersey">${lgJersey(p)}</div><div class="name">${esc(p.name)}${NF.isOut(p)?' <span class="inj-tag">OUT</span>':''}</div><div class="team">${nLogo(p.tm,'tm-lg')}${esc(tFull(p.tm))} · ${sub(p)}</div><div class="val"><b>${lgFmt(val(p),dec)}</b><span>${s.abbr}</span>${dl(p)}</div></div>`; }).join('');
   const rows = TR.rows.map((p,i)=>`<div class="row" data-npid="${p.id}"><div class="rk${TR.rm(i+TR.np)}">${TR.lab(i+TR.np)}</div><div class="mj">${lgJersey(p,{mini:true})}</div>
@@ -5014,7 +5033,7 @@ function slots(ab){ const sp = sportOf(LGK), ps = NF.byTeam[ab].filter(p => !NF.
 function matchupsHTML(g){
   const A = slots(g.a), H = slots(g.h); if(!A.length || !H.length) return '';
   const inkA = nInk(g.a), inkH = nInk(g.h); let wa = 0, wh = 0; const sp = sportOf(LGK);
-  const cell = (s, side) => `<div class="lm-p ${side}" data-npid="${s.p.id}">${nFace(s.p,'lm-face')}<div><b>${esc(s.p.name.split(' ').slice(-1)[0])}${favStar('p',LGK,s.p.id,s.p.name,s.p.tm)}</b><span>${lineText(s.p)||'—'}</span></div></div>`;
+  const cell = (s, side) => `<div class="lm-p ${side}" data-npid="${s.p.id}">${nFace(s.p,'lm-face')}<div><b>${esc(lastName(s.p.name))}${favStar('p',LGK,s.p.id,s.p.name,s.p.tm)}</b><span>${lineText(s.p)||'—'}</span></div></div>`;
   const rows = A.map(a => { const h = H.find(x => x.lab===a.lab); if(!h) return ''; const va = impact(a.p), vh = impact(h.p); const d = vh - va; const scale = sp==='mlb' ? 0.25 : sp==='soc' ? 0.3 : sp==='cbb' ? 10 : 8;
     const even = Math.abs(d) < scale*0.08; if(!even) (d>0 ? wh++ : wa++); const w = even ? 0 : Math.min(50, Math.abs(d)/scale*50);
     const dv = sp==='mlb' ? lgFmt(Math.abs(d), 3) : Math.abs(d).toFixed(sp==='soc' ? 2 : 1); const unit = sp==='mlb' ? ' OPS' : '';
@@ -5106,7 +5125,7 @@ function peerBlock(p){
   const scopeSeg = NF.college ? `<select class="peer-sel" data-peerscope aria-label="Compare against">${[['all','All Division I'],['p4','Power conferences'],['top','Each Power team’s No. 1']].concat(peerConfs().map(c => [c===own ? 'conf' : 'c:' + c, c + (c===own ? ' (his conference)' : '')])).map(([k,l])=>`<option value="${esc(k)}"${sc===k || (sc==='c:' + own && k==='conf') ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>` : '';
   return `<div class="p-full"><div class="h4row"><h4>How he stacks up</h4><div class="seg"><button class="${UI.peerSim==='all'?'':'on'}" data-peersim="sim">Similar players</button><button class="${UI.peerSim==='all'?'on':''}" data-peersim="all">Whole league</button></div>${scopeSeg}${sportOf(LGK)!=='cbb'?`<div class="seg"><button class="${per?'':'on'}" data-peerrate="tot">Season totals</button><button class="${per?'on':''}" data-peerrate="pg">Per game</button></div>`:''}</div>
     <div class="cmp-sum"><span>Compared with ${pool.length} ${lbl} ${NF.college?`· ${peerScopeLbl(p)}`:`in ${esc(lgName())}`} ${UI.peerSim==='all'?'with a real role':'with a similar workload this season'}${p.st0?' (2025–26 numbers)':''}</span></div><div class="cmp-rows">${rows}</div>
-    <div class="cmp-leg"><span><i class="me" style="background:${nInk(p.tm)}"></i>${esc(p.name.split(' ').slice(-1)[0])}</span><span><i></i>Each dot is one player (hover for name, tap to open)</span></div></div>`;
+    <div class="cmp-leg"><span><i class="me" style="background:${nInk(p.tm)}"></i>${esc(lastName(p.name))}</span><span><i></i>Each dot is one player (hover for name, tap to open)</span></div></div>`;
 }
 function openNflPlayer(id){ return openLgPlayer(id); }
 let LG_CUR = null;
@@ -5150,7 +5169,7 @@ function openLgPlayer(id){
     ${extra.length?`<div class="p-sec"><span>${pType(p)==='bat'?'On the mound':'At the plate'}</span></div><div class="cur-strip">${extra.map(k=>`<span>${fmtK(k)} ${LBL[k][0]}</span>`).join('')}</div>`:''}
     ${perG.length?`<div class="p-sec"><span>Per game</span><small>Season totals ÷ his ${gpOf(p)} game${gpOf(p)===1?'':'s'}</small></div><div class="proj-grid">${perG.map(k=>`<div><b>${lgFmt(s[k]/gpOf(p), Math.max(1, lblDec(k)))}</b><span>${LBL[k][0]}</span></div>`).join('')}</div>`:''}
     ${pace.length?`<div class="p-sec"><span>Projected season</span><small>${sp==='cbb'?`His ${pre?'projected ':''}averages × ${seasonN} scheduled games`:`His season so far × ${seasonN} ${sp==='soc'?'matches':'games'} ÷ the ${tgp} his team has played`}</small></div><div class="proj-grid">${pace.map(k=>`<div><b>${lgFmt(sp==='cbb' ? pj(k)*seasonN : s[k]/tgp*seasonN, sp==='cbb' ? 0 : lblDec(k))}</b><span>${sp==='cbb' ? LBL[k][0].replace(/^Assists$/, 'Assists') : LBL[k][0]}</span></div>`).join('')}</div>`:''}
-    <div class="h2h-bar-card" style="--tp:${t.p}"><div class="h2h-cta"><span class="h2h-tag">Head-to-head</span><div class="h2h-pick"><input class="txt" id="lgQp" placeholder="${sp==='mlb'?(pType(p)==='pit'?'Pick a hitter to see every at-bat between them, or compare with any pitcher…':'Pick a pitcher to see every at-bat between them, or compare with any hitter…'):`Compare ${esc(p.name.split(' ').slice(-1)[0])} with anyone… type a name, press Enter`}" autocomplete="off" data-a="${p.id}"><div class="sres" id="lgResP"></div></div></div>
+    <div class="h2h-bar-card" style="--tp:${t.p}"><div class="h2h-cta"><span class="h2h-tag">Head-to-head</span><div class="h2h-pick"><input class="txt" id="lgQp" placeholder="${sp==='mlb'?(pType(p)==='pit'?'Pick a hitter to see every at-bat between them, or compare with any pitcher…':'Pick a pitcher to see every at-bat between them, or compare with any hitter…'):`Compare ${esc(lastName(p.name))} with anyone… type a name, press Enter`}" autocomplete="off" data-a="${p.id}"><div class="sres" id="lgResP"></div></div></div>
       ${rivals.length?`<div class="h2h-quick"><span>Quick picks</span>${rivals.map(q=>`<a class="lnk" data-lgh2h="${p.id}:${q.id}">${esc(q.name)} <em>${esc(q.tm.split('-')[0])}</em></a>`).join('')}</div>`:''}</div>
     ${others.length && !pre?`<div class="p-sec"><span>Other numbers</span></div><div class="cur-strip">${others.map(k=>`<span>${fmtK(k)} ${LBL[k][0]}</span>`).join('')}</div>`:''}
     <div class="p-body">${leagueHasPO(LGK) && NF.games.some(g => g.stype===3 && g.state==='post' && (g.h===p.tm || g.a===p.tm)) ? poBlock(LGK, p) : ''}${pre ? '' : peerBlock(p)}${vsBlock(LGK, p)}</div>`;
@@ -5720,7 +5739,7 @@ const glOppName = lg => r => { const a = glTeamOf(lg, r); return a ? (lg==='nba'
 function splitTiles(lg, p, a, ty){ const sp = glSp(lg);
   if(sp==='nba'){ const L = glNbaLine(a); if(!L) return ''; const tot = k => Math.round((a.st[k]||0)).toLocaleString();
     return `<div class="bigstats">${[['pts','PTS'],['reb','REB'],['ast','AST'],['stl','STL'],['blk','BLK'],['tpm','3PM']].map(([k,l]) => `<div><b>${f1(L[k])}</b><span>${l} per game</span><em>${tot(k)} total</em></div>`).join('')}</div>
-      <div class="cur-strip"><span>${a.n} games</span>${glWL(a)?`<span>${glWL(a)} record</span>`:''}<span>${f1(L.min)} MIN</span><span>${pct(L.fgp)} FG%</span><span>${pct(L.tpp)} 3P%</span><span>${pct(L.ftp)} FT%</span><span>${pct(L.ts)} TS%</span></div>`; }
+      <div class="cur-strip"><span>${a.n} games</span>${glWL(a)?`<span>${glWL(a)} record</span>`:''}<span>${f1(L.min)} MIN</span><span>${f1(L.fgm)}-${f1(L.fga)} FGM-FGA</span><span>${pct(L.fgp)} FG%</span><span>${f1(L.tpm)}-${f1(L.tpa)} 3PM-3PA</span><span>${pct(L.tpp)} 3P%</span><span>${f1(L.ftm)}-${f1(L.fta)} FTM-FTA</span><span>${pct(L.ftp)} FT%</span><span>${pct(L.ts)} TS%</span></div>`; }
   const st = sp==='cbb' ? glCbbLine(a) : a.st; const k0 = LGK; LGK = lg;
   try{ const set = (PRIMARY[ty]||[]).filter(k => LBL[k] && st[k]!=null && isFinite(st[k]) && !SKIP2.has(k)); const n = Math.max(1, a.n);
     const big = set.slice(0, 6), small = set.slice(6);
@@ -5922,7 +5941,7 @@ function bvpHTML(bat, pit){ const st = BVP[bat.id+':'+pit.id];
   const L = bvpLine(st.tot), P = bvpLine(st.po);
   if(!L && !P) return `<div class="bvp"><h4>${esc(bat.name)} vs ${esc(pit.name)}</h4><p class="muted">They’ve never faced each other in a regular-season or postseason game.</p></div>`;
   const ops = L && L.obp!=null && L.slg!=null ? L.obp + L.slg : null, kr = L && L.pa ? L.k/L.pa : 0;
-  const last = n => n.split(' ').slice(-1)[0];
+  const last = lastName;
   const verdict = !L || L.pa < 4 ? 'Too few meetings to read much into yet.' : ops!=null && ops >= 0.850 ? `${esc(last(bat.name))} has had the upper hand.` : ops!=null && ops <= 0.600 ? `${esc(last(pit.name))} has had the upper hand${kr >= 0.3 ? ', mostly by striking him out' : ''}.` : 'Pretty even so far.';
   const tile = (v, l) => `<div><b>${v}</b><span>${l}</span></div>`;
   const tbl = rows => `<div class="tbl-wrap"><table class="bvp-tbl"><thead><tr><th class="l"></th><th>PA</th><th>AB</th><th>H</th><th>2B</th><th>3B</th><th>HR</th><th>RBI</th><th>BB</th><th>K</th><th>AVG</th><th>OBP</th><th>SLG</th><th>OPS</th></tr></thead><tbody>
@@ -6622,7 +6641,7 @@ async function doSync(silent){
   try{
     const oldRaw = RAW, oldTeams = {}; M.teams.forEach(t=>oldTeams[t.ab]=t.projW);
     const nr = mergeRaw(oldRaw, await syncLive({have:Object.keys(oldRaw.box||{}), need26:!oldRaw.ts26, need25:!oldRaw.s0, haveCar:Object.keys(oldRaw.car||{}), lgHave:lgHave(oldRaw.lg), leagues: silent ? (UI.sport && UI.sport!=='nba' ? [LGK] : []) : undefined}, say));
-    RAW = nr; build();
+    RAW = nr; build(); try{ injWatch(); }catch(e){}   // a fresh injury report alerts starred players now
     const items = diffLog(oldRaw, nr, oldTeams);
     RAW.log = (oldRaw.log||[]).concat([{t: nr.asOf, items: items.length ? items : ['No changes since last sync.']}]).slice(-80);
     if(!LS.set('cs27_raw', RAW)) say('Synced (too large to cache on this device; export to keep it).');
@@ -7389,7 +7408,7 @@ async function socShapeLoad(g){ if(STATIC) return; const need = []; [g.h, g.a].f
 const FM_ROWS = f => f.split('-').map(Number);
 function pitchSVG(ab, fm, xi){ const t = NF.T[ab]; const rows = [1].concat(FM_ROWS(fm.f)); const W = 220, H = 150; const byLine = []; let k = 0; const lines = [['gk'], ['df'], ...FM_ROWS(fm.f).slice(1, -1).map(() => ['mf']), ['fw']];
   const pool = {gk:xi.filter(s => s.lab.startsWith('GK')), df:xi.filter(s => s.lab.startsWith('DF')), mf:xi.filter(s => s.lab.startsWith('MF')), fw:xi.filter(s => s.lab.startsWith('FW'))};
-  const dots = rows.map((n, ri) => { const y = H - 14 - ri*((H - 28)/(rows.length - 1)); const grp = lines[ri][0]; return Array.from({length:n}, (_, i) => { const s = pool[grp].shift(); const x = W*(i + 1)/(n + 1); const nm = s ? s.p.name.split(' ').slice(-1)[0] : ''; const fit = n > 4 ? 7 : 10;
+  const dots = rows.map((n, ri) => { const y = H - 14 - ri*((H - 28)/(rows.length - 1)); const grp = lines[ri][0]; return Array.from({length:n}, (_, i) => { const s = pool[grp].shift(); const x = W*(i + 1)/(n + 1); const nm = s ? lastName(s.p.name) : ''; const fit = n > 4 ? 7 : 10;
     return `<g${s?` data-npid="${s.p.id}" style="cursor:pointer"`:''}><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="7" fill="${t.p}" stroke="${t.s}" stroke-width="2"/><text x="${x.toFixed(1)}" y="${(y+17).toFixed(1)}" text-anchor="middle" class="fm-nm">${esc(nm.length > fit ? nm.slice(0, fit - 1) + '.' : nm)}</text></g>`; }).join(''); }).join('');
   return `<svg class="fm-pitch" viewBox="0 0 ${W} ${H+10}"><rect x="1" y="1" width="${W-2}" height="${H+8}" rx="4" class="fm-turf"/><line x1="1" x2="${W-1}" y1="1" y2="1" class="fm-ln"/><rect x="${W/2-40}" y="${H-12}" width="80" height="20" class="fm-box"/><circle cx="${W/2}" cy="1" r="22" class="fm-box"/>${dots}</svg>`; }
 function socShapeHTML(g){ const one = ab => { const {fm, slots} = socXI(ab); let best = []; try{ best = pbSchemes(ab).slice(0, 3); }catch(e){}
@@ -8525,16 +8544,29 @@ const NBA_AB = {GS:'GSW', NO:'NOP', NY:'NYK', SA:'SAS', UTAH:'UTA', WSH:'WAS'};
 const evAb = (k, ab) => k==='nba' ? (NBA_AB[ab] || ab) : ab;
 function favTeamsBy(){ const by = {}; Object.keys(FAV).forEach(k => { const [kind, lg, id] = k.split('|'); if(kind==='t') (by[lg] = by[lg] || new Set()).add(id); }); return by; }
 const INJST = LS.get('cs13_injst') || {};
-// Pushes fire only on a confirmed flip between healthy and out. Day-to-day / questionable / probable listings are unverified
-// and leave the stored state alone, and a new state has to show up on two checks in a row before it counts.
-const INJPEND = {}, INJ_SOFT_RX = /day.to.day|questionable|doubtful|probable|game.?time/i;
-function injWatch(){ let ch = false; Object.entries(FAV).forEach(([k, v]) => { const [kind, lg, id] = k.split('|'); if(kind!=='p') return; let st = null, txt = '';
-    try{ if(lg==='nba'){ const p = M.players.find(x => x.id===id); if(p){ st = !(p.inj && p.outUntil > M.now) ? 'ok' : INJ_SOFT_RX.test(p.inj.status||'') ? 'soft' : 'out'; txt = p.inj ? [p.inj.status, p.inj.type].filter(Boolean).join(' · ') : ''; } }
-      else if(lgData(lg)){ const m = lgModel(lg), p = m && m.players.find(x => x.id===id); if(p){ st = !p.inj ? 'ok' : m.isOut(p) && !INJ_SOFT_RX.test(p.inj[0]||'') ? 'out' : 'soft'; txt = p.inj ? [p.inj[0], p.inj[1]].filter(Boolean).join(' · ') : ''; } } }catch(e){}
-    if(!st || st==='soft'){ delete INJPEND[k]; return; } const was = INJST[k]; if(was===st){ delete INJPEND[k]; return; }
-    if(was && INJPEND[k]!==st){ INJPEND[k] = st; return; } delete INJPEND[k]; INJST[k] = st; ch = true; if(!was) return;
-    if(st==='out') csNotify(`🩹 ${v.n} ruled OUT`, txt || 'Listed out on the latest injury report', 'inj-' + k); else csNotify(`✅ ${v.n} is back`, 'Off the injury report and available', 'inj-' + k); });
+// Any change to a starred player's injury listing pushes right away: ruled out, a new diagnosis or return date while out
+// (e.g. a Grade 2 hamstring strain, out ~4 weeks), a day-to-day / questionable listing, or coming off the report.
+// The first look at a newly starred player only records his state.
+const INJ_SOFT_RX = /day.to.day|questionable|doubtful|probable|game.?time/i;
+function injWatch(){ let ch = false; Object.entries(FAV).forEach(([k, v]) => { const [kind, lg, id] = k.split('|'); if(kind!=='p') return; let st = null, sig = '', txt = '', note = '';
+    try{ if(lg==='nba'){ const p = M.players.find(x => x.id===id); if(p){ st = !(p.inj && p.outUntil > M.now) ? 'ok' : INJ_SOFT_RX.test(p.inj.status||'') ? 'soft' : 'out'; if(p.inj){ txt = [p.inj.status, p.inj.type].filter(Boolean).join(' · '); sig = [p.inj.status, p.inj.type, p.inj.ret].join('/'); note = p.inj.note || ''; } } }
+      else if(lgData(lg)){ const m = lgModel(lg), p = m && m.players.find(x => x.id===id); if(p){ st = !p.inj ? 'ok' : m.isOut(p) && !INJ_SOFT_RX.test(p.inj[0]||'') ? 'out' : 'soft'; if(p.inj){ txt = [p.inj[0], p.inj[1]].filter(Boolean).join(' · '); sig = [p.inj[0], p.inj[1], p.inj[3]].join('/'); note = p.inj[2] || ''; } } } }catch(e){}
+    if(!st) return; const now = st==='ok' ? 'ok' : st + '|' + sig, was = INJST[k]; if(was===now) return; INJST[k] = now; ch = true;
+    if(!was || (was==='out' && st==='out')) return;   // first look, or a save from before details were tracked
+    const wasSt = String(was).split('|')[0], body = [txt, note].filter(Boolean).join(' · ').slice(0, 220);
+    if(st==='ok') csNotify(`✅ ${v.n} is back`, 'Off the injury report and available', 'inj-' + k, null, true);
+    else if(st==='out' && wasSt!=='out') csNotify(`🩹 ${v.n} ruled OUT`, body || 'Listed out on the latest injury report', 'inj-' + k, null, true);
+    else csNotify(`🩹 ${v.n} injury update`, body || 'New listing on the injury report', 'inj-' + k, null, true); });
   if(ch) LS.set('cs13_injst', INJST); }
+// Starred NBA players: re-read the league injury report every two minutes, so a new listing alerts right away instead of waiting for the next full sync
+const INJPOLL = {at:0};
+async function favInjPoll(){ const ids = Object.keys(FAV).filter(k => k.startsWith('p|nba|')).map(k => k.split('|')[2]); if(STATIC || !ids.length || Date.now() - INJPOLL.at < 2*60e3) return; INJPOLL.at = Date.now();
+  try{ const r = await fetch('https://site.api.espn.com/apis/site/v2/sports/basketball/nba/injuries', {cache:'no-store'}); if(!r.ok) return; const ij = await r.json(), got = {};
+    (ij.injuries||[]).forEach(t => (t.injuries||[]).forEach(i => { const id = (i.athlete?.links?.[0]?.href||'').match(/id\/(\d+)/)?.[1]; if(id) got[id] = [i.status||'', i.details?.type||'', i.details?.returnDate||'', (i.shortComment||'').slice(0,200)]; }));
+    if(Object.keys(got).length < 5) return;   // an empty or broken report never clears anyone
+    ids.forEach(id => { const p = M.players.find(x => x.id===id); if(!p || (EDITS[id]||{}).status) return; const nw = got[id] || null;
+      if(nw) RAW.inj[id] = nw; else delete RAW.inj[id];
+      p.inj = nw ? {status:nw[0], type:nw[1], ret:nw[2], note:nw[3]} : null; p.outUntil = p.inj ? (p.inj.ret ? dayMs(p.inj.ret) : Date.now()+DAY) : 0; }); }catch(e){} }
 const MS = {st:{}, done:new Set(LS.get('cs13_ms') || [])};
 const msOnce = (key, fn) => { if(MS.done.has(key)) return; MS.done.add(key); LS.set('cs13_ms', [...MS.done].slice(-500)); fn(); };
 function milestoneCheck(k, e, favT, favP){ const prev = MS.st[e.id]; MS.st[e.id] = {state:e.state, half:(prev && prev.half) || /half|^HT$/i.test(e.detail||'')}; if(!prev) return;
@@ -8561,7 +8593,7 @@ function favScoreCheck(e, list){ if(e.state==='pre' || e.h.sc==null || e.a.sc==n
   if(!prev || !list.length || e.state!=='in' || !(cur[0] > prev[0] || cur[1] > prev[1]) || !e.last) return;
   list.forEach(p => { if(nameRx(p.n).test(e.last)) favPing(p, e, e.last, board); }); }
 function favPlayersBy(){ const by = {}; Object.entries(FAV).forEach(([k, v]) => { const [kind, lg, id] = k.split('|'); if(kind==='p' && v && v.n) (by[lg] = by[lg] || []).push({id, n:v.n, tm:v.tm}); }); return by; }
-async function favWatch(){ clearTimeout(FW.t); if(STATIC) return; try{ injWatch(); }catch(e){} const fp = favPlayersBy(), ft = favTeamsBy();
+async function favWatch(){ clearTimeout(FW.t); if(STATIC) return; try{ injWatch(); }catch(e){} favInjPoll().then(() => { try{ injWatch(); }catch(e){} }); const fp = favPlayersBy(), ft = favTeamsBy();
   const keys = new Set([...Object.keys(fp), ...Object.keys(ft)].filter(k => LIVE_SRC.some(s => s.k===k))); (UI.sport==='soc' ? [LGK] : liveSpKeys()).forEach(k => keys.add(k)); let live = false;
   await Promise.all([...keys].map(async k => { const src = LIVE_SRC.find(s => s.k===k); if(!src) return;
     if(!LH.ev[k] || Date.now() - (LH.at[k]||0) > 25000){ try{ const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${src.path}/scoreboard${src.q||''}`, {cache:'no-store'}); if(r.ok){ LH.ev[k] = sbEvents(src, await r.json()); LH.at[k] = Date.now(); } }catch(e){} }
@@ -8788,9 +8820,9 @@ async function notifTest(){ const st = notifState();
   try{ const reg = navigator.serviceWorker && (await navigator.serviceWorker.getRegistration()); if(reg && reg.showNotification){ await reg.showNotification(title, opt); via = 'sw'; } }catch(e){}
   if(!via) try{ new Notification(title, opt); via = 'page'; }catch(e){}
   toast(via ? `Test alert sent${via==='page' ? ' (no service worker yet, so alerts only arrive while the app is open)' : ''}${NOTIF_ON ? '' : ' · alerts are muted, tap the bell to turn them on'}` : 'Couldn’t show a notification on this device.'); }
-async function csNotify(title, body, tag, url){ const vis = document.visibilityState==='visible';
-  if(vis || !notifOK() || !NOTIF_ON){ if(vis) toast(`${title} · ${body}`); return; }
-  const opt = {body, tag, icon:'icon-192.png', badge:'icon-192.png', data:{url: url || location.href}};
+async function csNotify(title, body, tag, url, force){ const vis = document.visibilityState==='visible';   // force: a system notification even with the app open (injury news)
+  if(vis) toast(`${title} · ${body}`); if((vis && !force) || !notifOK() || !NOTIF_ON) return;
+  const opt = {body, tag, renotify: !!force, icon:'icon-192.png', badge:'icon-192.png', data:{url: url || location.href}};
   try{ const reg = navigator.serviceWorker && (await navigator.serviceWorker.getRegistration()); if(reg && reg.active){ reg.active.postMessage({type:'cs-notify', title, opt}); return; } if(reg && reg.showNotification){ await reg.showNotification(title, opt); return; } }catch(e){}
   try{ new Notification(title, opt); }catch(e){} }
 // the service worker is registered on any secure origin (iPhone Home Screen apps included), not just after the page's load event
@@ -8929,8 +8961,9 @@ function lgLeagueRank(p, k){ try{ if(SKIP2.has(k) || !LBL[k]) return null; const
   // a counting stat still ranks a player short of the qualifiers, against everyone at his position who has recorded one
   if(!pool.some(q => q.id===p.id)){ if(!count || low || !v) return null; pool = peers.filter(q => has(q) && q.st[k] > 0); }
   if(!low && !v) return null; if(pool.length < 6 || !pool.some(q => q.id===p.id)) return null;
-  const sh = x => lgFmt(x, lblDec(k)), sv = sh(v);   // ties at the shown precision share the place
-  const r = pool.filter(q => sh(q.st[k])!==sv && (low ? q.st[k] < v : q.st[k] > v)).length + 1; return {r, n: pool.length, tie: pool.some(q => q.id!==p.id && sh(q.st[k])===sv), nat: !!NF.college}; }catch(e){ return null; } }
+  const sh = x => lgFmt(x, lblDec(k)), sv = sh(v);   // ties at the shown precision share the place, unless attempts break them (rates)
+  const at = ldAttOf(sp, k), A = q => at ? Math.round(at(q)) : 0, a = A(p);
+  const r = pool.filter(q => sh(q.st[k])!==sv ? (low ? q.st[k] < v : q.st[k] > v) : A(q) > a).length + 1; return {r, n: pool.length, tie: pool.some(q => q.id!==p.id && sh(q.st[k])===sv && A(q)===a), nat: !!NF.college}; }catch(e){ return null; } }
 
 /* ---- Table ranks: ties share a medal, and style stats (stolen bases, pitches per PA, pace) get medals too, just no green / red ---- */
 tierCls = function(vs, a, low, style){ if(vs.length < 6) return ''; const me = vs.find(x => x[0]===a); if(!me) return ''; const n = vs.length, k = Math.round(n/3), v = me[1];
@@ -9084,7 +9117,8 @@ const CM_RL = {pts:'PPG', reb:'RPG', ast:'APG', stl:'SPG', blk:'BPG', fgp:'FG%',
 function nbaRank(p, k){ const s = STATS.find(x => x.k===k); if(!s || !p.C || p.C[k]==null) return null;
   const ok = q => q.C && q.C.gp >= Math.max(1, Math.ceil(tgp(q)*0.5)) && q.C.min >= 12 && (!s.min || s.min(q.C)) && q.C[k]!=null; if(!ok(p)) return null;
   const pool = M.players.filter(ok), sh = x => fmtStat(s, x), v = sh(p.C[k]);   // ranked at the precision shown, so a displayed tie shares the place (and medal) like the Leaders board
-  return {r: pool.filter(q => sh(q.C[k])!==v && q.C[k] > p.C[k]).length + 1, n: pool.length, tie: pool.some(q => q.id!==p.id && sh(q.C[k])===v)}; }
+  const A = q => s.att ? Math.round(s.att(q.C) * q.C.gp) : 0, a = A(p);   // % stats: equal values go to more attempts, like the Leaders board
+  return {r: pool.filter(q => sh(q.C[k])!==v ? q.C[k] > p.C[k] : A(q) > a).length + 1, n: pool.length, tie: pool.some(q => q.id!==p.id && sh(q.C[k])===v && A(q)===a)}; }
 const _openPlayer17 = openPlayer; openPlayer = function(id){ _openPlayer17(id); try{ const p = M.players.find(x => x.id===id), bs = document.querySelector('#playerPanel .bigstats'); if(!p || !p.C || !bs) return;
   const pg = bs.nextElementSibling, tiles = [...bs.children].map(d => [d, true]).concat(pg && pg.classList.contains('proj-grid') ? [...pg.children].map(d => [d, false]) : []);
   tiles.forEach(([d, big]) => { const k = CM_RK[((d.querySelector('span')||{}).textContent||'').trim()]; if(!k) return; const R = nbaRank(p, k); d.classList.remove('rk-m','rk1','rk2','rk3');
