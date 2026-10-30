@@ -81,6 +81,8 @@ main{position:relative}
 .section.active{display:block}
 @keyframes fade{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:34px;flex-wrap:wrap}
+.tp-list.tp-top{margin-bottom:30px}
+.sec-head{scroll-margin-top:calc(var(--navh,80px) + 14px)}
 .sec-head h2{font-family:"Barlow Condensed";font-weight:700;font-size:clamp(40px,6vw,76px);text-transform:uppercase;line-height:.95;letter-spacing:.02em}
 .sec-head .kicker{font-family:"Barlow Condensed";letter-spacing:.32em;font-size:13px;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
 .sec-head p{color:var(--muted);max-width:440px;font-size:14px;line-height:1.6}
@@ -1210,6 +1212,38 @@ td .vg-bar{margin-bottom:4px}
 .p-bio p{font-size:14.5px;line-height:1.6;color:#e8eaed;margin:0 0 8px}.p-bio .p-bio-facts{color:rgba(255,255,255,.72);font-size:13px}
 .p-flip-hint{position:absolute;right:16px;bottom:8px;z-index:31;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.5);pointer-events:none;font-family:"Barlow Condensed"}
 @media (max-width:900px){.p-bio{padding:22px 20px}.p-bio p{font-size:13.5px}}
+/* entry screen styles live in the head so the crest paints before the rest of the page streams in */
+/* entry screen: the crest on midnight, one tap in */
+html.cm-intro body{overflow:hidden}
+#cmIntro{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;outline:none;color:#fff;padding:env(safe-area-inset-top,0px) 16px env(safe-area-inset-bottom,0px);background:radial-gradient(ellipse 80% 62% at 50% 40%,#111729 0%,#080b16 46%,#020309 100%);transition:opacity .8s ease,visibility .8s,filter .8s ease;-webkit-tap-highlight-color:transparent}
+#cmIntro .cmi-grid{position:absolute;left:-50%;right:-50%;bottom:-6%;height:58%;transform:perspective(520px) rotateX(64deg);transform-origin:50% 100%;background-image:linear-gradient(rgba(212,175,55,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(212,175,55,.16) 1px,transparent 1px);background-size:46px 46px;-webkit-mask-image:linear-gradient(0deg,#000 10%,transparent 85%);mask-image:linear-gradient(0deg,#000 10%,transparent 85%);animation:cmiGrid 5s linear infinite;pointer-events:none}
+#cmIntro .cmi-glow{position:absolute;left:50%;top:40%;width:min(70vmin,560px);height:min(70vmin,560px);transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,196,60,.22) 0%,rgba(255,196,60,.07) 42%,transparent 70%);animation:cmiPulse 4s ease-in-out infinite;pointer-events:none}
+#cmIntro .cmi-in{position:relative;display:flex;flex-direction:column;align-items:center;gap:clamp(14px,3vh,26px);text-align:center;mix-blend-mode:screen;animation:cmiUp 1.1s cubic-bezier(.2,.7,.2,1) both;transition:transform .8s cubic-bezier(.6,0,.4,1)}
+#cmIntro .cmi-logo{width:min(340px,70vw);max-width:100%;height:auto;animation:cmiFloat 5s ease-in-out infinite}
+#cmIntro .cmi-title{margin:0;font-family:"Bebas Neue","Barlow Condensed",sans-serif;font-weight:400;font-size:clamp(30px,6.4vw,60px);line-height:1;letter-spacing:.08em;color:#e8e2d0}
+#cmIntro .cmi-title b{font-weight:400;background:var(--gold-grad);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:cmShine 3.6s linear infinite}
+#cmIntro .cmi-btn{font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:13px;letter-spacing:.32em;text-transform:uppercase;padding:14px 28px 14px 32px;border-radius:999px;border:1px solid rgba(255,213,74,.55);background:rgba(255,213,74,.06);color:#ffe9a3;cursor:pointer;transition:background .25s,color .25s,box-shadow .25s;animation:cmiBtn 2.6s ease-in-out infinite}
+#cmIntro .cmi-btn:hover,#cmIntro .cmi-btn:focus-visible{background:#ffd54a;color:#000;outline:none;box-shadow:0 0 28px rgba(255,213,74,.45)}
+#cmIntro.out{opacity:0;visibility:hidden;filter:blur(8px)}
+#cmIntro.out .cmi-in{transform:scale(1.14)}
+#cmIntro.out .cmi-logo{animation:none}
+@keyframes cmiGrid{from{background-position:0 0}to{background-position:0 46px}}
+@keyframes cmiPulse{0%,100%{opacity:.75;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}}
+@keyframes cmiUp{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes cmiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes cmiBtn{0%,100%{box-shadow:0 0 0 0 rgba(255,213,74,0)}50%{box-shadow:0 0 22px 2px rgba(255,213,74,.25)}}
+#cmIntro .cmi-logo{aspect-ratio:1/1;object-fit:contain;width:min(320px,64vw);height:auto}
+#cmIntro.out{transition-duration:.6s}
+/* entry: a hyperspace jump into the crest */
+#cmIntro .cmi-warp{position:absolute;left:50%;top:40%;width:260vmax;height:260vmax;margin:-130vmax 0 0 -130vmax;opacity:0;pointer-events:none;background:repeating-conic-gradient(from 0deg,rgba(255,226,150,0) 0deg 1.6deg,rgba(255,226,150,.75) 1.9deg,rgba(255,226,150,0) 2.3deg 5.2deg);-webkit-mask:radial-gradient(circle,transparent 4%,#000 22%,transparent 60%);mask:radial-gradient(circle,transparent 4%,#000 22%,transparent 60%)}
+#cmIntro.warp .cmi-warp{animation:cmiWarp .75s cubic-bezier(.55,0,.8,.2) forwards}
+#cmIntro.warp .cmi-logo,#cmIntro.warp.out .cmi-logo{animation:cmiZoom .75s cubic-bezier(.6,0,.85,.25) forwards}
+#cmIntro.warp .cmi-title,#cmIntro.warp .cmi-btn{opacity:0;transform:scale(.9);transition:opacity .22s,transform .3s}
+#cmIntro.warp .cmi-glow{animation:cmiFlare .75s ease-in forwards}
+#cmIntro.warp .cmi-grid{animation-duration:.18s}
+@keyframes cmiWarp{0%{opacity:0;transform:scale(.25) rotate(0deg)}35%{opacity:1}100%{opacity:0;transform:scale(1.6) rotate(6deg)}}
+@keyframes cmiZoom{0%{transform:scale(1);opacity:1;filter:none}100%{transform:scale(7);opacity:0;filter:blur(5px) brightness(1.8)}}
+@keyframes cmiFlare{to{opacity:1;transform:translate(-50%,-50%) scale(3.2)}}
 </style>
 </head>
 <body>
@@ -1683,6 +1717,7 @@ body{overflow-x:hidden}
 .grd.none{background:transparent;color:var(--muted)}
 .grd.big{font-size:16px;height:24px;min-width:34px}
 .ms-s .grd{margin-left:6px}
+.gb-tbl tr.gb-tot td{border-top:1px solid rgba(255,255,255,.18);font-weight:700;color:#fff}
 .gb-h{display:flex;align-items:center;gap:8px;margin:14px 0 6px;font-family:"Barlow Condensed";letter-spacing:.12em;text-transform:uppercase;font-size:14px}
 .gb-fb{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px}
 .gb-r{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line)}
@@ -2119,25 +2154,6 @@ td.rk3,em.rk3{color:var(--bronze)!important;font-weight:700;box-shadow:inset 0 -
 /* stars: a real touch target */
 .fav-star{touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-width:30px;min-height:30px}
 /* ---- v1.7 ---- */
-/* entry screen: the crest on midnight, one tap in */
-html.cm-intro body{overflow:hidden}
-#cmIntro{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;outline:none;color:#fff;padding:env(safe-area-inset-top,0px) 16px env(safe-area-inset-bottom,0px);background:radial-gradient(ellipse 80% 62% at 50% 40%,#111729 0%,#080b16 46%,#020309 100%);transition:opacity .8s ease,visibility .8s,filter .8s ease;-webkit-tap-highlight-color:transparent}
-#cmIntro .cmi-grid{position:absolute;left:-50%;right:-50%;bottom:-6%;height:58%;transform:perspective(520px) rotateX(64deg);transform-origin:50% 100%;background-image:linear-gradient(rgba(212,175,55,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(212,175,55,.16) 1px,transparent 1px);background-size:46px 46px;-webkit-mask-image:linear-gradient(0deg,#000 10%,transparent 85%);mask-image:linear-gradient(0deg,#000 10%,transparent 85%);animation:cmiGrid 5s linear infinite;pointer-events:none}
-#cmIntro .cmi-glow{position:absolute;left:50%;top:40%;width:min(70vmin,560px);height:min(70vmin,560px);transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,196,60,.22) 0%,rgba(255,196,60,.07) 42%,transparent 70%);animation:cmiPulse 4s ease-in-out infinite;pointer-events:none}
-#cmIntro .cmi-in{position:relative;display:flex;flex-direction:column;align-items:center;gap:clamp(14px,3vh,26px);text-align:center;mix-blend-mode:screen;animation:cmiUp 1.1s cubic-bezier(.2,.7,.2,1) both;transition:transform .8s cubic-bezier(.6,0,.4,1)}
-#cmIntro .cmi-logo{width:min(340px,70vw);max-width:100%;height:auto;animation:cmiFloat 5s ease-in-out infinite}
-#cmIntro .cmi-title{margin:0;font-family:"Bebas Neue","Barlow Condensed",sans-serif;font-weight:400;font-size:clamp(30px,6.4vw,60px);line-height:1;letter-spacing:.08em;color:#e8e2d0}
-#cmIntro .cmi-title b{font-weight:400;background:var(--gold-grad);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:cmShine 3.6s linear infinite}
-#cmIntro .cmi-btn{font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:13px;letter-spacing:.32em;text-transform:uppercase;padding:14px 28px 14px 32px;border-radius:999px;border:1px solid rgba(255,213,74,.55);background:rgba(255,213,74,.06);color:#ffe9a3;cursor:pointer;transition:background .25s,color .25s,box-shadow .25s;animation:cmiBtn 2.6s ease-in-out infinite}
-#cmIntro .cmi-btn:hover,#cmIntro .cmi-btn:focus-visible{background:#ffd54a;color:#000;outline:none;box-shadow:0 0 28px rgba(255,213,74,.45)}
-#cmIntro.out{opacity:0;visibility:hidden;filter:blur(8px)}
-#cmIntro.out .cmi-in{transform:scale(1.14)}
-#cmIntro.out .cmi-logo{animation:none}
-@keyframes cmiGrid{from{background-position:0 0}to{background-position:0 46px}}
-@keyframes cmiPulse{0%,100%{opacity:.75;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}}
-@keyframes cmiUp{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
-@keyframes cmiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-@keyframes cmiBtn{0%,100%{box-shadow:0 0 0 0 rgba(255,213,74,0)}50%{box-shadow:0 0 22px 2px rgba(255,213,74,.25)}}
 /* nav: the brand never changes width and the scrollbar never comes and goes, so the bars stay put between sports */
 html{scrollbar-gutter:stable}
 nav .brand{flex:none}
@@ -2193,8 +2209,6 @@ td.rk3{box-shadow:inset 0 0 0 999px rgba(217,140,74,.13),inset 0 -2px 0 var(--br
 @media (prefers-reduced-motion:reduce){ #cmIntro *,.bigstats *,.proj-grid *,.podium *,td.rk-top,td.rk2,td.rk3,em.rk-top,em.rk2,em.rk3{animation:none!important} }
 /* ---- v1.8 ---- */
 /* the logo keeps its shape everywhere: a square box, the whole crest inside it */
-#cmIntro .cmi-logo{aspect-ratio:1/1;object-fit:contain;width:min(320px,64vw);height:auto}
-#cmIntro.out{transition-duration:.6s}
 nav .brand{display:inline-flex;align-items:center;gap:10px}
 nav .brand .brand-logo{width:34px;height:34px;aspect-ratio:1/1;object-fit:contain;flex:none;max-width:none}
 @media (max-width:640px){ nav .brand .brand-logo{width:28px;height:28px} }
@@ -2212,16 +2226,6 @@ nav .brand .brand-logo{width:34px;height:34px;aspect-ratio:1/1;object-fit:contai
 /* a game still on: no grade yet */
 .grd.none[title]{font-size:9px;letter-spacing:.08em}
 /* ---- v1.9 ---- */
-/* entry: a hyperspace jump into the crest */
-#cmIntro .cmi-warp{position:absolute;left:50%;top:40%;width:260vmax;height:260vmax;margin:-130vmax 0 0 -130vmax;opacity:0;pointer-events:none;background:repeating-conic-gradient(from 0deg,rgba(255,226,150,0) 0deg 1.6deg,rgba(255,226,150,.75) 1.9deg,rgba(255,226,150,0) 2.3deg 5.2deg);-webkit-mask:radial-gradient(circle,transparent 4%,#000 22%,transparent 60%);mask:radial-gradient(circle,transparent 4%,#000 22%,transparent 60%)}
-#cmIntro.warp .cmi-warp{animation:cmiWarp .75s cubic-bezier(.55,0,.8,.2) forwards}
-#cmIntro.warp .cmi-logo,#cmIntro.warp.out .cmi-logo{animation:cmiZoom .75s cubic-bezier(.6,0,.85,.25) forwards}
-#cmIntro.warp .cmi-title,#cmIntro.warp .cmi-btn{opacity:0;transform:scale(.9);transition:opacity .22s,transform .3s}
-#cmIntro.warp .cmi-glow{animation:cmiFlare .75s ease-in forwards}
-#cmIntro.warp .cmi-grid{animation-duration:.18s}
-@keyframes cmiWarp{0%{opacity:0;transform:scale(.25) rotate(0deg)}35%{opacity:1}100%{opacity:0;transform:scale(1.6) rotate(6deg)}}
-@keyframes cmiZoom{0%{transform:scale(1);opacity:1;filter:none}100%{transform:scale(7);opacity:0;filter:blur(5px) brightness(1.8)}}
-@keyframes cmiFlare{to{opacity:1;transform:translate(-50%,-50%) scale(3.2)}}
 /* level scores read level: neither side gets the leader's white */
 .mu .ln.tie,.mu .ln.tie b{color:#d5d9de}
 .mu .ln.tie .ln-rec{color:#9aa0a8}
@@ -3028,11 +3032,12 @@ function teamPage(ab){
      </div>
    </div>
    ${outs.length?`<div class="sub-h">Injury report <small>${outs.length} listed</small></div><div class="tbl-wrap"><table><tbody>${outs.map(p=>`<tr class="hov" data-pid="${p.id}"><td class="l"><div class="tn"><span class="mj">${jersey(p,{mini:true})}</span>${esc(p.name)}</div></td><td class="l">${esc(p.inj.status)}</td><td class="l">${esc(p.inj.type||'')}</td><td>Est. return ${p.outUntil>=SEASON_END?'season':fmtDate(p.outUntil)}</td></tr>`).join('')}</tbody></table></div>`:''}
-   ${nbaProjSec(r, next)}
+   ${teamProfileHTML(ab, true, true)}
    <div class="sub-h">Roster <small>Click a jersey for every stat and the game log · projected PTS / REB / AST</small></div>
    <div class="roster-grid">${cards}</div>
    <div class="sub-h">Projected per-game stats <small>Click a column to sort</small></div>${table}
-   <div class="sub-h">Recent results</div>${recent.map(g=>gameRow(g,ab)).join('') || '<p class="muted">No games played yet.</p>'}`;
+   <div class="sub-h">Recent results</div>${recent.map(g=>gameRow(g,ab)).join('') || '<p class="muted">No games played yet.</p>'}
+   <div style="margin-top:26px">${nbaProjSec(r, next)}</div>`;
 }
 
 function scheduleSection(){
@@ -4435,7 +4440,8 @@ const nflCard = lgCard;
 function lgGames(){
   const sp = sportOf(LGK); let gs, nav, kicker;
   if(isFBs(sp)){ const nW = sp==='cfb' ? 17 : 18; let wk = (UI.nflWeekLg||{})[LGK] || NF.curWeek; if(wk > nW) wk = NF.curWeek; gs = NF.games.filter(g => g.wk===wk);
-    if(NF.college){ const f = colFilter('colGames'); if(UI.colGames!=='all') gs = gs.filter(g => f(g.h) || f(g.a)); }
+    // Tuesday–Thursday games are the only ones those nights, so they always show; so does anything live
+    if(NF.college){ const f = colFilter('colGames'), mid = g => wk < 17 && [2, 3, 4].includes(new Date(g.t).getDay()); if(UI.colGames!=='all') gs = gs.filter(g => f(g.h) || f(g.a) || mid(g) || g.state==='in'); }
     nav = `<div class="filters wk-strip">${Array.from({length:nW},(_,i)=>i+1).map(w=>`<button class="chip ${w===wk?'on':''}" data-nweek="${w}">${sp==='cfb'&&w===17?'Bowls':w}</button>`).join('')}</div>${NF.college?colFilterUI('colGames','All games'):''}`; kicker = sp==='cfb'&&wk===17 ? 'Bowl season' : `Week ${wk}`; }
   else { const today = dayKey(Date.now()), days0 = [...new Set(NF.games.map(g=>dayKey(g.t)))], days = [...new Set(days0.concat(today))].sort(); const key = 'day'+LGK;
     let d = UI[key]; if(!d || !days.includes(d)) d = days0.includes(today) ? today : NF.curDay || days0[days0.length-1];
@@ -4567,8 +4573,8 @@ function lgTeamPage(ab){
         <div class="tagline">${nRec(r)} · ${lgRankTxt(ab)}${allDone&&!soc&&(r.post.w||r.post.l)?` · postseason ${r.post.w}–${r.post.l}`:''}</div><div hidden>${soc?`projected ${f0(s.pts)} points · ${oddsStr(s.top)} top ${SOC_LEAGUES[LGK].top}`:allDone?`postseason ${r.post.w}–${r.post.l}`:`projected ${Math.round(s.w)}–${gl-Math.round(s.w)}${NF.college?` · ${oddsStr(s.ct)} conference title`:` · ${oddsStr(s.po)} playoff odds`}`}</div>
         <div class="legend" style="margin-top:14px"><span class="lnk" data-go2="lg-playbook" data-pbt="${ab}" style="cursor:pointer">Playbook →</span> <span class="lnk" data-go2="lg-tstats" style="cursor:pointer">Team stats →</span> <span class="lnk" data-th2hopen="${ab}" style="cursor:pointer">Compare with another team ⇄</span></div></div>
       <div class="kpis">${kpis}</div></div>
-    ${lgProjSec(ab, sched, srow)}
-    <div class="g-cols nfl-cols"><div><div class="sub-h">${sp==='mlb'?(UI.fullSched?'Full season':'Schedule (last 25 + upcoming)'):'Schedule'}${sp==='mlb'?` <button class="chip sm" data-fullsched="1">${UI.fullSched?'Show recent only':'Show every game'}</button>`:''} <small>Tap any game for the box score</small></div><div class="ns-list">${recent.map(srow).join('') || '<p class="muted">No games listed yet.</p>'}</div>${teamProfileHTML(ab)}</div><div><div class="sub-h">Roster${roster.length && (roster.length < rosterAll || sp==='mlb') ? ` <small>${activeLbl(sp, ab)}${sp==='mlb' ? '' : ` · ${roster.length} players`}</small>` : ''}</div>${grp || `<p class="muted">${sp==='cba'?'ESPN doesn’t publish college baseball rosters with stats, so this page shows results only.':'No roster listed.'}</p>`}</div></div>`;
+    ${teamProfileHTML(ab, true)}
+    <div class="g-cols nfl-cols"><div><div class="sub-h">${sp==='mlb'?(UI.fullSched?'Full season':'Schedule (last 25 + upcoming)'):'Schedule'}${sp==='mlb'?` <button class="chip sm" data-fullsched="1">${UI.fullSched?'Show recent only':'Show every game'}</button>`:''} <small>Tap any game for the box score</small></div><div class="ns-list">${recent.map(srow).join('') || '<p class="muted">No games listed yet.</p>'}</div><div style="margin-top:26px">${lgProjSec(ab, sched, srow)}</div></div><div><div class="sub-h">Roster${roster.length && (roster.length < rosterAll || sp==='mlb') ? ` <small>${activeLbl(sp, ab)}${sp==='mlb' ? '' : ` · ${roster.length} players`}</small>` : ''}</div>${grp || `<p class="muted">${sp==='cba'?'ESPN doesn’t publish college baseball rosters with stats, so this page shows results only.':'No roster listed.'}</p>`}</div></div>`;
 }
 const nflTeamPage = lgTeamPage;
 
@@ -4982,7 +4988,7 @@ function openLgPlayer(id){
   const perG = sp==='cbb' ? [] : prim.filter(k => LBL[k][3] && s[k] > 0 && k!=='war' && k!=='pwar').slice(0, 6);
   const fmtK = k => lgFmt(s[k], lblDec(k));
   const ink = nInk(p.tm); const wmName = (sp==='soc' ? t.n : t.n).toUpperCase();
-  const stillOut = p.inj ? `${esc(p.inj[0])}${p.inj[1]?' · '+esc(p.inj[1]):''}${isFBs(sportOf(LGK)) && /reserve/i.test(p.inj[0]+' '+(p.grp||'')) ? ' · ' + esc(retEst(p)) : ''}` : injFeedless() ? 'Active · this league publishes no injury report' : 'Active';
+  const stillOut = p.inj ? `${esc(p.inj[0])}${p.inj[1]?' · '+esc(p.inj[1]):''}${isFBs(sportOf(LGK)) && /reserve/i.test(p.inj[0]+' '+(p.grp||'')) ? ' · ' + esc(retEst(p)) : ''}` : injFeedless() ? (NF.sp==='cfb' ? 'Rostered · no reliable college injury feed, so availability isn’t shown' : 'Active · this league publishes no injury report') : 'Active';
   const rivals = peerPool(p).sort((a,b)=>Math.abs(impact(a)-impact(p))-Math.abs(impact(b)-impact(p))).slice(0,4);
   const meta = [p.num?`<span>#<b>${esc(p.num)}</b></span>`:'', `<span>Pos <b>${esc(p.pos||'–')}</b></span>`, p.age?`<span>Age <b>${p.age}</b></span>`:'', p.ht?`<span>Ht <b>${esc(p.ht)}</b></span>`:'', p.wt?`<span>Wt <b>${p.wt}</b></span>`:'', p.exp!=null && p.exp!=='' ? `<span>${NF.college?'Class':'Exp'} <b>${NF.college?esc(p.exp):p.exp?p.exp+' yr':'Rookie'}</b></span>`:''].join('');
   const secLbl = p.st0 ? '2025–26 season (this season starts in November)' : `${CF().seasonLbl} so far`;
@@ -4999,8 +5005,8 @@ function openLgPlayer(id){
     </div>
     ${p.inj&&p.inj[2]?`<div class="p-notes"><div class="status-note">${esc(p.inj[2])}</div></div>`:''}
     <div class="p-sec" style="border-top:3px solid ${ink}"><span>${secLbl}</span></div>
-    ${big.length ? `<div class="bigstats">${big.map(k=>{ const L = lgLeagueRank(p, k); return `<div class="${L ? medalCls(L.r) : ''}"><b>${fmtK(k)}</b><span>${LBL[k][0]}</span><em>${L ? medalTxt(L.r, L.tie, LBL[k][0], 'league') : rankOf(k)}</em></div>`; }).join('')}</div>
-      ${small.length?`<div class="proj-grid">${small.map(k=>`<div><b>${fmtK(k)}</b><span>${LBL[k][0]}</span></div>`).join('')}</div>`:''}` : `<div class="cur-strip" style="padding:22px 36px"><span>No stats recorded yet${isFBs(sp)&&pType(p)==='ol'?' (ESPN doesn’t track individual offensive-line stats)':''}.</span></div>`}
+    ${big.length ? `<div class="bigstats">${big.map(k=>{ const L = lgLeagueRank(p, k); return `<div class="${L ? medalCls(L.r) : ''}"${L ? ` title="${esc(rankTip(L, LBL[k][0]))}"` : ''}><b>${fmtK(k)}</b><span>${LBL[k][0]}</span><em>${L ? rankTxt(L) : ''}</em></div>`; }).join('')}</div>
+      ${small.length?`<div class="proj-grid">${small.map(k=>{ const L = lgLeagueRank(p, k); return `<div class="${L ? medalCls(L.r) : ''}"${L ? ` title="${esc(rankTip(L, LBL[k][0]))}"` : ''}><b>${fmtK(k)}</b><span>${LBL[k][0]}</span>${L ? `<em class="cm-rk">${rankTxt(L)}</em>` : ''}</div>`; }).join('')}</div>`:''}` : `<div class="cur-strip" style="padding:22px 36px"><span>No stats recorded yet${isFBs(sp)&&pType(p)==='ol'?' (ESPN doesn’t track individual offensive-line stats)':''}.</span></div>`}
     ${extra.length?`<div class="p-sec"><span>${pType(p)==='bat'?'On the mound':'At the plate'}</span></div><div class="cur-strip">${extra.map(k=>`<span>${fmtK(k)} ${LBL[k][0]}</span>`).join('')}</div>`:''}
     ${perG.length?`<div class="p-sec"><span>Per game</span><small>Season totals ÷ his ${gpOf(p)} game${gpOf(p)===1?'':'s'}</small></div><div class="proj-grid">${perG.map(k=>`<div><b>${lgFmt(s[k]/gpOf(p), Math.max(1, lblDec(k)))}</b><span>${LBL[k][0]}</span></div>`).join('')}</div>`:''}
     ${pace.length?`<div class="p-sec"><span>Projected season</span><small>${sp==='cbb'?`His averages × ${seasonN} scheduled games`:`His season so far × ${seasonN} ${sp==='soc'?'matches':'games'} ÷ the ${tgp} his team has played`}</small></div><div class="proj-grid">${pace.map(k=>`<div><b>${lgFmt(sp==='cbb' ? s[k]*seasonN : s[k]/tgp*seasonN, sp==='cbb' ? 0 : lblDec(k))}</b><span>${sp==='cbb' ? LBL[k][0].replace(/^Assists$/, 'Assists') : LBL[k][0]}</span></div>`).join('')}</div>`:''}
@@ -5386,13 +5392,17 @@ function lineTally(){ if(lineTalT) return; lineTalT = setTimeout(() => { lineTal
 // Moneylines -> no-vig win chances
 function mlProb(h, a, d){ const imp = x => x==null ? null : x < 0 ? -x/(-x+100) : 100/(x+100); const ph = imp(h), pa = imp(a), pd = imp(d); if(ph==null || pa==null) return null; const s = ph + pa + (pd||0); return {h:ph/s, a:pa/s, d:pd!=null ? pd/s : 0}; }
 // Compare our pre-game projection with the betting line once the final score is in
+// The model's misses are measured from the whole-number score it showed (24–17 is a 7-point call), so a 7-point swing reads as 7, not 7.5
+const projInt = (p, sp) => sp!=='soc' && Number.isInteger(p.hs) && Number.isInteger(p.as);
+const projMargin = (p, sp) => projInt(p, sp) ? p.hs - p.as : p.margin, projTotal = (p, sp) => projInt(p, sp) ? p.hs + p.as : p.total;
+const errTxt = v => Number.isInteger(Math.round(v*10)/10) ? String(Math.round(v)) : v.toFixed(1);
 function vsVegas(sp, g, p, hs, as, ln){
   if(!ln || hs==null || as==null || !p) return null;
-  const A = hs - as, TT = hs + as, r = {sp, h:g.h, a:g.a, A, TT};
-  if(SPREAD_SP(sp) && ln.hm!=null){ const me = Math.abs(p.margin - A), mk = Math.abs(ln.hm - A);
+  const A = hs - as, TT = hs + as, r = {sp, h:g.h, a:g.a, A, TT}; const pm = projMargin(p, sp), pt = projTotal(p, sp);
+  if(SPREAD_SP(sp) && ln.hm!=null){ const me = Math.abs(pm - A), mk = Math.abs(ln.hm - A);
     r.spread = {me:p.margin, mk:ln.hm, eMe:me, eMk:mk, win: Math.abs(me-mk) < 0.05 ? 0 : me < mk ? 1 : -1};
     const edge = p.margin - ln.hm; if(Math.abs(edge) >= 0.5){ const pickH = edge > 0, cov = A - ln.hm; r.ats = {pick: pickH ? g.h : g.a, line: pickH ? -ln.hm : ln.hm, res: Math.abs(cov) < 1e-9 ? 0 : ((cov > 0) === pickH ? 1 : -1)}; } }
-  if(ln.ou!=null && p.total!=null){ const me = Math.abs(p.total - TT), mk = Math.abs(ln.ou - TT);
+  if(ln.ou!=null && p.total!=null){ const me = Math.abs(pt - TT), mk = Math.abs(ln.ou - TT);
     r.total = {me:p.total, mk:ln.ou, eMe:me, eMk:mk, win: Math.abs(me-mk) < 0.05 ? 0 : me < mk ? 1 : -1};
     const e2 = p.total - ln.ou; if(Math.abs(e2) >= (sp==='soc' ? 0.15 : sp==='mlb' ? 0.25 : 0.5)){ const over = e2 > 0; r.ou = {pick: over ? 'Over' : 'Under', line: ln.ou, res: TT===ln.ou ? 0 : ((TT > ln.ou) === over ? 1 : -1)}; } }
   const q = mlProb(ln.mlH, ln.mlA, sp==='soc' ? ln.mlD : null);
@@ -5431,9 +5441,9 @@ function vvCard(lg, g, p, hs, as, nm, big){ nm = nm || (x => x);
     <div class="vv-f">${vvBadge(w, !big)}${tags.length?`<span>${tags.join(' · ')}</span>`:''}</div>${big?vvExplain(r, nm, g):''}</div>`;
 }
 function vvExplain(r, nm, g){ const out = [];
-  if(r.spread) out.push(`Spread: we were off by ${r.spread.eMe.toFixed(1)}, Vegas by ${r.spread.eMk.toFixed(1)}.`);
+  if(r.spread) out.push(`Spread: we were off by ${errTxt(r.spread.eMe)}, Vegas by ${errTxt(r.spread.eMk)}.`);
   if(r.prob) out.push(`Win odds: we gave the ${r.sp==='soc'&&r.prob.res==='d'?'draw':'winner'} ${Math.round(r.prob.me*100)}%, the moneyline (vig removed) ${Math.round(r.prob.mk*100)}%; higher is better.`);
-  if(r.total) out.push(`Total: we were off by ${r.total.eMe.toFixed(1)}, Vegas by ${r.total.eMk.toFixed(1)}.`);
+  if(r.total) out.push(`Total: we were off by ${errTxt(r.total.eMe)}, Vegas by ${errTxt(r.total.eMk)}.`);
   if(r.sp==='mlb') out.push('Baseball books only post a ±1.5 run line, so baseball is graded on win odds and the total.');
   return `<p class="vv-x">${out.join(' ')}</p>`; }
 // Season scoreboard against the books, from every graded game that has a line on file
@@ -5785,7 +5795,7 @@ function go(k, scroll){
   try{ history.replaceState(null,'','#'+(k==='team'?'team-'+UI.team:k==='lg-team'?'lg-team-'+UI.nflTeam:k)); }catch(e){}
   if(k==='updates') wireUpdates();
   try{ heroMode(k); }catch(e){}
-  if(scroll!==false) document.getElementById('main').scrollIntoView({behavior:'smooth'});
+  if(scroll!==false){ const sec = main.firstElementChild, hd = sec && (sec.querySelector('.sec-head') || sec); if(document.body.classList.contains('no-hero')) window.scrollTo({top:0, behavior:'smooth'}); else if(hd) hd.scrollIntoView({behavior:'smooth'}); }
 }
 /* The big header says "This season" on current-stat leaderboards and "Projections" everywhere else */
 function heroMode(k){
@@ -6478,9 +6488,9 @@ function nbaProjSec(r, next){ const S = simulate()[r.ab]; const gp = r.aw + r.al
   const note = gp < 3 ? 'Too early to read anything into the pace.' : Math.abs(d) < 3 ? `On pace for ${pace} wins, right in line with the projection.`
     : d > 0 ? `On pace for ${pace} wins, ${Math.round(d)} ahead of the projection. The model expects some of that to fade: it leans on the roster’s track record, not just ${gp} games.`
     : `On pace for ${pace} wins, ${Math.round(-d)} behind the projection. The roster projects better than the start, so the model expects a climb.`;
-  return `<div class="sub-h">Projections <small>Where the model has them finishing · 80% range ${S.p10}–${S.p90} wins</small></div><div class="proj-sec">
+  return `<div class="sub-h">Projections &amp; model ratings <small>Where the model has them finishing · 80% range ${S.p10}–${S.p90} wins</small></div><div class="proj-sec">
     <div class="kpis proj-k"><div><b>${r.W}–${r.L}</b><span>Projected record</span></div><div><b>${gp<5?'–':`${pace}–${82-pace}`}</b><span>Current pace</span></div><div><b>${ord(r.seed)}</b><span>Projected seed</span></div>
-    <div><b>${oddsStr(S.playoff)}</b><span>Top-6 seed</span></div><div><b>${sgn(r.fullNet)}</b><span>Net · full strength</span></div><div><b>${sgn(r.netNow)}</b><span>Net · tonight</span></div></div>
+    <div><b>${oddsStr(S.playoff)}</b><span>Top-6 seed</span></div><div><b>${sgn(r.fullNet)}</b><span>Net rating vs. league avg · full strength</span></div><div><b>${sgn(r.netNow)}</b><span>Net rating vs. league avg · with injuries</span></div></div>
     <p class="pace-note ${d>=3&&gp>=3?'up':d<=-3&&gp>=3?'down':''}">${note}</p>
     <div class="sub-h sm">Upcoming games</div>${next.map(g=>gameRow(g, r.ab)).join('') || '<p class="muted">No remaining games.</p>'}</div>`; }
 
@@ -6488,17 +6498,17 @@ function nbaProjSec(r, next){ const S = simulate()[r.ab]; const gp = r.aw + r.al
 function lgProjSec(ab, sched, srow){ const sp = NF.sp, soc = sp==='soc', r = NF.rec[ab], s = NF.sim[ab]; const gl = sched.filter(g=>g.stype!==3).length || CF().regGames; const allDone = !NF.regLeft;
   const kp = (l, v) => `<div><b>${v}</b><span>${l}</span></div>`; const dd = isFBs(sp)||sp==='cbb' ? 1 : 2; const rg = r.gp; let k, note = '', dir = '';
   if(soc){ const pace = rg ? Math.round(r.pts/rg*gl) : null; const d = pace==null ? 0 : pace - s.pts;
-    k = kp('Projected points', f0(s.pts)) + kp('Current pace', rg < 4 ? '–' : pace) + kp(`Top ${SOC_LEAGUES[LGK].top}`, oddsStr(s.top)) + kp('Title', oddsStr(s.s1)) + kp('Attack', NF.R.at[ab].toFixed(2)+'×') + kp('Defense', (1/NF.R.df[ab]).toFixed(2)+'×');
+    k = kp('Projected points', f0(s.pts)) + kp('Current pace', rg < 4 ? '–' : pace) + kp(`Top ${SOC_LEAGUES[LGK].top}`, oddsStr(s.top)) + kp('Title', oddsStr(s.s1)) + kp('Attack · goals scored vs. league avg', NF.R.at[ab].toFixed(2)+'×') + kp('Defense · goals kept out vs. league avg', (1/NF.R.df[ab]).toFixed(2)+'×');
     if(rg >= 3){ dir = d >= 4 ? 'up' : d <= -4 ? 'down' : ''; note = !dir ? `On pace for ${pace} points, in line with the projection.` : d > 0 ? `On pace for ${pace} points, ${Math.round(d)} above the projection. The model expects results to drift back toward the underlying numbers.` : `On pace for ${pace} points, ${Math.round(-d)} below the projection. The underlying numbers point to a better run-in.`; } }
   else { const projW = allDone ? r.w : Math.round(s.w); const pw = rg ? Math.round((r.w + r.t/2)/rg*gl) : null; const d = pw==null ? 0 : pw - projW; const tol = Math.max(1.5, gl*0.05);
     k = kp(allDone ? 'Current season record' : 'Projected record', allDone ? nRec(r) : `${projW}–${gl-projW}`) + kp('Current pace', rg < 4 || allDone ? '–' : `${pw}–${gl-pw}`)
       + (NF.college ? kp('Conf. title', oddsStr(s.ct)) + kp(sp==='cfb'?'Playoff':sp==='cbb'?'NCAA bid':'Conference', (sp==='cbb'||sp==='cfb') ? oddsStr(s.bid) : `${r.cw}–${r.cl}`)
         : allDone ? kp('Postseason', `${r.post.w}–${r.post.l}`) + kp(sp==='mlb' ? 'Run differential' : 'Point differential', sgn0(r.pf-r.pa)) : kp('Playoffs', oddsStr(s.po)) + kp('Division', oddsStr(s.div)))
-      + kp('Offense', (NF.R.o[ab]>=0?'+':'') + NF.R.o[ab].toFixed(dd)) + kp('Defense', (NF.R.d[ab]>=0?'+':'') + NF.R.d[ab].toFixed(dd));
+      + kp(`Offense rating · ${sp==='mlb' ? 'runs' : 'pts'} scored/game vs. league avg`, (NF.R.o[ab]>=0?'+':'') + NF.R.o[ab].toFixed(dd)) + kp(`Defense rating · ${sp==='mlb' ? 'runs' : 'pts'} allowed/game below league avg`, (NF.R.d[ab]>=0?'+':'') + NF.R.d[ab].toFixed(dd));
     if(allDone) note = `Regular season complete${r.post.w || r.post.l ? ` · postseason ${r.post.w}–${r.post.l}` : ''}.`;
     else if(rg >= 3){ dir = d >= tol ? 'up' : d <= -tol ? 'down' : ''; note = !dir ? `On pace for ${pw} wins, right in line with the projection.` : d > 0 ? `On pace for ${pw} wins, ${d} more than projected. The model leans on opponent-adjusted scoring margin, so it expects some regression.` : `On pace for ${pw} wins, ${-d} fewer than projected. Their scoring margin is better than the record, so the model expects a rebound.`; } }
   const up = sched.filter(g => g.state!=='post').slice(0, 6);
-  return `<div class="sub-h">${allDone && !soc ? 'Season summary <small>Final regular-season numbers</small>' : 'Projections <small>Where the model has them finishing</small>'}</div>${allDone && !soc && poOutTxt(ab) ? `<p class="pace-note">${poOutTxt(ab, true)}</p>` : ''}<div class="proj-sec"><div class="kpis proj-k">${k}</div>${note ? `<p class="pace-note ${dir}">${note}</p>` : ''}
+  return `<div class="sub-h">${allDone && !soc ? 'Season summary <small>Final regular-season numbers</small>' : 'Projections &amp; model ratings <small>Where the model has them finishing · ratings are opponent-adjusted</small>'}</div>${allDone && !soc && poOutTxt(ab) ? `<p class="pace-note">${poOutTxt(ab, true)}</p>` : ''}<div class="proj-sec"><div class="kpis proj-k">${k}</div>${note ? `<p class="pace-note ${dir}">${note}</p>` : ''}
     ${up.length ? `<div class="sub-h sm">Upcoming games</div><div class="ns-list">${up.map(srow).join('')}</div>` : ''}</div>`; }
 
 /* ---- Play-by-play, split by quarter / half / inning ---- */
@@ -7218,7 +7228,10 @@ const _impact0 = impact; impact = function(p){ if(sportOf(LGK)==='soc' && p && p
 /* ================= CALIBRATION: walk-forward correction of each model's lines (only kept when it beats the raw model) ================= */
 function calibrate(games, sp, done, K){ const fin = games.filter(done).filter(g => g.pred && isFinite(g.pred.margin)).sort((a, b) => a.t - b.t); if(fin.length < 40) return null;
   const soc = sp==='soc'; const n0 = soc ? 220 : sp==='nba' ? 90 : 140; const SIG = soc ? 1 : (K && K.SIG) || SIGS[sp] || 12;
-  const fit = S => { const n = S.n; if(n < 15) return {k:1, a:0}; const den = n*S.xx - S.x*S.x; let k = den > 1e-9 ? (n*S.xy - S.x*S.y)/den : 1; let a = (S.y - k*S.x)/n; const w = n/(n + n0); k = Math.max(0.55, Math.min(1.35, 1 + (k - 1)*w)); a = a*w; return {k, a}; };
+  // the intercept is set from the final (shrunk, clamped) slope so the line stays centred: its mean output is a blend of the observed and raw means.
+  // (Setting it from the raw slope and clamping afterwards added ~20 points to every college football total, whose raw slope is near zero.)
+  const fit = S => { const n = S.n; if(n < 15) return {k:1, a:0}; const den = n*S.xx - S.x*S.x; let k = den > 1e-9 ? (n*S.xy - S.x*S.y)/den : 1; const w = n/(n + n0); k = Math.max(0.55, Math.min(1.35, 1 + (k - 1)*w));
+    const xm = S.x/n, ym = S.y/n; return {k, a: w*ym + (1 - w)*xm - k*xm}; };
   const z = () => ({n:0, x:0, y:0, xx:0, xy:0}); const add = (S, x, y) => { S.n++; S.x += x; S.y += y; S.xx += x*x; S.xy += x*y; };
   const SM = z(), ST = z(); let rss = 0, rn = 0, dObs = 0, dPred = 0; const out = new Map();
   const apply = (g, last) => { const p = g.pred; const m0 = p.margin, t0 = p.total; const fm = fit(SM), ft = fit(ST); const m = fm.a + fm.k*m0, tt = isFinite(t0) ? ft.a + ft.k*t0 : t0;
@@ -7679,10 +7692,21 @@ function gbHTML(id){ const B = LBOX[id]; if(!B) return ''; const j = B.j, path =
   const body = tms.map(c => { const t = c.team || {}; const tid = String(t.id||''); const rows = P.filter(r => r.tm===tid);
     const head = `<div class="gb-h">${t.logo || (t.logos||[])[0] ? `<img class="lv-logo" src="${esc(darkLogo(t.logo || t.logos[0].href))}" alt="" onerror="this.remove()">` : ''}<b>${esc(t.displayName||t.shortDisplayName||'')}</b></div>`;
     if(/baseball/.test(path)) return head + tblFor(tid, rows.filter(r => r.kind==='bat'), 'bat') + tblFor(tid, rows.filter(r => r.kind==='pit'), 'pit');
+    if(/football/.test(path)) return head + fbGroups(j, tid, rows);
     return head + tblFor(tid, rows.filter(r => r.lines.length).sort((a, b) => (b.starter - a.starter))); }).join('');
   const best = P.filter(r => r.G && r.G.v!=null).sort((a, b) => b.G.v - a.G.v)[0];
   return `<h4 style="margin-top:22px">Box score &amp; game grades${st.state==='in' ? ' <span class="live">LIVE</span>' : ''}</h4><p class="muted" style="font-size:12px;margin:-4px 0 10px">${GR_NOTE(path)}${best ? ` Best grade so far: <b style="color:#fff">${esc(best.name)}</b> ${grPill(best.G)}` : ''}</p>${body}`; }
 const GR_NOTE = path => (/basketball/.test(path) ? 'Grades score each line fantasy-style (points, threes, boards, assists, steals and blocks, minus misses, turnovers and fouls) against what an average player produces in the same minutes.' : /football/.test(path) ? 'Grades score yards, touchdowns and catches fantasy-style, add efficiency and defense (tackles, sacks, takeaways), and take off interceptions, fumbles and missed kicks.' : /baseball/.test(path) ? 'Hitters are scored fantasy-style on hits by type, runs, RBI, walks and steals, minus outs and strikeouts; pitchers on outs and strikeouts minus runs, hits, walks and homers.' : 'Grades rate each player’s game.') + ' A+ is reserved for the top 1% of performances.';
+// football box score, ESPN style: one table per stat category in ESPN's order, players in the order ESPN lists them
+const FB_GRP = [['passing','Passing'],['rushing','Rushing'],['receiving','Receiving'],['fumbles','Fumbles'],['defensive','Defense'],['interceptions','Interceptions'],['kickReturns','Kick Returns'],['puntReturns','Punt Returns'],['kicking','Kicking'],['punting','Punting']];
+function fbGroups(j, tid, rows){ const tp = ((j.boxscore||{}).players||[]).find(x => String((x.team||{}).id||'')===tid); if(!tp) return '';
+  const G = {}; rows.forEach(r => G[r.id] = r); const order = FB_GRP.map(x => x[0]);
+  const grps = (tp.statistics||[]).slice().sort((a, b) => { const ia = order.indexOf(a.name), ib = order.indexOf(b.name); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib); });
+  return grps.map(g => { const ath = (g.athletes||[]).filter(a => !a.didNotPlay && (a.stats||[]).length); if(!ath.length) return ''; const labels = g.labels || [];
+    const title = (FB_GRP.find(x => x[0]===g.name)||[])[1] || g.text || g.name || '';
+    const tot = (g.totals||[]).some(x => x!=='' && x!=null) ? `<tr class="gb-tot"><td class="l">Team</td><td></td>${labels.map((l, i) => `<td>${esc(String(g.totals[i] ?? ''))}</td>`).join('')}</tr>` : '';
+    return `<div class="tbl-wrap box gb-tbl"><table><thead><tr><th class="l">${esc(title)}</th><th>GRD</th>${labels.map(l => `<th>${esc(l)}</th>`).join('')}</tr></thead><tbody>
+      ${ath.map(a => { const at = a.athlete || {}; const id = String(at.id||''); const r = G[id] || {}; return `<tr data-gbp="${esc(id)}"><td class="l">${esc(at.shortName||at.displayName||'')}</td><td>${grPill(r.G)}</td>${labels.map((l, i) => `<td>${esc(String(a.stats[i] ?? ''))}</td>`).join('')}</tr>`; }).join('')}${tot}</tbody></table></div>`; }).join(''); }
 function fbLine(x){ const g = String(x.grp||'').toLowerCase(); const v = i => x.vals[i]; const L = (x.labels||[]).map(s => String(s).toUpperCase()); const get = lab => { const i = L.indexOf(lab); return i < 0 ? null : v(i); };
   if(/passing/.test(g)) return `${get('C/ATT')||''} ${get('YDS')||0} yds${+get('TD') ? `, ${get('TD')} TD` : ''}${+get('INT') ? `, ${get('INT')} INT` : ''}`;
   if(/rushing/.test(g)) return `${get('CAR')||0} car ${get('YDS')||0} yds${+get('TD') ? `, ${get('TD')} TD` : ''}`;
@@ -8121,7 +8145,7 @@ function pctRank(vals, v, inv){ if(!vals || !vals.length || v==null || !isFinite
 
 /* ---- Rosters: NFL injured reserve gets its own group with an estimated return ---- */
 const IR_LBL = 'Injured reserve';
-function irRoster(ab, active){ if(!isFBs(sportOf(LGK))) return []; const on = new Set(active);
+function irRoster(ab, active){ if(sportOf(LGK)!=='nfl') return []; const on = new Set(active);
   return (NF.byTeam[ab] || []).filter(p => !on.has(p) && (/injuredReserve|reserve/i.test(p.grp||'') || (p.inj && /reserve|physically unable|non-football/i.test(p.inj[0])))).sort((a, b) => a.name.localeCompare(b.name)); }
 function retEst(p){ const i = p.inj || [], note = String(i[2]||''), rd = i[3] ? Date.parse(i[3]) : NaN;
   if(isFinite(rd) && rd > Date.now() - 864e5) return `Est. return ${fmtDate(rd, {month:'short', day:'numeric'})}`;
@@ -8130,7 +8154,7 @@ function retEst(p){ const i = p.inj || [], note = String(i[2]||''), rd = i[3] ? 
   if(m){ const w = +(m[2] || m[1]); return `Est. return ~${fmtDate((Date.parse(NF.asOf) || Date.now()) + w*7*864e5, {month:'short', day:'numeric'})} (${m[0]})`; }
   if(/reserve/i.test((i[0]||'') + ' ' + (p.grp||''))) return 'Return date TBD · IR stints last at least 4 games';
   return i[0] ? `${i[0]} · return date TBD` : 'Return date TBD'; }
-const injFeedless = () => NF && NF.sp==='soc' && !NF.players.some(q => q.inj);
+const injFeedless = () => NF && (NF.sp==='cfb' || (NF.sp==='soc' && !NF.players.some(q => q.inj)));
 
 /* ---- Soccer headshots: ESPN first, then the Wikimedia photo on file, then Wikipedia's lead image, then initials ---- */
 const SOC_PH = {};
@@ -8190,8 +8214,11 @@ document.addEventListener('input', e => { const q = e.target.closest && e.target
   const p = (lgModel(sec.dataset.rglg) || NF).players.find(x => x.id===sec.dataset.rgpid); if(p) withLgSafe(sec.dataset.rglg, () => { list.innerHTML = rgListHTML(sec.dataset.rglg, p); }); });
 function withLgSafe(lg, fn){ if(lg==='nba' || lg===LGK) return fn(); return withLg(lg, fn); }
 // A past game: the full game page when it's in this season's data, otherwise ESPN's box score with grades
-function openPastGame(lg, id){ try{ if(lg==='nba'){ if(M.games.some(g => g.id===id)){ closeOv('ovPlayer'); return openGame(id); } }
-  else if(lg===LGK && NF && NF.games.some(g => g.id===id)){ closeOv('ovPlayer'); return openLgGame(id); } }catch(e){}
+// A game opened from a game log always starts at the top of its card, wherever the last game card was scrolled to
+const ovTop = () => { const f = () => ['ovGame', 'gamePanel'].forEach(k => { const el = document.getElementById(k); if(el) el.scrollTop = 0; }); f(); requestAnimationFrame(f); };
+document.addEventListener('click', e => { const t = e.target.closest && e.target.closest('#playerPanel [data-game], #playerPanel [data-ngame], #playerPanel [data-rggame], #playerPanel [data-pastbox]'); if(t) setTimeout(ovTop, 0); }, true);
+function openPastGame(lg, id){ try{ if(lg==='nba'){ if(M.games.some(g => g.id===id)){ closeOv('ovPlayer'); openGame(id); return ovTop(); } }
+  else if(lg===LGK && NF && NF.games.some(g => g.id===id)){ closeOv('ovPlayer'); openLgGame(id); return ovTop(); } }catch(e){}
   openPastBox(lg==='nba' ? 'basketball/nba' : LG_PATH(lg), id, lg); }
 function openPastBox(path, id, lg){ closeOv('ovPlayer'); const soc = /soccer/.test(path);
   const draw = () => { const B = LBOX[id], comp = B ? (((B.j.header||{}).competitions||[])[0]||{}) : {}, cs = comp.competitors || [];
@@ -8200,7 +8227,7 @@ function openPastBox(path, id, lg){ closeOv('ovPlayer'); const soc = /soccer/.te
     $('#gamePanel').innerHTML = `<button class="close" data-close="ovGame">✕</button><span data-gid="${esc(id)}" hidden></span><div class="past-head">${B ? `<small>${esc(comp.date ? new Date(comp.date).toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric', year:'numeric'}) : '')} · ${esc(st.detail || st.shortDetail || 'Final')}</small><div class="pb-row">${tm(a)}<span>@</span>${tm(h)}</div>` : '<p class="muted">Loading…</p>'}</div>
       <div class="g-body">${B ? (soc ? msSlot(path, id, lg) : gbSlot(path, id)) : ''}</div>`;
     if(B && soc) msLoad(); };
-  draw(); openOv('ovGame'); if(!LBOX[id]) lboxFetch(path, id).then(draw); }
+  draw(); openOv('ovGame'); ovTop(); if(!LBOX[id]) lboxFetch(path, id).then(() => { draw(); ovTop(); }); }
 
 /* ---- College career: a fold-out section on NFL and NBA player cards (ESPN links each pro to his college record) ---- */
 const COLL = {};
@@ -8379,8 +8406,8 @@ function nbaBlurb(g){ try{ const p = g.pred; if(!p) return ''; const fav = p.ph 
   bits.push(fav===g.h ? 'home court helps' : `${T[fav].n} favored on the road`);
   return `<div class="g-blurb"><b>Model read</b> ${pw < 0.56 ? 'Close to a coin flip: ' : ''}${esc(T[fav].n)} ${Math.round(pw*100)}% · ${esc(modelSpread(g))}. ${esc(bits.slice(0, 2).join('; '))}.</div>`; }catch(e){ return ''; } }
 function vvCard(lg, g, p, hs, as, nm, big){ try{ nm = nm || (lg==='nba' ? (x => T[x] ? T[x].n : x) : tName); if(!p || hs==null || as==null) return ''; const soc = lg!=='nba' && sportOf(lg)==='soc', A = hs - as;
-  const pick = soc ? (p.ph >= p.pa && p.ph >= (p.pd||0) ? 1 : p.pa >= (p.pd||0) ? -1 : 0) : (p.ph >= .5 ? 1 : -1), res = Math.sign(A), hit = pick===res, off = isFinite(p.margin) ? Math.abs(p.margin - A) : null;
-  const txt = `Projected ${nm(g.a)} ${p.as}–${p.hs} ${nm(g.h)}; finished ${as}–${hs}. ${hit ? 'The model had the right result' : res===0 ? 'It ended level, which the model didn’t favour' : `${nm(res > 0 ? g.h : g.a)} beat the projection`}${off!=null && !soc ? `, and the margin was off by ${off.toFixed(1)}` : ''}.`;
+  const pick = soc ? (p.ph >= p.pa && p.ph >= (p.pd||0) ? 1 : p.pa >= (p.pd||0) ? -1 : 0) : (p.ph >= .5 ? 1 : -1), res = Math.sign(A), hit = pick===res, off = isFinite(p.margin) ? Math.abs(projMargin(p, lg==='nba' ? 'nba' : sportOf(lg)) - A) : null;
+  const txt = `Projected ${nm(g.a)} ${p.as}–${p.hs} ${nm(g.h)}; finished ${as}–${hs}. ${hit ? 'The model had the right result' : res===0 ? 'It ended level, which the model didn’t favour' : `${nm(res > 0 ? g.h : g.a)} beat the projection`}${off!=null && !soc ? `, and the margin was off by ${errTxt(off)}` : ''}.`;
   return `<div class="g-blurb post${big ? ' big' : ''}"><b>${hit ? '✓' : '✗'} Post-game</b> ${esc(txt)}</div>`; }catch(e){ return ''; } }
 function vvMini(){ return ''; }
 function vvTallyHTML(){ return ''; }
@@ -8407,11 +8434,12 @@ function serEndNote(g){ try{ const k = [g.h, g.a].sort().join('|'), s = (NF.seri
   const lo = s.winner===s.x ? s.y : s.x, w = Math.max(s.wx, s.wy), l = Math.min(s.wx, s.wy); return `<div class="ser-end">${esc(tName(lo))} — Lost to ${esc(tName(s.winner))} ${l}–${w} · ${esc(serRound(s).replace(/^the /, ''))}</div>`; }catch(e){ return ''; } }
 
 /* ---- Team page: the space under the schedule shows where the team ranks in every key stat ---- */
-function teamProfileHTML(ab){ try{ const defs = teamStatDefs().filter(d => !d[5]).slice(0, 12); if(!defs.length) return '';
-  const rows = defs.map(d => { const vs = NF.teams.map(a => [a, d[1](a)]).filter(x => x[1]!=null && isFinite(x[1])); const me = d[1](ab); if(me==null || !isFinite(me) || vs.length < 6) return '';
+// Team stats with the league rank in each; `top` puts it first on the team page as the headline numbers
+function teamProfileHTML(ab, top, nba){ try{ const defs = (nba ? nbaStatDefs() : teamStatDefs()).filter(d => !d[5]).slice(0, 12), teams = nba ? ABS : NF.teams; if(!defs.length) return '';
+  const rows = defs.map(d => { const vs = teams.map(a => [a, d[1](a)]).filter(x => x[1]!=null && isFinite(x[1])); const me = d[1](ab); if(me==null || !isFinite(me) || vs.length < 6) return '';
     const sorted = vs.slice().sort((x, y) => d[3] ? x[1] - y[1] : y[1] - x[1]), rk = sorted.findIndex(x => x[0]===ab) + 1, pos = 1 - (rk - 1)/(vs.length - 1);
     return `<div class="tp-row"><span>${esc(d[0])}</span><b>${lgFmt(me, d[2])}</b><em class="${tierCls(vs, ab, d[3], d[5])}">${ord(rk)}</em><i class="tp-bar"><u style="width:${Math.max(4, pos*100).toFixed(0)}%"></u></i></div>`; }).filter(Boolean);
-  return rows.length ? `<div class="sub-h" style="margin-top:26px">Team profile <small>League rank in each · gold is 1st, crimson is last</small></div><div class="tp-list">${rows.join('')}</div>` : ''; }catch(e){ return ''; } }
+  return rows.length ? `<div class="sub-h"${top ? '' : ' style="margin-top:26px"'}>Team stats <small>Season numbers with the league rank in each · gold is 1st, crimson is last</small></div><div class="tp-list${top ? ' tp-top' : ''}">${rows.join('')}</div>` : ''; }catch(e){ return ''; } }
 
 /* ---- Team cards flip to show the club: home ground, history and titles ---- */
 const TEAM_HIST_NBA = {ATL:'1 title (1958, as the St. Louis Hawks).', BKN:'Two ABA titles as the New York Nets; still chasing a first NBA title.', BOS:'18 titles, the most in NBA history; latest in 2024.', CHA:'Since 1988; no title yet.', CHI:'6 titles, all in the Jordan era (1991–93, 1996–98).', CLE:'1 title: the 2016 comeback from 3–1 down.', DAL:'1 title (2011).', DEN:'1 title (2023).', DET:'3 titles (1989, 1990, 2004).', GSW:'7 titles, four of them between 2015 and 2022.', HOU:'2 titles (1994, 1995).', IND:'Three ABA titles; still chasing a first NBA title.', LAC:'No title yet.', LAL:'17 titles; latest in 2020.', MEM:'Since 1995; no title yet.', MIA:'3 titles (2006, 2012, 2013).', MIL:'2 titles (1971, 2021).', MIN:'Since 1989; no title yet.', NOP:'Since 2002; no title yet.', NYK:'2 titles (1970, 1973).', OKC:'2 titles: 1979 as the Seattle SuperSonics and 2025.', ORL:'Since 1989; no title yet.', PHI:'3 titles; latest in 1983.', PHX:'Since 1968; no title yet.', POR:'1 title (1977).', SAC:'1 title (1951, as the Rochester Royals).', SAS:'5 titles (1999, 2003, 2005, 2007, 2014).', TOR:'1 title (2019).', UTA:'Since 1974; no title yet.', WAS:'1 title (1978, as the Washington Bullets).'};
@@ -8563,9 +8591,10 @@ function oppLogo(path, r){ const lg = String(path).split('/')[1] || '', ab = Str
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-labsort]'); if(!b) return; e.stopPropagation(); UI.labSort = b.dataset.labsort; saveUI(); const y = scrollY; go('lg-lab', false); window.scrollTo(0, y); }, true);
 
 /* ---- College football: pull extreme projections back toward a realistic scoreline ---- */
-if(SPORTS.cfb){ SPORTS.cfb.SHRINK = 0.82; SPORTS.cfb.CAP = 56; }
+// Totals: shrink toward the league average, then bend anything past KNEE sharply (sportsbook totals top out in the 70s; projections are means, not shootouts)
+if(SPORTS.cfb){ SPORTS.cfb.SHRINK = 0.82; SPORTS.cfb.CAP = 56; SPORTS.cfb.KNEE = 66; SPORTS.cfb.KNEE_K = 0.5; }
 const _lgPredPts15 = lgPredPts; lgPredPts = function(R, g, K, adj){ const p = _lgPredPts15(R, g, K, adj); if(!K || !K.SHRINK || !isFinite(p.total)) return p;
-  const lg2 = 2*R.lg, total = lg2 + (p.total - lg2)*K.SHRINK, margin = p.margin*0.92; let xh = Math.min(K.CAP, Math.max(3, (total + margin)/2)), xa = Math.min(K.CAP, Math.max(3, (total - margin)/2)); const m = xh - xa;
+  const lg2 = 2*R.lg; let total = lg2 + (p.total - lg2)*K.SHRINK; if(K.KNEE && total > K.KNEE) total = K.KNEE + (total - K.KNEE)*K.KNEE_K; const margin = p.margin*0.92; let xh = Math.min(K.CAP, Math.max(3, (total + margin)/2)), xa = Math.min(K.CAP, Math.max(3, (total - margin)/2)); const m = xh - xa;
   let rH = Math.round(xh), rA = Math.round(xa); if(rH===rA){ m >= 0 ? rH++ : rA++; } return Object.assign({}, p, {hs:rH, as:rA, xh, xa, margin:m, total:xh + xa, ph:phi(m/K.SIG)}); };
 
 /* ---- All-time comparison boxes: type a name, pick from the list or press Enter ---- */
@@ -8642,7 +8671,8 @@ function cfbTotals(m){ const done = m.games.filter(g => g.state==='post' && g.hs
   const bias = done.reduce((t, g) => t + (g.pred.hs + g.pred.as) - (g.hs + g.as), 0)/done.length; if(!(bias > 0.5)) return; m.cfbBias = bias;
   m.games.forEach(g => { if(g.state==='post' || !g.pred || !isFinite(g.pred.total)) return; const p = g.pred, total = Math.max(20, p.total - bias), xh = Math.max(3, (total + p.margin)/2), xa = Math.max(3, (total - p.margin)/2);
     let rH = Math.round(xh), rA = Math.round(xa); if(rH===rA){ p.margin >= 0 ? rH++ : rA++; } g.pred = Object.assign({}, p, {xh, xa, hs:rH, as:rA, total:xh + xa}); }); }
-const _lgModel15 = lgModel; lgModel = function(key){ const m = _lgModel15(key); if(m && m.sp==='cfb' && !m.__tb){ m.__tb = 1; try{ cfbTotals(m); }catch(e){} } return m; };
+// College football has no reliable, current injury feed, so no injury status is shown anywhere for it (player cards, rosters, game previews)
+const _lgModel15 = lgModel; lgModel = function(key){ const m = _lgModel15(key); if(m && m.sp==='cfb' && !m.__tb){ m.__tb = 1; try{ cfbTotals(m); }catch(e){} try{ m.players.forEach(p => { p.inj = null; }); m.isOut = () => false; }catch(e){} } return m; };
 
 /* ================= v1.6: sub-tabs under the sports bar, steady date pager, soccer by day, medal ranks, position-aware grades, team history everywhere ================= */
 
@@ -8650,13 +8680,19 @@ const _lgModel15 = lgModel; lgModel = function(key){ const m = _lgModel15(key); 
 const medalCls = r => r===1 ? 'rk-m rk1' : r===2 ? 'rk-m rk2' : r===3 ? 'rk-m rk3' : '';
 const medalTxt = (r, tie, lab, scope) => r <= 3 ? (tie ? `Tied for ${ord(r)} in ${lab}` : `#${r} in ${lab}`) : `#${r} in ${scope}`;
 // League rank for one headline number on a league player card: qualified players in the same role (hitters vs hitters, quarterbacks vs quarterbacks)
-function lgLeagueRank(p, k){ try{ if(SKIP2.has(k) || !LBL[k]) return null; const v = p.st[k]; if(v==null || !isFinite(v) || v===0) return null;
-  const sp = sportOf(LGK), low = LBL[k][2], count = LBL[k][3], ty = pType(p); if(low && count) return null;
-  const tg = q => Math.max(1, (NF.rec[q.tm] || {}).gp || 1);
-  const qual = q => count ? gpOf(q) >= 1 : sp==='mlb' ? (ty==='pit' ? (q.st.ip||0) >= tg(q) : (q.st.ab||0) + (q.st.bb||0) >= 3.1*tg(q)) : gpOf(q) >= Math.max(1, 0.5*tg(q));
+/* ---- Player-card ranks, every sport: each stat shows its exact place (4/41) among same-position players who meet the Leaders qualifiers; the top three get gold, silver, bronze ---- */
+const rankTxt = L => `${L.tie ? 'T-' : ''}${L.r}/${L.n}`;
+const rankTip = (L, lab) => `${L.tie ? 'Tied for ' : ''}${ord(L.r)} of ${L.n} qualified in ${lab}`;
+function lgLeagueRank(p, k){ try{ if(SKIP2.has(k) || !LBL[k]) return null; const v = p.st && p.st[k]; if(v==null || !isFinite(v)) return null;
+  const sp = sportOf(LGK), low = LBL[k][2], count = LBL[k][3], ty = pType(p);
   const same = q => sp==='mlb' || isFBs(sp) ? pType(q)===ty : sp==='soc' ? (pType(q)==='gk')===(ty==='gk') : true;
-  const pool = NF.players.filter(q => q.st && q.st[k]!=null && isFinite(q.st[k]) && same(q) && qual(q)); if(pool.length < 10 || !pool.some(q => q.id===p.id)) return null;
-  const r = pool.filter(q => low ? q.st[k] < v : q.st[k] > v).length + 1; return r <= 3 ? {r, tie: pool.some(q => q.id!==p.id && q.st[k]===v), n: pool.length} : null; }catch(e){ return null; } }
+  const has = q => q.st && q.st[k]!=null && isFinite(q.st[k]);
+  const peers = NF.players.filter(q => q.st && same(q)), Q = qualifier(peers.concat(peers.some(q => q.id===p.id) ? [] : [p]));
+  let pool = peers.filter(q => has(q) && Q(q));
+  // a counting stat still ranks a player short of the qualifiers, against everyone at his position who has recorded one
+  if(!pool.some(q => q.id===p.id)){ if(!count || low || !v) return null; pool = peers.filter(q => has(q) && q.st[k] > 0); }
+  if(!low && !v) return null; if(pool.length < 6 || !pool.some(q => q.id===p.id)) return null;
+  const r = pool.filter(q => low ? q.st[k] < v : q.st[k] > v).length + 1; return {r, n: pool.length, tie: pool.some(q => q.id!==p.id && q.st[k]===v)}; }catch(e){ return null; } }
 
 /* ---- Table ranks: ties share a medal, and style stats (stolen bases, pitches per PA, pace) get medals too, just no green / red ---- */
 tierCls = function(vs, a, low, style){ if(vs.length < 6) return ''; const me = vs.find(x => x[0]===a); if(!me) return ''; const n = vs.length, k = Math.round(n/3), v = me[1];
@@ -8807,13 +8843,13 @@ const CM_RK = {PTS:'pts', REB:'reb', AST:'ast', STL:'stl', BLK:'blk', 'FG%':'fgp
 const CM_RL = {pts:'PPG', reb:'RPG', ast:'APG', stl:'SPG', blk:'BPG', fgp:'FG%', tpp:'3P%', ftp:'FT%', ts:'TS%'};
 function nbaRank(p, k){ const s = STATS.find(x => x.k===k); if(!s || !p.C || p.C[k]==null) return null;
   const ok = q => q.C && q.C.gp >= Math.max(1, Math.ceil(tgp(q)*0.5)) && q.C.min >= 12 && (!s.min || s.min(q.C)) && q.C[k]!=null; if(!ok(p)) return null;
-  const pool = M.players.filter(ok), v = p.C[k]; return {r: pool.filter(q => q.C[k] > v).length + 1, tie: pool.some(q => q.id!==p.id && q.C[k]===v)}; }
+  const pool = M.players.filter(ok), v = p.C[k]; return {r: pool.filter(q => q.C[k] > v).length + 1, n: pool.length, tie: pool.some(q => q.id!==p.id && q.C[k]===v)}; }
 const _openPlayer17 = openPlayer; openPlayer = function(id){ _openPlayer17(id); try{ const p = M.players.find(x => x.id===id), bs = document.querySelector('#playerPanel .bigstats'); if(!p || !p.C || !bs) return;
   const pg = bs.nextElementSibling, tiles = [...bs.children].map(d => [d, true]).concat(pg && pg.classList.contains('proj-grid') ? [...pg.children].map(d => [d, false]) : []);
   tiles.forEach(([d, big]) => { const k = CM_RK[((d.querySelector('span')||{}).textContent||'').trim()]; if(!k) return; const R = nbaRank(p, k); d.classList.remove('rk-m','rk1','rk2','rk3');
     let em = d.querySelector('em'); if(!big && em && !em.classList.contains('cm-rk')) return;
-    if(!R || (!big && R.r > 3)){ if(em && big) em.textContent = R ? `#${R.r} in NBA` : ''; return; }
-    if(R.r <= 3) d.classList.add(...medalCls(R.r).split(' ')); if(!em){ em = document.createElement('em'); em.className = 'cm-rk'; d.appendChild(em); } em.textContent = medalTxt(R.r, R.tie, CM_RL[k], 'NBA'); }); }catch(e){} };
+    if(!R){ if(em && big) em.textContent = ''; return; }
+    if(R.r <= 3) d.classList.add(...medalCls(R.r).split(' ')); if(!em){ em = document.createElement('em'); em.className = 'cm-rk'; d.appendChild(em); } em.textContent = rankTxt(R); d.title = rankTip(R, CM_RL[k]); }); }catch(e){} };
 
 /* ---- Career tables on player cards: tap a column for high → low, again for low → high, a third time for the original order; totals stay at the bottom ---- */
 const OSORT = new WeakMap();
@@ -8966,8 +9002,8 @@ function sitPaint(){ try{
 
 /* ---- Football game pages: the play-by-play sits right under the Match Center; the long box score and position matchups start folded ---- */
 const GB_OPEN = new Set();
-const _gbHTML19 = gbHTML; gbHTML = function(id){ const h = _gbHTML19(id), B = LBOX[id]; if(!h || !B || !/football/.test(B.path) || !/class="gb-fb"/.test(h)) return h;
-  const n = (h.match(/class="gb-r"/g) || []).length;
+const _gbHTML19 = gbHTML; gbHTML = function(id){ const h = _gbHTML19(id), B = LBOX[id]; if(!h || !B || !/football/.test(B.path) || !/class="tbl-wrap box gb-tbl"/.test(h)) return h;
+  const n = new Set((h.match(/data-gbp="[^"]*"/g) || [])).size;
   return `<details class="gb-fold" data-gbfold="${esc(id)}"${GB_OPEN.has(String(id)) ? ' open' : ''}><summary>Box score &amp; game grades<em>${n} players</em></summary>${h}</details>`; };
 document.addEventListener('toggle', e => { const d = e.target; if(d && d.dataset && d.dataset.gbfold) d.open ? GB_OPEN.add(d.dataset.gbfold) : GB_OPEN.delete(d.dataset.gbfold); }, true);
 const _matchupsHTML19 = matchupsHTML; matchupsHTML = function(g){ const h = _matchupsHTML19(g); if(!h || !isFBs(sportOf(LGK)) || !(g.state==='in' || g.state==='post')) return h;
