@@ -2228,6 +2228,9 @@ td.rk-top{box-shadow:inset 0 0 0 999px rgba(255,213,74,.13),inset 0 -2px 0 var(-
 td.rk2{box-shadow:inset 0 0 0 999px rgba(185,198,212,.12),inset 0 -2px 0 var(--silver)!important}
 td.rk3{box-shadow:inset 0 0 0 999px rgba(217,140,74,.13),inset 0 -2px 0 var(--bronze)!important}
 #main table td.rk2,#main table td.rk3{background-color:transparent}
+/* tied medal places that miss the three podium boxes keep their metal in the list */
+.list .row .rk.rm1{background:var(--gold-grad)}.list .row .rk.rm2{background:var(--silver-grad)}.list .row .rk.rm3{background:var(--bronze-grad)}
+.list .row .rk:is(.rm1,.rm2,.rm3){background-size:250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-weight:700}
 /* career tables on player cards sort by any column */
 .overlay table thead th{cursor:pointer;user-select:none}
 .overlay table thead th[data-arr]::after{content:attr(data-arr);color:#ffd54a}
@@ -2929,14 +2932,17 @@ function leaderPool(s){
   return M.players.filter(p => p.C && p.C.gp >= Math.max(1, Math.ceil(tgp(p)*0.5)) && p.C.min >= 12 && (!s.min || s.min(p.C)) && p.C[s.k]!=null);
 }
 // Leaderboard places, every sport: players showing the same value share the place (1, 2, 2, 4), so a tie shares the medal.
-// The podium holds everyone placed 1st–3rd (at least three players), and the list runs past its cutoff until the tie ends.
-function ldTiers(sorted, shown, cut){
+// The podium is at most three big boxes: within a tie the stronger case (tb: efficiency / workload) gets the box, and the rest of
+// the tie drops into the list with the same shared place and medal colour. The list runs past its cutoff until the tie ends.
+function ldTiers(sorted, shown, cut, tb){
+  if(tb){ const grp = []; sorted.forEach((p, i) => grp.push(i && shown(p)===shown(sorted[i-1]) ? grp[i-1] : i)); const idx = new Map(sorted.map((p, i) => [p, i]));
+    sorted = sorted.slice().sort((a, b) => { const ga = grp[idx.get(a)], gb = grp[idx.get(b)]; if(ga!==gb) return ga - gb; const d = (tb(b)||0) - (tb(a)||0); return d || idx.get(a) - idx.get(b); }); }
   const rk = []; sorted.forEach((p, i) => rk.push(i && shown(p)===shown(sorted[i-1]) ? rk[i-1] : i+1));
   const tie = i => (i > 0 && rk[i-1]===rk[i]) || (i+1 < rk.length && rk[i+1]===rk[i]);
-  let np = Math.min(3, sorted.length); while(np < sorted.length && rk[np] <= 3) np++;
+  const np = Math.min(3, sorted.length);
   let end = Math.min(Math.max(cut, np), sorted.length); while(end < sorted.length && rk[end]===rk[end-1]) end++;
-  const lab = i => `${tie(i)?'T':''}${String(rk[i]).padStart(2,'0')}`, pm = i => rk[i] <= 3 ? ' pm'+rk[i] : '';
-  return {pod: sorted.slice(0, np), rows: sorted.slice(np, end), np, lab, pm};
+  const lab = i => `${tie(i)?'T':''}${String(rk[i]).padStart(2,'0')}`, pm = i => rk[i] <= 3 ? ' pm'+rk[i] : '', rm = i => rk[i] <= 3 ? ' rm'+rk[i] : '';
+  return {pod: sorted.slice(0, np), rows: sorted.slice(np, end), np, lab, pm, rm};
 }
 function leadersSection(){
   const s = STATS.find(x=>x.k===UI.stat) || STATS[0]; const pre = nbaPre(), cur = lmOf() !== 'proj';
@@ -2944,7 +2950,7 @@ function leadersSection(){
   const sorted = leaderPool(s).sort((a,b)=>v(b)-v(a));
   const max = sorted.length ? v(sorted[0]) || 1 : 1;
   const sub = p => cur ? `${p.C.gp} GP · ${f1(p.C.min)} MPG` : `${f1(p.L.min)} MPG · ${p.gp} GP proj`;
-  const TR = ldTiers(sorted, p => fmtStat(s, v(p)), 40);
+  const TR = ldTiers(sorted, p => fmtStat(s, v(p)), 40, p => { const L = lineOf(p) || {}; return (L.ts||0)*1e4 + (cur ? (p.C||{}).gp||0 : p.gp||0)*10 + (L.min||0); });   // tie: efficiency, then games, then minutes
   const pod = TR.pod.map((p,i)=>`
    <div class="pod${TR.pm(i)}" data-pid="${p.id}">
      <div class="glow" style="background:${T[p.tm].p}"></div>
@@ -2956,7 +2962,7 @@ function leadersSection(){
    </div>`).join('');
   const rows = TR.rows.map((p,i)=>`
    <div class="row" data-pid="${p.id}">
-     <div class="rk">${TR.lab(i+TR.np)}</div>
+     <div class="rk${TR.rm(i+TR.np)}">${TR.lab(i+TR.np)}</div>
      <div class="mj">${jersey(p,{mini:true})}</div>
      <div class="pn">${esc(p.name)}${injTag(p)}<small>${p.pos} · ${sub(p)}</small></div>
      <div class="tm">${logoImg(p.tm,'tm-lg')}${T[p.tm].c} ${T[p.tm].n}</div>
@@ -4187,7 +4193,7 @@ function hiHead(p){
 function openOv(id){ $('#'+id).classList.add('open'); document.body.classList.add('locked'); }
 function closeOv(id){ $('#'+id).classList.remove('open'); if(!document.querySelector('.overlay.open')) document.body.classList.remove('locked'); }
 
-/* ================= MULTI-SPORT ENGINE: Sideline (NFL) · Dugout (MLB) · Touchline (soccer) · Campus (college) ================= */
+/* ================= MULTI-SPORT ENGINE: Sideline (NFL) · Dugout (MLB) · Touchline (soccer) · Hardwood (college basketball) · Campus (college baseball) ================= */
 const SOC_LEAGUES = {'eng.1':{name:'Premier League', short:'EPL', top:4, rel:3, n:38}, 'esp.1':{name:'La Liga', short:'La Liga', top:4, rel:3, n:38}, 'ita.1':{name:'Serie A', short:'Serie A', top:4, rel:3, n:38},
   'ger.1':{name:'Bundesliga', short:'Bundesliga', top:4, rel:2, n:34}, 'fra.1':{name:'Ligue 1', short:'Ligue 1', top:3, rel:2, n:34}, 'usa.1':{name:'MLS', short:'MLS', top:18, rel:0, n:34}};
 const NCAA_LEAGUES = {'mcbb':{name:"Men's college basketball", short:'NCAAM'}, 'cfb':{name:'College football', short:'NCAAF'}};
@@ -4197,7 +4203,7 @@ const SPORTS = {
   mlb:{brand:'Dugout', label:'MLB', model:'pts', HFA:0.25, SIG:3.7, LG:4.4, PRIOR_REG:0.5, LAMBDA:120, unit:'runs', seasonLbl:'2026 MLB season', regGames:162, ab:'MLB'},
   soc:{brand:'Touchline', label:'Soccer', model:'goals', HFA:0.25, LAMBDA:5, HOMEX:0.5, PRIOR_G:15, PK:0.9, DECAY:150, DI:1.12, unit:'goals', seasonLbl:'2026–27 season', ab:'Soccer'},
   cfb:{brand:'Gridiron', label:'College football', model:'pts', HFA:3.2, SIG:15.5, LG:28, PRIOR_REG:0.6, LAMBDA:3, unit:'points', seasonLbl:'2026 season', regGames:12, ab:'NCAAF'},
-  cbb:{brand:'Campus', label:"Men's college basketball", model:'pts', HFA:3.2, SIG:10.8, LG:72, PRIOR_REG:0.55, LAMBDA:6, unit:'points', seasonLbl:'2026–27 season', regGames:31, ab:'NCAA'},
+  cbb:{brand:'Hardwood', label:"Men's college basketball", model:'pts', HFA:3.2, SIG:10.8, LG:72, PRIOR_REG:0.55, LAMBDA:6, unit:'points', seasonLbl:'2026–27 season', regGames:31, ab:'NCAA'},
   cba:{brand:'Campus', label:'College baseball', model:'pts', HFA:0.6, SIG:5.6, LG:6.3, PRIOR_REG:0, LAMBDA:6, unit:'runs', seasonLbl:'2026 season', regGames:56, ab:'NCAA'}
 };
 let LGK = 'nfl';          // current league key: 'nfl' | 'mlb' | 'eng.1' … | 'mcbb' | 'cbase'
@@ -4398,6 +4404,10 @@ function lgPredGoals(R, g){
   const pick = pH>=pA && pH>=pD ? 'h' : pA>=pD ? 'a' : 'd';
   return {hs:best[pick][0], as:best[pick][1], xh:lh, xa:la, ph:pH, pd:pD, pa:pA, margin:lh-la, total:lh+la};
 }
+// Soccer is graded as a moneyline: the official call is the full-time result (home win, draw, away win) of the model's predicted
+// scoreline, the one printed on every card. A finished match counts as called when that result matches, whatever the exact goals.
+function socCall(p){ if(!p) return null; if(p.hs!=null && p.as!=null && isFinite(p.hs) && isFinite(p.as)) return p.hs > p.as ? 'h' : p.hs < p.as ? 'a' : 'd'; return p.ph>=p.pa && p.ph>=p.pd ? 'h' : p.pa>=p.pd ? 'a' : 'd'; }
+const socRes = (hs, as) => hs > as ? 'h' : hs < as ? 'a' : 'd';
 const poisSample = l => { let k = 0, p = Math.exp(-l), s = p, u = Math.random(); while(u > s && k < 12){ k++; p *= l/k; s += p; } return k; };
 const NFL_DIVS = {'AFC East':['BUF','MIA','NE','NYJ'],'AFC North':['BAL','CIN','CLE','PIT'],'AFC South':['HOU','IND','JAX','TEN'],'AFC West':['DEN','KC','LV','LAC'],
   'NFC East':['DAL','NYG','PHI','WSH'],'NFC North':['CHI','DET','GB','MIN'],'NFC South':['ATL','CAR','NO','TB'],'NFC West':['ARI','LAR','SF','SEA']};
@@ -4438,7 +4448,7 @@ function buildLeague(key, D, opts={}){
       const R = fit(prior, cur[0].t);
       cur.forEach(g => {
         g.pred = K.model==='goals' ? lgPredGoals(R, g) : lgPredPts(R, g, K);
-        if(K.model==='goals'){ const res = g.hs>g.as?'h':g.hs<g.as?'a':'d'; const pick = g.pred.ph>=g.pred.pa && g.pred.ph>=g.pred.pd ? 'h' : g.pred.pa>=g.pred.pd ? 'a' : 'd'; decided++; if(pick===res) correct++; absErr += Math.abs((g.hs-g.as)-g.pred.margin); }
+        if(K.model==='goals'){ decided++; if(socCall(g.pred)===socRes(g.hs, g.as)) correct++; absErr += Math.abs((g.hs-g.as)-g.pred.margin); }
         else { if(g.hs!==g.as){ decided++; if((g.pred.ph>=.5)===(g.hs>g.as)) correct++; } absErr += Math.abs((g.hs-g.as)-g.pred.margin); }
       });
     } }
@@ -4537,7 +4547,7 @@ function lgCard(g){
   const line = (ab, sc, win, cls) => `<div class="ln ${cls||''} ${sc!=null && g.hs===g.as?'tie':win?'win':'lose'}"><span data-nteam="${ab}">${nDot(ab)}${rankTag(ab)}${esc(tName(ab))}${favMark(LGK,ab)}${sc!=null?`<small class="ln-rec" title="${g.stype===3?'Postseason record':'Record'}">${g.stype===3 && serRec(g, ab) ? serRec(g, ab) : nRec(r[ab])}</small>`:''}</span>${sc!=null?`<b data-sc="${g.id}|${ab===g.h?'h':'a'}">${sc}</b>`:`<em>${g.stype===3 && serRec(g, ab) ? 'Series ' + serRec(g, ab) : nRec(r[ab])}</em>`}</div>`;
   const tag = g.stype===3 ? `<div class="po-tag">${esc(serStatus(g) || 'Postseason')}</div>` : '';
   if(g.state==='post' && g.hs!=null){ const hW = g.hs > g.as; let hit;
-    if(soc){ const res = g.hs>g.as?'h':g.hs<g.as?'a':'d'; const pick = p.ph>=p.pa && p.ph>=p.pd ? 'h' : p.pa>=p.pd ? 'a' : 'd'; hit = pick===res; } else hit = g.hs===g.as ? null : (p.ph>=.5)===hW;
+    if(soc) hit = socCall(p)===socRes(g.hs, g.as); else hit = g.hs===g.as ? null : (p.ph>=.5)===hW;
     return `<div class="mu" data-ngame="${g.id}">${tag}${soc?line(g.h, g.hs, hW)+socGoals(g, g.h)+line(g.a, g.as, !hW && g.hs!==g.as)+socGoals(g, g.a):line(g.a, g.as, !hW && g.hs!==g.as)+line(g.h, g.hs, hW)}<div class="ft"><span>Final · predicted ${soc?`${esc(NF.T[g.h].ab||g.h)} ${p.hs}–${p.as} ${esc(NF.T[g.a].ab||g.a)}`:`${p.as}–${p.hs}`}</span>${hit==null?'<span>Tie</span>':`<span class="${hit?'hit':'miss'}">${hit?'✓ called':'✗ missed'}</span>`}</div>${g.stype===3 ? serEndNote(g) : ''}${vvCard(LGK, g, p, g.hs, g.as)}</div>`; }
   if(g.state==='in'){ const U = lgUpset(g); return `<div class="mu is-live${U?' is-upset':''}" data-ngame="${g.id}">${tag}${U?upsetBadge(U):''}${soc?line(g.h, g.hs, g.hs>g.as)+socGoals(g, g.h)+line(g.a, g.as, g.as>g.hs)+socGoals(g, g.a):line(g.a, g.as, g.as>g.hs)+line(g.h, g.hs, g.hs>g.as)}${lgOuts(g)}<div class="ft"><span><span class="live">LIVE</span> ${esc(g.detail)}</span><span>${soc?`Exp. ${esc(g.h)} ${p.xh.toFixed(1)}–${p.xa.toFixed(1)} ${esc(g.a)}`:`Pred ${p.as}–${p.hs}`}</span></div></div>`; }
   const fav = p.ph>=(soc ? Math.max(p.pa,p.pd) : .5) ? g.h : g.a; const runs = sportOf(LGK)==='mlb' || sportOf(LGK)==='cba';
@@ -4556,7 +4566,9 @@ function lgGames(){
     if(NF.college){ const f = colFilter('colGames'), mid = g => wk < 17 && [2, 3, 4].includes(new Date(g.t).getDay()); if(UI.colGames!=='all') gs = gs.filter(g => f(g.h) || f(g.a) || mid(g) || g.state==='in'); }
     nav = `<div class="filters wk-strip">${Array.from({length:nW},(_,i)=>i+1).map(w=>`<button class="chip ${w===wk?'on':''}" data-nweek="${w}">${sp==='cfb'&&w===17?'Bowls':w}</button>`).join('')}</div>${NF.college?colFilterUI('colGames','All games'):''}`; kicker = sp==='cfb'&&wk===17 ? 'Bowl season' : `Week ${wk}`; }
   else { const today = dayKey(Date.now()), days0 = [...new Set(NF.games.map(g=>dayKey(g.t)))], days = [...new Set(days0.concat(today))].sort(); const key = 'day'+LGK;
-    let d = UI[key]; if(!d || !days.includes(d)) d = days0.includes(today) ? today : NF.curDay || days0[days0.length-1];
+    // the default day comes from the calendar alone (today, else the next matchday), never from game states: a postponed fixture or a
+    // stale cached result would otherwise open an earlier day first and jump once the live poll lands
+    let d = UI[key]; if(!d || !days.includes(d)) d = days0.includes(today) ? today : days0.find(x => x > today) || days0[days0.length-1] || today;
     const span = 1; const i = days.indexOf(d); const d0 = Date.parse(d+'T00:00:00'), d1 = d0 + span*864e5;
     gs = NF.games.filter(g => { const t = Date.parse(dayKey(g.t)+'T00:00:00'); return t >= d0 && t < d1; });
     if(NF.college){ const f = colFilter('colGames'); if(UI.colGames!=='all') gs = gs.filter(g => f(g.h) || f(g.a)); }
@@ -4712,7 +4724,7 @@ function lgLeaders(){
   if(sp==='cba') return lgTeamLeaders();
   const PITK = ['w','era','whip','k','k9','kbb','bb9','sv','hld','ip','qs','pwar']; const mg = sp==='mlb' ? (UI.mlbGrp==='pit' ? 'pit' : 'bat') : null;
   const fp = isFBs(sp) ? ((UI.fbPos||{})[LGK] || 'ALL') : null; const FBP = fp && FB_POS_STATS[fp];
-  const cat0 = mg ? LEAD.mlb.filter(x => PITK.includes(x.k) === (mg==='pit')) : LEAD[sp]; const cat = FBP ? cat0.filter(x => FBP.includes(x.k)) : cat0; const s = cat.find(x=>x.k===(UI.lgStat||{})[LGK]) || cat[0]; const cbbAvg = sp==='cbb'; const pre = lgPre(), want = pre ? 'proj' : UI.ldRate;   // before the opener only projections show: last season's lines would read as this season's const mode = want==='proj' && (pre || NF.regLeft) ? 'proj' : s.cnt ? (cbbAvg ? (want==='tot' ? 'tot' : 'pg') : want==='pg' ? 'pg' : 'tot') : 'tot'; const per = mode==='pg' && !cbbAvg; const colF = NF.college ? colFilter('colLead') : null; if(NF.college && !UI.colLead) UI.colLead = 'all';
+  const cat0 = mg ? LEAD.mlb.filter(x => PITK.includes(x.k) === (mg==='pit')) : LEAD[sp]; const cat = FBP ? cat0.filter(x => FBP.includes(x.k)) : cat0; const s = cat.find(x=>x.k===(UI.lgStat||{})[LGK]) || cat[0]; const cbbAvg = sp==='cbb'; const pre = lgPre(), want = pre ? 'proj' : UI.ldRate;   /* before the opener only projections show: last season's lines would read as this season's */ const mode = want==='proj' && (pre || NF.regLeft) ? 'proj' : s.cnt ? (cbbAvg ? (want==='tot' ? 'tot' : 'pg') : want==='pg' ? 'pg' : 'tot') : 'tot'; const per = mode==='pg' && !cbbAvg; const colF = NF.college ? colFilter('colLead') : null; if(NF.college && !UI.colLead) UI.colLead = 'all';
   const gpS = p => sp==='mlb' && ['w','k','sv','hld','ip','qs','pwar','kbb','bb9'].includes(s.k) ? (p.st.pgp||0) : (p.st.gp||p.st.pgp||0);
   const maxGp = Math.max(1, ...NF.players.filter(p => !s.q || s.q(p)).map(gpS));
   const minGp = p => { if(sp==='cbb') return (p.st.gp||0) >= Math.max(3, Math.round(maxGp*0.4)); if(per || mode==='proj') return gpS(p) >= Math.max(3, Math.round(maxGp*(sp==='mlb' && ['sv','hld'].includes(s.k) ? 0.25 : 0.4))); return true; };
@@ -4723,10 +4735,10 @@ function lgLeaders(){
   const pool = NF.players.filter(p => { if(!inConf(p) || (qual && !qual(p)) || (FBP && !fbPosOk(p, fp))) return false; const v = val(p); return v!=null && (s.asc ? v >= 0 : v > 0) && (!s.q || s.q(p)) && minGp(p); }).sort((a,b)=> s.asc ? val(a)-val(b) : val(b)-val(a));
   const dec = per || mode==='proj' ? Math.max(sp==='mlb' || sp==='soc' ? 2 : 1, s.dec) : cbbAvg && mode==='tot' ? 0 : s.dec; const max = pool.length ? Math.max(...pool.slice(0,40).map(val)) || 1 : 1;
   const sub = p => `${esc(p.pos)} · ${sp==='cbb'?`${p.st.gp||0} GP · ${lgFmt(p.st.min,1)} MPG`:`${gpOf(p)} ${sp==='soc'?'apps':'GP'}`}`;
-  const TR = ldTiers(pool, p => lgFmt(val(p),dec), 40);
+  const TR = ldTiers(pool, p => lgFmt(val(p),dec), 40, p => s.cnt && mode==='tot' ? -gpS(p) : gpS(p));   // tied totals: fewer games is the more efficient line; tied rates: the bigger workload
   const pod = TR.pod.map((p,i)=>{ const t = NF.T[p.tm]; return `<div class="pod${TR.pm(i)}" data-npid="${p.id}"><div class="glow" style="background:${t.p}"></div><div class="rank">${TR.lab(i)} / ${s.abbr}${per||(cbbAvg&&mode==='pg')?' per game':mode==='proj'?(pre?' pre-season proj':' proj / game'):cbbAvg&&mode==='tot'?' total':''}</div>
     <div class="jersey">${lgJersey(p)}</div><div class="name">${esc(p.name)}${NF.isOut(p)?' <span class="inj-tag">OUT</span>':''}</div><div class="team">${nLogo(p.tm,'tm-lg')}${esc(tFull(p.tm))} · ${sub(p)}</div><div class="val"><b>${lgFmt(val(p),dec)}</b><span>${s.abbr}</span>${dl(p)}</div></div>`; }).join('');
-  const rows = TR.rows.map((p,i)=>`<div class="row" data-npid="${p.id}"><div class="rk">${TR.lab(i+TR.np)}</div><div class="mj">${lgJersey(p,{mini:true})}</div>
+  const rows = TR.rows.map((p,i)=>`<div class="row" data-npid="${p.id}"><div class="rk${TR.rm(i+TR.np)}">${TR.lab(i+TR.np)}</div><div class="mj">${lgJersey(p,{mini:true})}</div>
     <div class="pn">${esc(p.name)}<small>${sub(p)}</small></div><div class="tm">${nLogo(p.tm,'tm-lg')}${esc(tFull(p.tm))}</div><div class="bwrap"><div class="bar"><i style="width:${Math.max(2, s.asc ? (pool.length ? val(pool[0])/val(p)*100 : 0) : val(p)/max*100).toFixed(1)}%"></i></div></div><div class="v">${lgFmt(val(p),dec)}${dl(p)}</div></div>`).join('');
   const last = NF.statsLast && mode!=='proj';
   return `<div class="sec-head"><div><div class="kicker">${mode==='proj'?(pre?'Pre-season projections · per game':'Projected per game · rest of season'):last?(sp==='cbb'?'2025–26 season (2026–27 begins in November)':'Last season'):CF().seasonLbl+' so far'} · ${s.label}</div><h2>${s.label}${pre&&mode==='proj'?' <span class="pre-tag">Projected</span>':''}</h2></div>
@@ -5934,9 +5946,17 @@ function renderSection(k){
   if(k.startsWith('nfl') || k.startsWith('lg')) return lgSection(k);
   return ({leaders:leadersSection, teams:teamsSection, team:()=>teamPage(UI.team), playbook:playbookSection, schedule:scheduleSection, live:liveSection, standings:standingsSection, injuries:injuriesSection, breakouts:breakoutsSection, tstats:nbaTeamStatsSection, favs:favsSection, vegas:vegasSection, lab:nbaLabSection, method:methodSection, updates:updatesSection}[k] || (()=>''))();
 }
-const EV_TABS = ['schedule','lg-games','lg-cups']; // tournament banners and event heroes live on the schedule/fixtures views only
+// NBA page key ↔ league page key, so routing is always bound to the active sport (and the active sport's league)
+const SP_KEYS = {schedule:'lg-games', leaders:'lg-leaders', teams:'lg-teams', playbook:'lg-playbook', standings:'lg-standings', injuries:'lg-injuries', breakouts:'lg-hot', tstats:'lg-tstats', alltime:'lg-alltime', lab:'lg-lab', method:'lg-method'};
+const SP_LG = {nfl:['nfl'], mlb:['mlb'], soc:['soc'], ncaam:['cbb','cba'], ncaaf:['cfb']};
+function goSportKey(k){ const nba = !UI.sport || UI.sport==='nba';
+  if(nba){ if(!/^(lg|nfl)-/.test(k)) return k; const lk = k.startsWith('nfl-') ? 'lg-' + k.slice(4) : k; if(lk==='lg-team') return 'teams'; return Object.keys(SP_KEYS).find(x => SP_KEYS[x]===lk) || 'schedule'; }
+  if(!(SP_LG[UI.sport] || []).includes(sportOf(LGK))){ LGK = UI.sport==='nfl' ? 'nfl' : UI.sport==='mlb' ? 'mlb' : UI.sport==='soc' ? (UI.socLeague && SOC_LEAGUES[UI.socLeague] ? UI.socLeague : 'eng.1') : UI.sport==='ncaam' ? 'mcbb' : 'cfb'; NF = lgModel(LGK); LG_VIEWS = lgViews(); buildTabs(); }
+  return SP_KEYS[k] || (k==='team' ? 'lg-teams' : k); }
+const EV_TABS = ['schedule','lg-games','lg-cups'];// tournament banners and event heroes live on the schedule/fixtures views only
 function go(k, scroll){
   if(k==='live') k = 'schedule'; else if(k==='lg-live') k = 'lg-games';   // the Live hub was folded into Schedule
+  k = goSportKey(k);   // every page stays inside the active sport: an NBA tab never opens a league page, and vice versa
   if(k==='playbook' || k==='lg-playbook' || k==='nfl-playbook') k = UI.sport && UI.sport!=='nba' ? 'lg-playbook' : 'playbook';   // Playbook always opens the active sport's version
   if(k==='vegas' || k==='tstats' || k==='lg-tstats'){ if(k!=='vegas') UI.ldView = 'teams'; k = k==='vegas' ? (UI.sport && UI.sport!=='nba' ? 'lg-games' : 'schedule') : k==='tstats' ? 'leaders' : 'lg-leaders'; }
   const __same = CUR===k; CUR = k; let __ev = false; if(['schedule','lg-games'].includes(k)) try{ __ev = !!eventFor(UI.sport || 'nba'); }catch(e){} document.body.classList.toggle('no-hero', ['schedule','lg-games','favs','vegas'].includes(k) && !__ev);
@@ -5951,7 +5971,7 @@ function go(k, scroll){
   try{ history.replaceState(null,'','#'+(k==='team'?'team-'+UI.team:k==='lg-team'?'lg-team-'+UI.nflTeam:k)); }catch(e){}
   if(k==='updates') wireUpdates();
   try{ heroMode(k); }catch(e){}
-  if(scroll!==false){ const sec = main.firstElementChild, hd = sec && (sec.querySelector('.sec-head') || sec); if(document.body.classList.contains('no-hero')) window.scrollTo(0, 0); else if(hd) hd.scrollIntoView({behavior:'auto', block:'start'}); }
+  if(scroll!==false){ const sec = main.firstElementChild, hd = sec && (sec.querySelector('.sec-head') || sec); if(document.body.classList.contains('no-hero') || k==='leaders' || k==='lg-leaders') window.scrollTo(0, 0); else if(hd) hd.scrollIntoView({behavior:'auto', block:'start'}); }
 }
 /* The big header says "This season" on current-stat leaderboards and "Projections" everywhere else */
 function heroMode(k){
@@ -7413,6 +7433,8 @@ function calibrate(games, sp, done, K){ const fin = games.filter(done).filter(g 
 const CAL = {};
 const _lgModel0 = lgModel; lgModel = function(key){ const m = _lgModel0(key); if(m && !m.__cal){ m.__cal = 1;
   try{ CAL[key] = calibrate(m.games, m.sp, g => g.state==='post' && g.hs!=null, m.K); }catch(e){ console.warn('calibrate', key, e); }
+  // soccer: the season record grades the same final lines the cards show (calibration can change the predicted scoreline)
+  if(m.sp==='soc' && m.acc) try{ const fin = m.games.filter(g => g.state==='post' && g.hs!=null && g.pred); m.acc.decided = fin.length; m.acc.correct = fin.filter(g => socCall(g.pred)===socRes(g.hs, g.as)).length; }catch(e){}
   if(m.sp==='soc') try{ socValues(m); }catch(e){ console.warn('socValues', e); }
   if(m.sp==='mlb') try{ mlbStarters(m); }catch(e){ console.warn('mlbStarters', e); } } return m; };
 /* Baseball model, game by game: the season ratings are only the starting point. The line then moves with
@@ -8591,7 +8613,7 @@ function nbaBlurb(g){ try{ const p = g.pred; if(!p) return ''; const fav = p.ph 
   bits.push(fav===g.h ? 'home court helps' : `${T[fav].n} favored on the road`);
   return `<div class="g-blurb"><b>Model read</b> ${pw < 0.56 ? 'Close to a coin flip: ' : ''}${esc(T[fav].n)} ${Math.round(pw*100)}% · ${esc(modelSpread(g))}. ${esc(bits.slice(0, 2).join('; '))}.</div>`; }catch(e){ return ''; } }
 function vvCard(lg, g, p, hs, as, nm, big){ try{ nm = nm || (lg==='nba' ? (x => T[x] ? T[x].n : x) : tName); if(!p || hs==null || as==null) return ''; const soc = lg!=='nba' && sportOf(lg)==='soc', A = hs - as;
-  const pick = soc ? (p.ph >= p.pa && p.ph >= (p.pd||0) ? 1 : p.pa >= (p.pd||0) ? -1 : 0) : (p.ph >= .5 ? 1 : -1), res = Math.sign(A), hit = pick===res, off = isFinite(p.margin) ? Math.abs(projMargin(p, lg==='nba' ? 'nba' : sportOf(lg)) - A) : null;
+  const pick = soc ? {h:1, d:0, a:-1}[socCall(p)] : (p.ph >= .5 ? 1 : -1), res = Math.sign(A), hit = pick===res, off = isFinite(p.margin) ? Math.abs(projMargin(p, lg==='nba' ? 'nba' : sportOf(lg)) - A) : null;
   const txt = `Projected ${nm(g.a)} ${p.as}–${p.hs} ${nm(g.h)}; finished ${as}–${hs}. ${hit ? 'The model had the right result' : res===0 ? 'It ended level, which the model didn’t favour' : `${nm(res > 0 ? g.h : g.a)} beat the projection`}${off!=null && !soc ? `, and the margin was off by ${errTxt(off)}` : ''}.`;
   return `<div class="g-blurb post${big ? ' big' : ''}"><b>${hit ? '✓' : '✗'} Post-game</b> ${esc(txt)}</div>`; }catch(e){ return ''; } }
 function vvMini(){ return ''; }
@@ -9245,7 +9267,7 @@ for(let i=0;i<140;i++){const d=document.createElement('div');d.className='star';
 build(); renderHero();
 const start = (location.hash||'').slice(1);
 if(!start) UI.sport = LS.get('cs_pinsport') || 'nba';   // launch on the pinned sport, NBA by default
-if(start.startsWith('nfl') || start.startsWith('lg-') || (UI.sport && UI.sport!=='nba' && !start)){ setSport(start.startsWith('nfl') ? 'nfl' : (UI.sport && UI.sport!=='nba' ? UI.sport : 'nfl'), true); const ts = start.replace(/^(nfl|lg)-team-/, ''); if(/^(nfl|lg)-team-/.test(start) && NF && NF.T[ts]){ UI.nflTeam = ts; go('lg-team', false); } else go(LG_VIEWS.some(v=>v.k===start) ? start : start.startsWith('nfl-') && LG_VIEWS.some(v=>v.k==='lg-'+start.slice(4)) ? 'lg-'+start.slice(4) : 'lg-games', false); }
+if(start.startsWith('nfl') || (start.startsWith('lg-') && UI.sport!=='nba') || (UI.sport && UI.sport!=='nba' && !start)){   /* a stale lg- hash never pulls an NBA session over to another sport */ setSport(start.startsWith('nfl') ? 'nfl' : (UI.sport && UI.sport!=='nba' ? UI.sport : 'nfl'), true); const ts = start.replace(/^(nfl|lg)-team-/, ''); if(/^(nfl|lg)-team-/.test(start) && NF && NF.T[ts]){ UI.nflTeam = ts; go('lg-team', false); } else go(LG_VIEWS.some(v=>v.k===start) ? start : start.startsWith('nfl-') && LG_VIEWS.some(v=>v.k==='lg-'+start.slice(4)) ? 'lg-'+start.slice(4) : 'lg-games', false); }
 else { if(UI.sport && UI.sport!=='nba') setSport('nba', true);
 if(start.startsWith('team-') && T[start.slice(5)]){ UI.team = start.slice(5); go('team', false); }
 else if(['pts','reb','ast','stl','blk'].includes(start)){ UI.stat = start; go('leaders', false); }
