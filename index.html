@@ -3,14 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Courtside · NBA Projections 2026–27</title>
+<title>Clutch Matrix · NBA Projections 2026–27</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Courtside">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Clutch Matrix">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="icon" type="image/png" href="logo.png">
 <script>if("serviceWorker" in navigator && location.protocol==="https:") addEventListener("load", () => navigator.serviceWorker.register("sw.js"));</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1212,9 +1213,19 @@ td .vg-bar{margin-bottom:4px}
 </style>
 </head>
 <body>
+<div id="cmIntro" role="button" tabindex="0" aria-label="Enter the Clutch Matrix">
+  <div class="cmi-grid"></div><div class="cmi-glow"></div>
+  <div class="cmi-in"><img class="cmi-logo" src="logo.png" alt="Clutch Matrix"><h1 class="cmi-title">Enter the <b>Clutch Matrix</b></h1><span class="cmi-btn">Click to Enter</span></div>
+</div>
+<script>/* entry screen: shown once per visit; deep links (a team, a shared favorites link, a notification) go straight in */
+(function(){ var el = document.getElementById('cmIntro'), skip = false; try{ skip = sessionStorage.getItem('cm_in')==='1' || location.hash.length > 1; }catch(e){}
+  if(skip){ el.remove(); return; } document.documentElement.classList.add('cm-intro');
+  var enter = function(){ if(el.classList.contains('out')) return; try{ sessionStorage.setItem('cm_in', '1'); }catch(e){} el.classList.add('out'); document.documentElement.classList.remove('cm-intro'); setTimeout(function(){ el.remove(); }, 900); };
+  el.addEventListener('click', function(e){ e.stopPropagation(); enter(); }); el.addEventListener('keydown', function(e){ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); enter(); } });
+  setTimeout(function(){ try{ el.focus({preventScroll:true}); }catch(e){} }, 60); })();</script>
 
 <nav id="nav">
-  <div class="brand" onclick="window.scrollTo({top:0,behavior:'smooth'})">Courtside</div>
+  <div class="brand" onclick="window.scrollTo({top:0,behavior:'smooth'})">Clutch Matrix</div>
   <button class="menu-btn" id="menuBtn">MENU</button>
   <div class="tabs" id="tabs"></div>
 </nav>
@@ -1224,7 +1235,7 @@ td .vg-bar{margin-bottom:4px}
   <div id="stars"></div>
   <div class="court"></div>
   <div class="hero-content">
-    <div class="eyebrow">Courtside · 2026–27 Season Forecast</div>
+    <div class="eyebrow">Clutch Matrix · 2026–27 Season Forecast</div>
     <h1>Projections</h1>
     <p>Every roster, every player, every game. Per-game projections for all 30 teams, team playbooks, a score prediction with a full breakdown for every game, and a model that moves with injuries, results, rest and trades.</p>
     <button class="btn" onclick="go('leaders',true)">Explore</button>
@@ -1237,7 +1248,7 @@ td .vg-bar{margin-bottom:4px}
 <main id="main"></main>
 
 <footer>
-  <div><div class="brand" style="font-size:14px">Courtside</div>Fan-made forecast. Not affiliated with the NBA or any team.</div>
+  <div><div class="brand" style="font-size:14px">Clutch Matrix</div>Fan-made forecast. Not affiliated with the NBA or any team.</div>
   <div style="max-width:600px">Player lines blend 2025–26 and 2026–27 per-minute production (current season weighted up as games accumulate), adjusted for age and for minutes available on each roster. Team strength comes from those projections, preseason consensus and results to date; injuries remove players from games before their expected return. Data: ESPN public feeds. Jersey graphics are generic illustrations in team colors.</div>
 </footer>
 
@@ -2106,6 +2117,79 @@ td.rk3,em.rk3{color:var(--bronze)!important;font-weight:700;box-shadow:inset 0 -
 .tc-ab{left:auto;right:14px;-webkit-text-stroke:1.5px color-mix(in srgb,var(--ti) 65%,#fff 35%);opacity:.42;text-shadow:0 0 18px rgba(0,0,0,.6)}
 /* stars: a real touch target */
 .fav-star{touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-width:30px;min-height:30px}
+/* ---- v1.7 ---- */
+/* entry screen: the crest on midnight, one tap in */
+html.cm-intro body{overflow:hidden}
+#cmIntro{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;outline:none;color:#fff;padding:env(safe-area-inset-top,0px) 16px env(safe-area-inset-bottom,0px);background:radial-gradient(ellipse 80% 62% at 50% 40%,#111729 0%,#080b16 46%,#020309 100%);transition:opacity .8s ease,visibility .8s,filter .8s ease;-webkit-tap-highlight-color:transparent}
+#cmIntro .cmi-grid{position:absolute;left:-50%;right:-50%;bottom:-6%;height:58%;transform:perspective(520px) rotateX(64deg);transform-origin:50% 100%;background-image:linear-gradient(rgba(212,175,55,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(212,175,55,.16) 1px,transparent 1px);background-size:46px 46px;-webkit-mask-image:linear-gradient(0deg,#000 10%,transparent 85%);mask-image:linear-gradient(0deg,#000 10%,transparent 85%);animation:cmiGrid 5s linear infinite;pointer-events:none}
+#cmIntro .cmi-glow{position:absolute;left:50%;top:40%;width:min(70vmin,560px);height:min(70vmin,560px);transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,196,60,.22) 0%,rgba(255,196,60,.07) 42%,transparent 70%);animation:cmiPulse 4s ease-in-out infinite;pointer-events:none}
+#cmIntro .cmi-in{position:relative;display:flex;flex-direction:column;align-items:center;gap:clamp(14px,3vh,26px);text-align:center;mix-blend-mode:screen;animation:cmiUp 1.1s cubic-bezier(.2,.7,.2,1) both;transition:transform .8s cubic-bezier(.6,0,.4,1)}
+#cmIntro .cmi-logo{width:min(340px,70vw);max-width:100%;height:auto;animation:cmiFloat 5s ease-in-out infinite}
+#cmIntro .cmi-title{margin:0;font-family:"Bebas Neue","Barlow Condensed",sans-serif;font-weight:400;font-size:clamp(30px,6.4vw,60px);line-height:1;letter-spacing:.08em;color:#e8e2d0}
+#cmIntro .cmi-title b{font-weight:400;background:var(--gold-grad);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:cmShine 3.6s linear infinite}
+#cmIntro .cmi-btn{font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:13px;letter-spacing:.32em;text-transform:uppercase;padding:14px 28px 14px 32px;border-radius:999px;border:1px solid rgba(255,213,74,.55);background:rgba(255,213,74,.06);color:#ffe9a3;cursor:pointer;transition:background .25s,color .25s,box-shadow .25s;animation:cmiBtn 2.6s ease-in-out infinite}
+#cmIntro .cmi-btn:hover,#cmIntro .cmi-btn:focus-visible{background:#ffd54a;color:#000;outline:none;box-shadow:0 0 28px rgba(255,213,74,.45)}
+#cmIntro.out{opacity:0;visibility:hidden;filter:blur(8px)}
+#cmIntro.out .cmi-in{transform:scale(1.14)}
+#cmIntro.out .cmi-logo{animation:none}
+@keyframes cmiGrid{from{background-position:0 0}to{background-position:0 46px}}
+@keyframes cmiPulse{0%,100%{opacity:.75;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}}
+@keyframes cmiUp{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes cmiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes cmiBtn{0%,100%{box-shadow:0 0 0 0 rgba(255,213,74,0)}50%{box-shadow:0 0 22px 2px rgba(255,213,74,.25)}}
+/* nav: the brand never changes width and the scrollbar never comes and goes, so the bars stay put between sports */
+html{scrollbar-gutter:stable}
+nav .brand{flex:none}
+/* roster season menu */
+.rs-head{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 12px}
+.rs-pick{margin-left:auto;display:inline-flex;align-items:center;gap:8px;font-family:"Barlow Condensed",sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.rs-pick select{background:#0b0c0f;color:#fff;border:1px solid var(--line2);padding:7px 30px 7px 10px;font:600 13px "Barlow Condensed",sans-serif;letter-spacing:.06em;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,#cfd2d6 50%),linear-gradient(135deg,#cfd2d6 50%,transparent 50%);background-position:calc(100% - 15px) 50%,calc(100% - 10px) 50%;background-size:5px 5px;background-repeat:no-repeat}
+.rs-pick select:focus{outline:none;border-color:#ffd54a}
+.rs-ph{position:relative;width:76px;height:76px;margin:0 auto 10px;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 50% 35%,#2a2e35,#0d0e11);box-shadow:0 0 0 2px rgba(255,255,255,.14)}
+.rs-ph em{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-style:normal;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:22px;color:#fff}
+.rs-ph img{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;object-position:50% 15%}
+/* player card on phones: a smaller portrait centred in its glow, the team badge a little lower */
+@media (max-width:900px){
+  #playerPanel .p-head:not(.soc-head) .p-photo{height:clamp(150px,40vw,205px)!important;margin:-18px 0 0!important}
+  #playerPanel .p-head:not(.soc-head) .p-photo .p-hs{left:0!important;right:0!important;margin:0 auto;width:auto!important;max-width:100%!important;object-position:bottom center}
+  #playerPanel .p-head:not(.soc-head) .p-photo::before{left:-8%!important;right:-8%!important;bottom:0!important;height:100%!important;background:radial-gradient(ellipse 52% 56% at 50% 60%,color-mix(in srgb,var(--acc) 85%,#fff 15%) 0%,color-mix(in srgb,var(--acc) 45%,transparent) 42%,transparent 70%)!important}
+  #playerPanel .p-head:not(.soc-head) .p-photo .p-logo{bottom:-10px!important}
+}
+/* team page flip: the back covers the whole header and nothing from the front shows through */
+.th-flip .tc-back{background:#05060a linear-gradient(160deg,color-mix(in srgb,var(--tp,#2a2e35) 40%,#05060a),#05060a 70%);padding:24px 28px;z-index:7}
+.th-flip.flipped{min-height:320px}
+.th-flip.flipped > :not(.tc-back){visibility:hidden}
+.th-flip .tb-body{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:0 24px}
+@media (max-width:640px){ .th-flip .tc-back{padding:18px 16px} }
+/* team cards: the watermark initials sit in the empty strip between the flip pill and the link, clear of names and records */
+.tcard .tc-ab{left:50%!important;right:auto!important;top:auto!important;bottom:6px!important;transform:translateX(-50%);font-size:46px!important;opacity:.3!important}
+/* medals: real metal, with a slow shine; the leader's whole box goes gold */
+:root{--gold-grad:linear-gradient(100deg,#9a6b0c 0%,#e0ad2c 20%,#fff4b8 38%,#ffd54a 50%,#fff9dc 60%,#d29a1c 78%,#9a6b0c 100%);--silver-grad:linear-gradient(100deg,#77828f 0%,#c5cfd9 22%,#ffffff 40%,#a9b6c4 58%,#eef3f8 72%,#77828f 100%);--bronze-grad:linear-gradient(100deg,#7a4217 0%,#c47a3a 22%,#ffd2a6 40%,#d98c4a 58%,#f5b985 72%,#7a4217 100%)}
+@keyframes cmShine{from{background-position:120% 0}to{background-position:-120% 0}}
+.bigstats > div.rk1 b,.bigstats > div.rk1 em,.proj-grid > div.rk1 b,.proj-grid > div.rk1 em,.podium .pod:nth-child(1) .val b,.podium .pod:nth-child(1) .rank,td.rk-top,em.rk-top{background:var(--gold-grad)}
+.bigstats > div.rk2 b,.bigstats > div.rk2 em,.proj-grid > div.rk2 b,.proj-grid > div.rk2 em,.podium .pod:nth-child(2) .val b,.podium .pod:nth-child(2) .rank,td.rk2,em.rk2{background:var(--silver-grad)}
+.bigstats > div.rk3 b,.bigstats > div.rk3 em,.proj-grid > div.rk3 b,.proj-grid > div.rk3 em,.podium .pod:nth-child(3) .val b,.podium .pod:nth-child(3) .rank,td.rk3,em.rk3{background:var(--bronze-grad)}
+.bigstats > div.rk-m b,.bigstats > div.rk-m em,.proj-grid > div.rk-m b,.proj-grid > div.rk-m em,.podium .pod:nth-child(-n+3) .val b,.podium .pod:nth-child(-n+3) .rank,td.rk-top,td.rk2,td.rk3,em.rk-top,em.rk2,em.rk3{background-size:250% 100%!important;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent;text-shadow:none!important;animation:cmShine 3.6s linear infinite}
+.bigstats > div.rk-m b,.proj-grid > div.rk-m b,.podium .pod:nth-child(-n+3) .val b{filter:drop-shadow(0 0 10px color-mix(in srgb,var(--mc,#ffd54a) 45%,transparent))}
+.bigstats > div.rk1,.proj-grid > div.rk1{background:linear-gradient(160deg,rgba(255,213,74,.22),rgba(255,213,74,.05) 70%)!important;box-shadow:inset 0 0 0 1px rgba(255,213,74,.4),inset 0 3px 0 var(--gold)!important}
+.bigstats > div.rk2,.proj-grid > div.rk2{background:linear-gradient(160deg,rgba(185,198,212,.14),transparent 70%)!important;box-shadow:inset 0 3px 0 var(--silver)!important}
+.bigstats > div.rk3,.proj-grid > div.rk3{background:linear-gradient(160deg,rgba(217,140,74,.14),transparent 70%)!important;box-shadow:inset 0 3px 0 var(--bronze)!important}
+.proj-grid > div.rk1{--mc:var(--gold)}.proj-grid > div.rk2{--mc:var(--silver)}.proj-grid > div.rk3{--mc:var(--bronze)}
+.proj-grid > div > em.cm-rk{display:block;font-style:normal;font-weight:600;font-size:10.5px;letter-spacing:.08em;margin-top:3px}
+.podium .pod:nth-child(1){background-image:linear-gradient(180deg,rgba(255,213,74,.17),rgba(255,213,74,.03) 65%);box-shadow:inset 0 3px 0 var(--gold),inset 0 0 0 1px rgba(255,213,74,.28)}
+td.rk-top{box-shadow:inset 0 0 0 999px rgba(255,213,74,.13),inset 0 -2px 0 var(--gold)!important}
+td.rk2{box-shadow:inset 0 0 0 999px rgba(185,198,212,.12),inset 0 -2px 0 var(--silver)!important}
+td.rk3{box-shadow:inset 0 0 0 999px rgba(217,140,74,.13),inset 0 -2px 0 var(--bronze)!important}
+#main table td.rk2,#main table td.rk3{background-color:transparent}
+/* career tables on player cards sort by any column */
+.overlay table thead th{cursor:pointer;user-select:none}
+.overlay table thead th[data-arr]::after{content:attr(data-arr);color:#ffd54a}
+.overlay table thead th.on{color:#fff}
+/* alerts bell: drawn icons, so on and muted always look different */
+.notif-btn svg{display:block}
+.notif-btn.on{color:#ffd54a}
+.notif-btn.off{color:#aab1ba}
+@media (prefers-reduced-motion:reduce){ #cmIntro *,.bigstats *,.proj-grid *,.podium *,td.rk-top,td.rk2,td.rk3,em.rk-top,em.rk2,em.rk3{animation:none!important} }
 </style>
 <script type="application/json" id="favs">{}</script>
 <script type="application/json" id="edits">{}</script>
@@ -4281,19 +4365,19 @@ function lgGames(){
     nav = `<div class="filters wk-strip">${Array.from({length:nW},(_,i)=>i+1).map(w=>`<button class="chip ${w===wk?'on':''}" data-nweek="${w}">${sp==='cfb'&&w===17?'Bowls':w}</button>`).join('')}</div>${NF.college?colFilterUI('colGames','All games'):''}`; kicker = sp==='cfb'&&wk===17 ? 'Bowl season' : `Week ${wk}`; }
   else { const days = [...new Set(NF.games.map(g=>dayKey(g.t)))]; const key = 'day'+LGK;
     let d = UI[key]; if(!d || !days.includes(d)) d = NF.curDay || days[days.length-1];
-    const span = sp==='soc' ? 7 : 1; const i = days.indexOf(d); const d0 = Date.parse(d+'T00:00:00'), d1 = d0 + span*864e5;
+    const span = 1; const i = days.indexOf(d); const d0 = Date.parse(d+'T00:00:00'), d1 = d0 + span*864e5;
     gs = NF.games.filter(g => { const t = Date.parse(dayKey(g.t)+'T00:00:00'); return t >= d0 && t < d1; });
     if(NF.college){ const f = colFilter('colGames'); if(UI.colGames!=='all') gs = gs.filter(g => f(g.h) || f(g.a)); }
-    const prev = sp==='soc' ? days.filter(x => Date.parse(x+'T00:00:00') < d0).filter(x => Date.parse(x+'T00:00:00') >= d0 - 7*864e5)[0] || days[Math.max(0,i-1)] : days[Math.max(0,i-1)];
-    const next = sp==='soc' ? days.find(x => Date.parse(x+'T00:00:00') >= d1) || d : days[Math.min(days.length-1,i+1)];
-    nav = `<div class="filters day-pager"><button class="chip" data-lgday="${prev}">← Prev</button><span class="cond" style="font-size:20px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:0 10px">${sp==='soc'?'Week of ':''}${fmtDate(d0,{weekday:sp==='soc'?undefined:'long',month:'long',day:'numeric'})}</span><button class="chip" data-lgday="${next}">Next →</button><button class="chip" data-lgday="${NF.curDay}">Today</button></div>${NF.college?colFilterUI('colGames','All games'):''}`;
+    const prev = days[Math.max(0,i-1)];
+    const next = days[Math.min(days.length-1,i+1)];
+    nav = `<div class="filters day-pager"><button class="chip" data-lgday="${prev}">← Prev</button><span class="cond" style="font-size:20px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:0 10px">${fmtDate(d0,{weekday:'long',month:'long',day:'numeric'})}</span><button class="chip" data-lgday="${next}">Next →</button><button class="chip" data-lgday="${NF.curDay}">Today</button></div>${NF.college?colFilterUI('colGames','All games'):''}`;
     kicker = gs.some(g=>g.stype===3) ? 'Postseason' : lgName(); }
   gs.sort((x,y)=>x.t-y.t); if(sp!=='soc') gs = favFirst(LGK, gs);
   const done = NF.games.filter(g=>g.state==='post').length, pct = NF.acc.decided ? Math.round(NF.acc.correct/NF.acc.decided*100) : null;
   const soc = sp==='soc', runs = sp==='mlb' || sp==='cba';
   return `<div class="sec-head"><div><div class="kicker">${kicker} · ${done.toLocaleString()} games played</div><h2>Schedule</h2></div>
     <p>Every game with a ${soc?'expected-goals line and win/draw/loss chances':'predicted score, '+(runs?'run line':'point spread')+' and win chance'}. Finished games show whether the model called it (graded on what it knew beforehand), with a short post-game read on how the projection held up. ${NF.acc.decided?`Season record: <b style="color:#fff">${NF.acc.correct.toLocaleString()} of ${NF.acc.decided.toLocaleString()}</b> (${pct}%)${soc?'':`, average miss ${f1(NF.acc.mae)} ${CF().unit}`}.`:''}</p></div>
-    ${vvTallyHTML(LGK, NF.games, sp)}${nav}<div class="slate">${(soc ? socDayGroups(gs) : gs.map(lgCard).join('')) || '<div class="mu muted">No games in this window.</div>'}</div>
+    ${vvTallyHTML(LGK, NF.games, sp)}${nav}<div class="slate">${gs.map(lgCard).join('') || '<div class="mu muted">No games in this window.</div>'}</div>
     <p class="muted" style="font-size:12px;margin-top:14px">${soc?'Soccer lists the home side first. Percentages are home win · draw · away win. ':'Spreads are the model’s; tap one to see the sportsbook line. '}${STATIC?'':'Live scores refresh every 30 seconds while games are on.'}</p>`;
 }
 const nflGames = lgGames;
@@ -4759,7 +4843,7 @@ function openLgGame(id){
   const how = soc ? `Expected goals = league average (${NF.R.lgH.toFixed(2)} at home, ${NF.R.lgA.toFixed(2)} away) × the attacking side’s attack strength × the defending side’s defense weakness. Win, draw and loss chances come from a Poisson model of each side’s goals.`
     : `Predicted score = league average (${f1(NF.R.lg)} ${CF().unit}) + each offense's rating − the other defense's rating, with ${CF().HFA} ${CF().unit} of home field${g.neutral?' (neutral site, so none here)':''}. ${qa||qh?`Starting QB out: ${qa?esc(tName(g.a))+' −4.5':''}${qa&&qh?', ':''}${qh?esc(tName(g.h))+' −4.5':''} points. `:''}Win chance uses a normal curve with a ${CF().SIG}-${CF().unit.slice(0,-1)} spread.`;
   $('#gamePanel').innerHTML = `<button class="close" data-close="ovGame">✕</button><span data-vvgame="${g.id}" data-vvlg="${LGK}" hidden></span>
-    <div class="g-head"><div class="g-glow" style="left:-15%;background:${NF.T[g.a].p}"></div><div class="g-glow" style="right:-15%;background:${NF.T[g.h].p}"></div>
+    <div class="g-head"><div class="g-glow" style="left:-15%;background:${NF.T[soc?g.h:g.a].p}"></div><div class="g-glow" style="right:-15%;background:${NF.T[soc?g.a:g.h].p}"></div>
       ${soc?side(g.h, post||live?g.hs:null, ''):side(g.a, post||live?g.as:null, '')}<div class="mid">${isFBs(sp)?`Week ${g.wk} · `:''}${g.stype===3?'Postseason · ':''}${fmtDate(g.t,{weekday:'short',month:'short',day:'numeric'})} · ${fmtTime(g.t)}${mid}</div>${soc?side(g.a, post||live?g.as:null, 'r'):side(g.h, post||live?g.hs:null, 'r')}</div>${soc?socGoalsBig(g):''}
     <div class="g-body">
       ${live ? liveSlot(LG_PATH(LGK), g.id, sp, p) : ''}
@@ -4958,7 +5042,7 @@ async function lgPoll(){
   const path = LG_PATH(key); const today = new Date(), ymd = d => `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
   // ESPN rejects date ranges for some sports, so ask for yesterday, today and tomorrow one day at a time
   const SB = `https://site.api.espn.com/apis/site/v2/sports/${path}/scoreboard`, grp = isCollege(key) ? `&groups=${key==='mcbb'?50:key==='cfb'?80:26}&limit=300` : '';
-  const urls = key==='nfl' ? [`${SB}?dates=${D.season}&seasontype=2&week=${(lgModel(key)||{}).curWeek||1}`] : [-1,0,1].map(o => `${SB}?dates=${ymd(new Date(+today + o*864e5))}${grp}`);
+  const urls = key==='nfl' ? [`${SB}?dates=${D.season}&seasontype=2&week=${(lgModel(key)||{}).curWeek||1}`] : [...new Set([-1,0,1].map(o => ymd(new Date(+today + o*864e5))).concat(D.games.filter(g => g[5]==='in' && Date.now() - new Date(g[1]) > 3*3600e3).map(g => ymd(new Date(g[1])))))].map(d => `${SB}?dates=${d}${grp}`);
   let live = false;
   try{ const evs = []; for(const u of urls){ try{ const r = await fetch(u, {cache:'no-store'}); if(r.ok) evs.push(...((await r.json()).events||[])); }catch(e){} } const s = {events: evs}; let changed = false, fin = false; const chg = [];
     (s.events||[]).forEach(e => { const c = e.competitions[0], st = c.status.type; const row = D.games.find(x=>x[0]===String(e.id)); if(!row) return;
@@ -4999,7 +5083,7 @@ function setSport(sp, first){
   if(UI.sport==='nfl') LGK = 'nfl'; else if(UI.sport==='mlb') LGK = 'mlb'; else if(UI.sport==='soc') LGK = UI.socLeague && SOC_LEAGUES[UI.socLeague] ? UI.socLeague : 'eng.1'; else if(UI.sport==='ncaam') LGK = 'mcbb'; else if(UI.sport==='ncaaf') LGK = 'cfb';
   saveUI();
   ['nfl','mlb','soc','ncaam','ncaaf'].forEach(x => document.body.classList.toggle('sport-'+x, UI.sport===x)); document.body.classList.toggle('sport-ncaa', UI.sport==='ncaam' || UI.sport==='ncaaf');
-  const brand = UI.sport==='nba' ? 'Courtside' : CF().brand;
+  const brand = UI.sport==='nba' ? 'Clutch Matrix' : CF().brand;
   document.querySelectorAll('.brand-name').forEach(b => b.textContent = brand);
   document.querySelectorAll('[data-sport]').forEach(b => b.classList.toggle('on', b.dataset.sport===UI.sport));
   LG_VIEWS = lgViews(); buildTabs();
@@ -5248,7 +5332,7 @@ const sprTxt = (m, h, a, sp, nm) => { nm = nm || (x => x); if(m==null) return '�
 // Sportsbook line text: a pick'em comes through as "EVEN", "PK", "KC 0" or nothing at all, so say it plainly
 function bookTxt(s){ const t = String(s==null ? '' : s).trim(); if(!t || /^(even|pk|pick'?\s*e?m?|pick’em)$/i.test(t) || /^[A-Z.&-]{1,6}\s+[-+]?0(\.0+)?$/i.test(t) || /^[-+]?0(\.0+)?$/.test(t)) return 'EVEN (PK)'; return t; }
 const fin = (A, h, a, sp, nm) => { nm = nm || (x => x); return A===0 ? (sp==='soc' ? 'Draw' : 'Tie') : `${nm(A>0?h:a)} by ${Math.abs(A)}`; };
-const vvBadge = (w, short) => w===1 ? `<em class="vv-w us">${short?'Us':'Courtside'} closer</em>` : w===-1 ? `<em class="vv-w them">Vegas closer</em>` : `<em class="vv-w">Even</em>`;
+const vvBadge = (w, short) => w===1 ? `<em class="vv-w us">${short?'Us':'Clutch Matrix'} closer</em>` : w===-1 ? `<em class="vv-w them">Vegas closer</em>` : `<em class="vv-w">Even</em>`;
 const resTxt = x => x===1 ? '<b class="hit">✓</b>' : x===-1 ? '<b class="miss">✗</b>' : '<b>push</b>';
 // Compact grid for a game card; nm maps a team key to its display name
 function vvCard(lg, g, p, hs, as, nm, big){ nm = nm || (x => x);
@@ -5267,7 +5351,7 @@ function vvCard(lg, g, p, hs, as, nm, big){ nm = nm || (x => x);
   const tags = [];
   if(r.ats) tags.push(`ATS: took ${esc(nm(r.ats.pick))} ${r.ats.line>0?'+':r.ats.line<0?'−':''}${Math.abs(r.ats.line).toFixed(1)} ${resTxt(r.ats.res)}`);
   if(r.ou) tags.push(`${r.ou.pick} ${r.ou.line} ${resTxt(r.ou.res)}`);
-  return `<div class="vv ${big?'big':''}"><div class="vv-g"><span class="vv-h">vs Vegas</span><span class="vv-h">Courtside</span><span class="vv-h">Vegas</span><span class="vv-h">Final</span>
+  return `<div class="vv ${big?'big':''}"><div class="vv-g"><span class="vv-h">vs Vegas</span><span class="vv-h">Clutch Matrix</span><span class="vv-h">Vegas</span><span class="vv-h">Final</span>
     ${rows.map(x => `<span class="vv-k">${x[0]}</span>${x[1]}${x[2]}<span class="vv-a">${esc(x[3])}</span>`).join('')}</div>
     <div class="vv-f">${vvBadge(w, !big)}${tags.length?`<span>${tags.join(' · ')}</span>`:''}</div>${big?vvExplain(r, nm, g):''}</div>`;
 }
@@ -6560,7 +6644,7 @@ function favToggle(btn){ const k = btn.dataset.fav; if(FAV[k]) delete FAV[k]; el
   toast(on ? `★ ${btn.dataset.favn} added to favorites` : `${btn.dataset.favn} removed from favorites`); if(CUR==='favs'){ const y = scrollY; go('favs', false); window.scrollTo(0, y); } }
 const LG_SPORT = lg => lg==='nba' ? 'nba' : lg==='nfl' ? 'nfl' : lg==='mlb' ? 'mlb' : SOC_LEAGUES[lg] ? 'soc' : lg==='cfb' ? 'ncaaf' : 'ncaam';
 const lgTitle = lg => lg==='nba' ? 'NBA' : SOC_LEAGUES[lg] ? SOC_LEAGUES[lg].name : NCAA_LEAGUES[lg] ? NCAA_LEAGUES[lg].name : (SPORTS[sportOf(lg)]||{}).label || lg;
-const lgBrand = lg => lg==='nba' ? 'Courtside' : (SPORTS[sportOf(lg)]||{}).brand || '';
+const lgBrand = lg => lg==='nba' ? 'Clutch Matrix' : (SPORTS[sportOf(lg)]||{}).brand || '';
 function withLg(lg, fn){ const k = LGK, n = NF; LGK = lg; NF = lgModel(lg); try{ return NF ? fn() : null; } catch(e){ return null; } finally { LGK = k; NF = n; } }
 function favGo(kind, lg, id){
   if(lg==='nba'){ if(UI.sport && UI.sport!=='nba') setSport('nba'); kind==='t' ? openTeam(id) : openPlayer(id); UI.backTo = 'favs'; return; }
@@ -6690,7 +6774,7 @@ function teamAlerts(out, go, nm, gs, streak, oppName, now, soc){ const D = 864e5
     const up = w && last.pw!=null && last.pw < 0.36; const po = last.g.stype===3;
     out.push({k:`res|${last.g.id}`, ic: up ? 'upset' : w ? 'win' : d ? 'next' : 'loss', lvl: up ? 2 : 1, t:last.g.t, go, who:nm, ttl: up ? `Upset win (we gave them ${Math.round(last.pw*100)}%)` : (po ? 'Postseason: ' : '') + (w ? 'Won' : d ? 'Drew' : 'Lost'), txt:sc}); }
   if(Math.abs(streak||0) >= 3 && last && now - last.g.t < 6*D) out.push({k:`stk|${go}|${streak}`, ic: streak > 0 ? 'streak' : 'cold', lvl:1, t:last.g.t, go, who:nm, ttl: streak > 0 ? `${streak} straight wins` : `${-streak} straight losses`, txt: streak > 0 ? 'On a roll' : 'Skid continues'});
-  if(nx && nx.g.t - now < 30*3600e3 && nx.g.t - now > -4*3600e3){ out.push({k:`nx|${nx.g.id}`, ic:'next', lvl:1, t:nx.g.t, go, who:nm, ttl: nx.live ? 'Playing now' : (new Date(nx.g.t).toDateString()===new Date().toDateString() ? 'Plays today' : 'Plays tomorrow'), txt:`${nx.home?'vs':'@'} ${oppName(nx.opp)} · ${new Date(nx.g.t).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})}${nx.pw!=null ? ` · Courtside: ${Math.round(nx.pw*100)}% to win` : ''}`}); } }
+  if(nx && nx.g.t - now < 30*3600e3 && nx.g.t - now > -4*3600e3){ out.push({k:`nx|${nx.g.id}`, ic:'next', lvl:1, t:nx.g.t, go, who:nm, ttl: nx.live ? 'Playing now' : (new Date(nx.g.t).toDateString()===new Date().toDateString() ? 'Plays today' : 'Plays tomorrow'), txt:`${nx.home?'vs':'@'} ${oppName(nx.opp)} · ${new Date(nx.g.t).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})}${nx.pw!=null ? ` · Clutch Matrix: ${Math.round(nx.pw*100)}% to win` : ''}`}); } }
 let FAV_AL = null; const alSeen = () => new Set(LS.get('cs27_alseen') || []);
 function favAlertsCached(force){ if(force || !FAV_AL) FAV_AL = favAlerts(); return FAV_AL; }
 function favBadge(){ const t = document.querySelector('.tab[data-k="favs"]'); if(!t) return; let n = 0; try{ const s = alSeen(); n = favAlertsCached().filter(a => a.lvl >= 2 && !s.has(a.k)).length; }catch(e){}
@@ -6702,7 +6786,7 @@ function alertsHTML(){ const al = favAlertsCached(true); const s = alSeen(); if(
 function favBackupHTML(){ if(!Object.keys(FAV).length) return ''; return `<div class="fav-bk"><span>Favorites are saved on this device and kept through updates. To move them to another device (laptop ↔ phone), copy your backup link and open it there.</span><button class="btn sm" data-favbk="copy">Copy backup link</button><button class="btn sm" data-favbk="paste">Paste a link</button></div>`; }
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-favbk]'); if(!b) return; e.stopPropagation();
   if(b.dataset.favbk==='copy'){ const u = (location.protocol==='file:' ? 'https://your-courtside-app/' : location.origin + location.pathname) + '#favs=' + favCode(); (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(() => toast('Backup link copied'), () => { prompt('Copy this backup link', u); }); }
-  else { const v = prompt('Paste your Courtside backup link (or code)'); const m = v && (v.match(/favs=([A-Za-z0-9+/=]+)/) || [null, v.trim()]); const o = m && favDecode(m[1]); if(!o) { if(v) toast('That link didn’t work'); return; } favMerge(o, 'added'); go('favs', false); } }, true);
+  else { const v = prompt('Paste your Clutch Matrix backup link (or code)'); const m = v && (v.match(/favs=([A-Za-z0-9+/=]+)/) || [null, v.trim()]); const o = m && favDecode(m[1]); if(!o) { if(v) toast('That link didn’t work'); return; } favMerge(o, 'added'); go('favs', false); } }, true);
 
 /* ---- Playoff / World Series banner, shown on every tab of that sport ---- */
 function seriesOdds(need, ws, ls, gs){ // chance the first team reaches `need` wins, given its per-game win chances for the games still to play
@@ -6719,7 +6803,7 @@ function poBanner(){ const sp = UI.sport || 'nba'; document.body.classList.remov
         const side = (a, w) => `<div class="po-tm ${over && w>=need ? 'champ' : ''}">${nLogo(a, 'po-logo')}<span>${esc(N.T[a].n)}</span><b>${w}</b></div>`;
         return `<div class="po-ban ${ws?'ws':''}" data-go="lg-games"><div class="po-ttl"><span class="po-tro">🏆</span><div><small>${ws ? `${N.season || ''} World Series` : 'MLB Postseason'}</small><b>${esc(over ? `${N.T[wx>wy?x:y].c} ${N.T[wx>wy?x:y].n} ${ws ? 'win the World Series' : 'advance'}` : lead)}</b></div></div>
           <div class="po-ser">${side(x, wx)}<i>–</i>${side(y, wy)}</div>
-          ${over ? '' : `<div class="po-meta">${nx ? `<span><em>Game ${done.length+1}</em> ${new Date(nx.t).toLocaleString([], {weekday:'short', hour:'numeric', minute:'2-digit'})} · at ${esc(N.T[nx.h].n)}${nx.state==='in' ? ' · <b class="live">LIVE</b>' : ''}</span><span>Courtside${nx.state==='in' ? ' live' : ''}: ${esc(N.T[php(nx)>=.5?nx.h:nx.a].n)} ${pctTxt(Math.max(php(nx), 1-php(nx)))} in Game ${done.length+1}</span>` : ''}<span>Series odds: ${esc(N.T[x].n)} ${pctTxt(ox)} · ${esc(N.T[y].n)} ${pctTxt(1-ox)}</span></div>`}</div>`; }).join(''); }
+          ${over ? '' : `<div class="po-meta">${nx ? `<span><em>Game ${done.length+1}</em> ${new Date(nx.t).toLocaleString([], {weekday:'short', hour:'numeric', minute:'2-digit'})} · at ${esc(N.T[nx.h].n)}${nx.state==='in' ? ' · <b class="live">LIVE</b>' : ''}</span><span>Clutch Matrix${nx.state==='in' ? ' live' : ''}: ${esc(N.T[php(nx)>=.5?nx.h:nx.a].n)} ${pctTxt(Math.max(php(nx), 1-php(nx)))} in Game ${done.length+1}</span>` : ''}<span>Series odds: ${esc(N.T[x].n)} ${pctTxt(ox)} · ${esc(N.T[y].n)} ${pctTxt(1-ox)}</span></div>`}</div>`; }).join(''); }
     const label = sp==='nfl' ? 'NFL Playoffs' : sp==='ncaaf' ? 'College Football Playoff' : sp==='ncaam' ? 'NCAA Tournament' : LGK==='usa.1' ? 'MLS Cup Playoffs' : 'Postseason';
     const up = act.filter(g => g.state!=='post').slice(0, 4), rec = act.filter(g => g.state==='post').slice(-2);
     const row = g => `<span class="po-g">${nLogo(g.a, 'po-logo sm')}${esc(tName(g.a))} ${g.state==='pre' ? '@' : `<b>${g.as}–${g.hs}</b>`} ${esc(tName(g.h))}${nLogo(g.h, 'po-logo sm')}<em>${g.state==='pre' ? new Date(g.t).toLocaleString([], {weekday:'short', hour:'numeric', minute:'2-digit'}) + ` · ${esc(tName(g.pred.ph>=.5?g.h:g.a))} ${Math.round(Math.max(g.pred.ph, 1-g.pred.ph)*100)}%` : g.state==='in' ? 'LIVE' : 'Final'}</em></span>`;
@@ -6782,7 +6866,7 @@ function vgBuckets(all){ const B = {}; const put = (grp, lab, w, ord) => { const
     const dt = new Date(x.t); put('By month', dt.toLocaleString([], {month:'short', year:'2-digit'}), w, dt.getFullYear()*12 + dt.getMonth());
     put('By sport', ({nba:'NBA', nfl:'NFL', mlb:'MLB', soc:'Soccer', ncaaf:'NCAAF', ncaam:'NCAAM'})[x.vs], w, Object.keys(VG_COL).indexOf(x.vs)); });
   const g = {}; Object.values(B).forEach(b => (g[b.grp] = g[b.grp] || []).push(b)); Object.values(g).forEach(a => a.sort((x, y) => x.ord - y.ord)); return g; }
-function vgDiverge(list){ return `<div class="vg-dv">${list.map(b => { const n = b.w + b.l; const p = n ? b.w/n : 0.5; const d = (p - 0.5)*200; return `<div class="vg-dv-r"><span class="vg-dv-l">${esc(b.lab)} <small>${n}</small></span><div class="vg-dv-b"><i class="${d>=0?'us':'them'}" style="${d>=0?`left:50%;width:${Math.min(50, d/2*1).toFixed(1)}%`:`right:50%;width:${Math.min(50, -d/2).toFixed(1)}%`}"></i><em></em></div><b class="${p>0.5?'hit':p<0.5?'miss':''}">${n ? Math.round(p*100) + '%' : '–'}</b></div>`; }).join('')}<div class="vg-dv-ax"><span>← Vegas closer</span><span>50%</span><span>Courtside closer →</span></div></div>`; }
+function vgDiverge(list){ return `<div class="vg-dv">${list.map(b => { const n = b.w + b.l; const p = n ? b.w/n : 0.5; const d = (p - 0.5)*200; return `<div class="vg-dv-r"><span class="vg-dv-l">${esc(b.lab)} <small>${n}</small></span><div class="vg-dv-b"><i class="${d>=0?'us':'them'}" style="${d>=0?`left:50%;width:${Math.min(50, d/2*1).toFixed(1)}%`:`right:50%;width:${Math.min(50, -d/2).toFixed(1)}%`}"></i><em></em></div><b class="${p>0.5?'hit':p<0.5?'miss':''}">${n ? Math.round(p*100) + '%' : '–'}</b></div>`; }).join('')}<div class="vg-dv-ax"><span>← Vegas closer</span><span>50%</span><span>Clutch Matrix closer →</span></div></div>`; }
 function vgMulti(all, sel){ const keys = sel==='all' ? [...new Set(all.map(x => x.vs))] : [sel]; if(!all.length) return '';
   const t0 = all[0].t, t1 = all[all.length-1].t || t0 + 1; const w = 640, h = 190; const ser = keys.map(k => { let c = 0; const pts = all.filter(x => x.vs===k).map(x => ({t:x.t, v:(c += x.w===1 ? 1 : x.w===-1 ? -1 : 0)})); return {k, pts, c}; });
   const mx = Math.max(5, ...ser.flatMap(s => s.pts.map(p => Math.abs(p.v)))); const X = t => 8 + (t - t0)/Math.max(1, t1 - t0)*(w - 16), Y = v => h/2 - v/mx*(h/2 - 14);
@@ -6793,7 +6877,7 @@ function vgMulti(all, sel){ const keys = sel==='all' ? [...new Set(all.map(x => 
 function vgErrBars(rows){ const R = rows.filter(r => r.n); if(!R.length) return '';
   const pair = (lab, a, b, unit, lowBetter) => { const mx = Math.max(a, b) || 1; const usB = lowBetter ? a < b : a > b; return `<div class="vg-pr"><span class="vg-pr-l">${lab}</span><div class="vg-pr-bars"><div><i class="us" style="width:${(a/mx*100).toFixed(1)}%"></i><b class="${usB?'hit':''}">${a.toFixed(unit==='%'?1:2)}${unit}</b></div><div><i class="them" style="width:${(b/mx*100).toFixed(1)}%"></i><b class="${!usB?'miss':''}">${b.toFixed(unit==='%'?1:2)}${unit}</b></div></div></div>`; };
   const items = []; R.forEach(r => { const nm = lgTitle(r.lg); if(r.nE >= 5) items.push(pair(`${nm} · avg miss on the spread`, r.eMe/r.nE, r.eMk/r.nE, '', true)); if(r.nP >= 5) items.push(pair(`${nm} · avg chance given to the result`, r.pMe/r.nP*100, r.pMk/r.nP*100, '%', false)); if(r.nT >= 5) items.push(pair(`${nm} · avg miss on the total`, r.tMe/r.nT, r.tMk/r.nT, '', true)); });
-  return items.length ? `<div class="vg-pr-wrap"><div class="vg-leg"><span><i style="background:#2ecc71"></i>Courtside</span><span><i style="background:#e74c3c"></i>Vegas</span></div>${items.join('')}</div>` : ''; }
+  return items.length ? `<div class="vg-pr-wrap"><div class="vg-leg"><span><i style="background:#2ecc71"></i>Clutch Matrix</span><span><i style="background:#e74c3c"></i>Vegas</span></div>${items.join('')}</div>` : ''; }
 let VG_PEND = 0;
 /* ---- Model tuning: where each model's line correction stands, with a slot for the next adjustment ----
    RAW.vgAdj (optional, filled by a future update) = {league: {note:'what changed', at:'ISO date', delta:+0.8}} */
@@ -6808,18 +6892,18 @@ function vegasSection(){ const sel = VG_SPORTS.some(s => s[0]===UI.vgSp) ? UI.vg
   const W = rows.reduce((s, r) => s + r.w, 0), L = rows.reduce((s, r) => s + r.l, 0), E = rows.reduce((s, r) => s + r.e, 0), N = W + L;
   const left = VG_LGS(sel).reduce((s, lg) => s + ((LINE_BF[lg]||{}).left||0), 0); const pc = (a, b) => a + b ? Math.round(a/(a+b)*100) : null; const lead = W > L ? 'us' : L > W ? 'them' : 'even';
   const chips = `<div class="filters vg-chips">${VG_SPORTS.map(([k, l]) => `<button class="chip ${k===sel?'on':''}" data-vgsp="${k}">${l}</button>`).join('')}</div>`;
-  const head = `<div class="sec-head"><div><div class="kicker">${sel==='all' ? 'Every sport' : VG_SPORTS.find(s => s[0]===sel)[1]} · every graded game with a closing line</div><h2>Courtside vs Vegas</h2></div><p>For every finished game we compare our pre-game number with the sportsbook’s closing line and ask whose was closer to what happened. Spread sports (NBA, NFL, college football and basketball) are judged on the spread; baseball and soccer on win odds (moneyline with the vig removed).</p></div>`;
+  const head = `<div class="sec-head"><div><div class="kicker">${sel==='all' ? 'Every sport' : VG_SPORTS.find(s => s[0]===sel)[1]} · every graded game with a closing line</div><h2>Clutch Matrix vs Vegas</h2></div><p>For every finished game we compare our pre-game number with the sportsbook’s closing line and ask whose was closer to what happened. Spread sports (NBA, NFL, college football and basketball) are judged on the spread; baseball and soccer on win odds (moneyline with the vig removed).</p></div>`;
   const status = `<div id="vgStatus" class="vg-status">${left ? `Loading ${left.toLocaleString()} more closing lines in the background — the page won’t jump around. <button class="btn sm" data-vgref="1">Refresh numbers</button>` : ''}</div>`;
   if(!N) return head + chips + status + `<p class="muted">${STATIC ? 'No closing lines on file yet.' : 'Loading closing lines for finished games… press Refresh numbers in a minute.'}</p>`;
   const bar = (a, b) => { const t = a + b || 1; return `<div class="vg-bar"><i class="us" style="width:${(a/t*100).toFixed(1)}%"></i><i class="them" style="width:${(b/t*100).toFixed(1)}%"></i></div>`; };
   const rec3 = a => a[0]+a[1]+a[2] ? `${a[0]}–${a[1]}${a[2]?'–'+a[2]:''}` : '–';
   const G = vgBuckets(all); const flat = Object.values(G).flat().filter(b => b.w + b.l >= 12 && b.grp!=='By month'); const by = (x) => x.w/(x.w+x.l);
   const best = flat.slice().sort((a, b) => by(b) - by(a))[0], worst = flat.slice().sort((a, b) => by(a) - by(b))[0];
-  const body = rows.filter(r => r.n).sort((a, b) => b.n - a.n).map(r => { const p = pc(r.w, r.l); const who = r.w > r.l ? '<em class="vv-w us">Courtside</em>' : r.l > r.w ? '<em class="vv-w them">Vegas</em>' : '<em class="vv-w">Even</em>';
+  const body = rows.filter(r => r.n).sort((a, b) => b.n - a.n).map(r => { const p = pc(r.w, r.l); const who = r.w > r.l ? '<em class="vv-w us">Clutch Matrix</em>' : r.l > r.w ? '<em class="vv-w them">Vegas</em>' : '<em class="vv-w">Even</em>';
     return `<tr><td class="l"><b>${esc(lgTitle(r.lg))}</b> <small class="muted">${lgBrand(r.lg)}</small></td><td>${r.n.toLocaleString()}</td><td class="l" style="min-width:150px">${bar(r.w, r.l)}<small>${r.w}–${r.l}${r.e?` · ${r.e} even`:''}</small></td><td><b>${p==null?'–':p+'%'}</b></td><td>${SPREAD_SP(r.sp)?rec3(r.ats):'–'}</td><td>${rec3(r.ou)}</td><td>${r.tot[0]+r.tot[1]?pc(r.tot[0], r.tot[1])+'%':'–'}</td><td>${who}</td></tr>`; }).join('');
-  return head + chips + status + `<div class="vg-top"><div class="vg-score ${lead}"><span class="vg-lbl">Who’s been closer</span><div class="vg-big"><div><b>${W.toLocaleString()}</b><span>Courtside</span></div><i>–</i><div><b>${L.toLocaleString()}</b><span>Vegas</span></div></div>${bar(W, L)}<p>${lead==='us' ? `<b class="hit">Courtside leads</b> — closer in ${pc(W, L)}% of ${N.toLocaleString()} decided games` : lead==='them' ? `<b class="miss">Vegas leads</b> — the books were closer in ${pc(L, W)}% of ${N.toLocaleString()} decided games` : 'Dead even'}${E?` (${E} were a wash)`:''}.</p>
-      ${best && worst && best!==worst ? `<p class="vg-ins"><span class="hit">Courtside’s edge:</span> ${esc(best.lab)} <small class="muted">(${esc(best.grp.toLowerCase())})</small> — closer ${Math.round(by(best)*100)}% of the time<br><span class="miss">Vegas’s edge:</span> ${esc(worst.lab)} <small class="muted">(${esc(worst.grp.toLowerCase())})</small> — Vegas closer ${Math.round((1-by(worst))*100)}%</p>` : ''}</div>
-    <div class="vg-chart"><span class="vg-lbl">How often we’ve been closer, as each season unfolds <small>(running share of graded games; above 50% means Courtside is ahead)</small></span>${vgMulti2(all, sel)}</div></div>
+  return head + chips + status + `<div class="vg-top"><div class="vg-score ${lead}"><span class="vg-lbl">Who’s been closer</span><div class="vg-big"><div><b>${W.toLocaleString()}</b><span>Clutch Matrix</span></div><i>–</i><div><b>${L.toLocaleString()}</b><span>Vegas</span></div></div>${bar(W, L)}<p>${lead==='us' ? `<b class="hit">Clutch Matrix leads</b> — closer in ${pc(W, L)}% of ${N.toLocaleString()} decided games` : lead==='them' ? `<b class="miss">Vegas leads</b> — the books were closer in ${pc(L, W)}% of ${N.toLocaleString()} decided games` : 'Dead even'}${E?` (${E} were a wash)`:''}.</p>
+      ${best && worst && best!==worst ? `<p class="vg-ins"><span class="hit">Clutch Matrix’s edge:</span> ${esc(best.lab)} <small class="muted">(${esc(best.grp.toLowerCase())})</small> — closer ${Math.round(by(best)*100)}% of the time<br><span class="miss">Vegas’s edge:</span> ${esc(worst.lab)} <small class="muted">(${esc(worst.grp.toLowerCase())})</small> — Vegas closer ${Math.round((1-by(worst))*100)}%</p>` : ''}</div>
+    <div class="vg-chart"><span class="vg-lbl">How often we’ve been closer, as each season unfolds <small>(running share of graded games; above 50% means Clutch Matrix is ahead)</small></span>${vgMulti2(all, sel)}</div></div>
     <div class="vg-grid">${Object.entries(G).filter(([k]) => !(sel!=='all' && k==='By sport')).map(([k, list]) => `<div class="vg-card"><span class="vg-lbl">${esc(k)}</span>${vgDiverge(list)}</div>`).join('')}
       ${vgTune(rows)}<div class="vg-card vg-wide"><span class="vg-lbl">Head to head on accuracy <small>(lower miss is better; higher chance on the actual result is better)</small></span>${vgErrBars(rows)}</div></div>
     <div class="tbl-wrap"><table class="vg-tbl"><thead><tr><th class="l">League</th><th>Graded</th><th class="l">Closer (us–Vegas)</th><th>Our %</th><th data-tip="When our spread differed from Vegas by half a point or more, did our side cover?">ATS</th><th data-tip="When our total differed from the book’s, did our over/under side hit?">O/U picks</th><th>Totals closer</th><th>Leader</th></tr></thead><tbody>${body}</tbody></table></div>
@@ -6971,7 +7055,7 @@ function lboxHTML(id){ const B = LBOX[id]; if(!B) return ''; const j = B.j, path
   const pills = soc ? `<div class="mc-pills"><span style="--c:${tcol(h)}">${esc(h.ab)} <b>${Math.round(P.h*100)}%</b><em>${amer(P.h)}</em></span><span>Draw <b>${Math.round(P.d*100)}%</b><em>${amer(P.d)}</em></span><span style="--c:${tcol(a)}">${esc(a.ab)} <b>${Math.round(P.a*100)}%</b><em>${amer(P.a)}</em></span></div>`
     : `<div class="mc-pills"><span style="--c:${tcol(a)}">${esc(a.ab)} <b>${Math.round(P.a*100)}%</b><em>${amer(P.a)}</em></span><span style="--c:${tcol(h)}">${esc(h.ab)} <b>${Math.round(P.h*100)}%</b><em>${amer(P.h)}</em></span></div>`;
   const odds = `<div class="mc-odds"><div class="mc-oh"><span class="mc-k">${live ? '<span class="live">LIVE</span> odds tracker' : state==='post' ? 'Final odds' : 'Pre-game odds'}</span><b>${live || state==='pre' ? `${favNm} ${fav[0]==='d'?'most likely':'favored'} · ${Math.round(fav[1]*100)}%` : `${esc((d>0?h:d<0?a:{n:'Draw'}).n)}${d?' won':''}`}</b></div>${pills}${live?`<p class="mc-by">${by}</p>`:''}${spark}
-    <p class="mc-pre">${pre ? `Opening line: ${pre}` : 'No sportsbook line posted for this game.'}${pred && pred.ph!=null ? ` · Courtside pre-game: ${esc(h.ab)} ${Math.round(pred.ph*100)}%${soc && pred.pd!=null ? ` · draw ${Math.round(pred.pd*100)}%` : ''}` : ''}</p>
+    <p class="mc-pre">${pre ? `Opening line: ${pre}` : 'No sportsbook line posted for this game.'}${pred && pred.ph!=null ? ` · Clutch Matrix pre-game: ${esc(h.ab)} ${Math.round(pred.ph*100)}%${soc && pred.pd!=null ? ` · draw ${Math.round(pred.pd*100)}%` : ''}` : ''}</p>
     <p class="mc-note">Live chances ${espnP!=null && !soc ? 'are ESPN’s win probability' : soc ? 'come from a Poisson model of the goals still to come, using each side’s expected goals for the minutes left' : 'blend the current margin with our pre-game spread, scaled to the time left'}; fair odds strip out the bookmaker’s margin.</p></div>`;
   return `<div class="mc">${keys.length ? `<div class="mc-stats"><div class="mc-h"><span style="color:${tcol(L)}">${esc(L.n)}</span><span class="mc-k">${live?'<span class="live">LIVE</span> ':''}Match stats</span><span style="color:${tcol(R)}">${esc(R.n)}</span></div>${statRows}</div>` : ''}${lsT}${odds}</div>`; }
 const tcol = t => readCol(t && t.color, t && t.alt, '#c9ccd1');
@@ -7151,12 +7235,12 @@ const TROPHY = (id) => `<svg class="trophy" viewBox="0 0 120 170"><defs><linearG
 function evHeroHTML(ev){ const chip = (aL, aN, sc, bN, bL, sub, attr) => `<div class="evh-chip" ${attr||''}>${aL?`<img src="${aL}" alt="" onerror="this.remove()">`:''}<b>${esc(aN)}</b><em>${sc}</em><b>${esc(bN)}</b>${bL?`<img src="${bL}" alt="" onerror="this.remove()">`:''}<small>${sub}</small></div>`;
   if(ev.kind==='ws'){ const {x, y, wx, wy, over, ox, nx, games} = ev.w; const lead = over ? `${x.n} are champions` : wx===wy ? (wx ? 'Series tied' : 'Series begins') : wx===3 ? `${x.n} one win away` : `${x.n} lead the series`;
     const dots = games.map((g, i) => `<i class="${g.w ? (g.w===x.ab ? 'x' : 'y') : ''}" title="Game ${i+1}">${i+1}</i>`).join('');
-    const nxt = nx ? `${nx.live ? `<b class="live">LIVE</b> Game ${nx.n}: ${esc(nx.a)} ${nx.as ?? ''}–${nx.hs ?? ''} ${esc(nx.h)} · ${esc(nx.detail||'')}` : `Game ${nx.n} · ${new Date(nx.t).toLocaleString([], {weekday:'long', hour:'numeric', minute:'2-digit'})} · at the ${esc(withLg('mlb', () => NF.T[nx.h].n))}`} · <b>Courtside${nx.live ? ' live' : ''}: ${esc(withLg('mlb', () => NF.T[nx.ph >= 0.5 ? nx.h : nx.a].n))} ${pctTxt(Math.max(nx.ph, 1 - nx.ph))}</b>` : '';
+    const nxt = nx ? `${nx.live ? `<b class="live">LIVE</b> Game ${nx.n}: ${esc(nx.a)} ${nx.as ?? ''}–${nx.hs ?? ''} ${esc(nx.h)} · ${esc(nx.detail||'')}` : `Game ${nx.n} · ${new Date(nx.t).toLocaleString([], {weekday:'long', hour:'numeric', minute:'2-digit'})} · at the ${esc(withLg('mlb', () => NF.T[nx.h].n))}`} · <b>Clutch Matrix${nx.live ? ' live' : ''}: ${esc(withLg('mlb', () => NF.T[nx.ph >= 0.5 ? nx.h : nx.a].n))} ${pctTxt(Math.max(nx.ph, 1 - nx.ph))}</b>` : '';
     const tm = (t, w, side) => `<div class="evh-tm ${side}" style="--tc:${t.p}"><div class="evh-logo"><img src="${t.logo}" alt="" onerror="this.remove()"></div><b>${esc(t.n)}</b><small>${t.lg==='AL'?'American League':'National League'} champions</small></div>`;
     return `<div class="evh evh-ws${over ? ' evh-champ' : ''}" style="--wc:${nInkSafe(x)}"><div class="evh-bg"><i class="beam b1"></i><i class="beam b2"></i><i class="beam b3"></i><div class="evh-diamond"></div><div class="evh-sheen"></div>${fallLeaves(over ? 0 : 14)}${over ? champConfetti(x, 46) : ''}</div><div class="evh-in">
       <div class="evh-kick">${esc(String(ev.w.season||new Date().getFullYear()))} · The Fall Classic</div><h1 class="evh-title" data-t="World Series">World Series</h1>
       <div class="evh-match">${tm(x, wx, 'l')}<div class="evh-score"><div><b>${wx}</b><i>–</i><b>${wy}</b></div><small>${esc(lead)}</small><div class="evh-dots">${dots}</div></div>${tm(y, wy, 'r')}</div>
-      ${ev.w.last ? `<div class="evh-last">Game ${ev.w.last.n}: <b>${esc(withLg('mlb', () => NF.T[ev.w.last.w].n))} ${ev.w.last.ws}</b>, ${esc(withLg('mlb', () => NF.T[ev.w.last.l].n))} ${ev.w.last.ls}${ev.w.last.x ? ` · ${ev.w.last.x} innings` : ''}</div>` : ''}${over ? `<div class="evh-meta champ">${TROPHY('wsG')}<span>${esc(x.c)} ${esc(x.n)} · World Series champions</span></div>` : `<div class="evh-meta">${nxt}</div><div class="evh-odds"><span style="color:${nInkSafe(x)}">${esc(x.n)} ${pctTxt(ox)}</span><div class="evh-bar"><i style="width:${(ox*100).toFixed(1)}%;background:${nInkSafe(x)}"></i><i style="width:${((1-ox)*100).toFixed(1)}%;background:${nInkSafe(y)}"></i></div><span style="color:${nInkSafe(y)}">${pctTxt(1-ox)} ${esc(y.n)}</span></div><small class="evh-cap">Courtside’s odds to win the series${nx && nx.live ? ' · updating live with Game ' + nx.n : ''}</small>`}
+      ${ev.w.last ? `<div class="evh-last">Game ${ev.w.last.n}: <b>${esc(withLg('mlb', () => NF.T[ev.w.last.w].n))} ${ev.w.last.ws}</b>, ${esc(withLg('mlb', () => NF.T[ev.w.last.l].n))} ${ev.w.last.ls}${ev.w.last.x ? ` · ${ev.w.last.x} innings` : ''}</div>` : ''}${over ? `<div class="evh-meta champ">${TROPHY('wsG')}<span>${esc(x.c)} ${esc(x.n)} · World Series champions</span></div>` : `<div class="evh-meta">${nxt}</div><div class="evh-odds"><span style="color:${nInkSafe(x)}">${esc(x.n)} ${pctTxt(ox)}</span><div class="evh-bar"><i style="width:${(ox*100).toFixed(1)}%;background:${nInkSafe(x)}"></i><i style="width:${((1-ox)*100).toFixed(1)}%;background:${nInkSafe(y)}"></i></div><span style="color:${nInkSafe(y)}">${pctTxt(1-ox)} ${esc(y.n)}</span></div><small class="evh-cap">Clutch Matrix’s odds to win the series${nx && nx.live ? ' · updating live with Game ' + nx.n : ''}</small>`}
       ${finalsRecap('mlb', [x, y], ev.w.games.filter(g => g.st!=='pre').map(g => g.id), over, ev.w.season)}<div class="evh-slogan">${over ? 'Champions forever.' : 'Four wins. One ring. Forever.'}</div>
       <div class="evh-btns">${nx && !over ? `<button class="btn" data-evgame="mlb|${nx.id}">Game ${nx.n} breakdown</button>` : ''}<button class="btn ghost" data-evgo="mlb|lg-games">Series schedule</button></div></div></div>`; }
   if(ev.kind==='cup'){ const teams = [...new Set(ev.list.flatMap(g => [g.a, g.h]))]; const stars = teams.map(ab => M.players.filter(p => p.tm===ab && !(p.outUntil > Date.now())).sort((a, b) => (b.L ? b.L.pts : 0) - (a.L ? a.L.pts : 0))[0]).filter(Boolean).slice(0, 8);
@@ -7401,7 +7485,7 @@ function liveCard(e){ const live = e.state==='in', post = e.state==='post'; scor
   const mlb = e.sp==='mlb' && live;
   const base = mlb ? `<div class="lv-mlb">${diamondSVG(e.onb, e.outs)}${bsoHTML(e.balls, e.strikes, e.outs)}${e.bat?`<span class="lv-ab"><b>${esc(e.bat)}</b> batting<br><small>vs ${esc(e.pit)}</small></span>`:''}</div>` : '';
   const last = mlb && isPitchTxt(e.last) ? '' : e.last;
-  const phC = e.ph==null ? null : clamp(e.ph, 0.01, 0.99); const prob = live && phC!=null ? `${wpBar(e.a, e.h, phC)}<div class="lv-probl"><span>${esc(e.a.ab)} ${Math.round((1-phC)*100)}%</span><span>win chance</span><span>${esc(e.h.ab)} ${Math.round(phC*100)}%</span></div>` : '';
+  const phC = e.ph==null ? null : clamp(e.ph, 0.01, 0.99); const hf = e.sp==='soc'; const prob = live && phC!=null ? (hf ? `${wpBar(e.h, e.a, 1-phC)}<div class="lv-probl"><span>${esc(e.h.ab)} ${Math.round(phC*100)}%</span><span>win chance</span><span>${esc(e.a.ab)} ${Math.round((1-phC)*100)}%</span></div>` : `${wpBar(e.a, e.h, phC)}<div class="lv-probl"><span>${esc(e.a.ab)} ${Math.round((1-phC)*100)}%</span><span>win chance</span><span>${esc(e.h.ab)} ${Math.round(phC*100)}%</span></div>`) : '';
   const U = live ? lvUpset(e) : null;
   return `<div class="lv-card ${live?'is-live':''} ${U?'is-upset':''} ${scoredRecently(e.id)?'scored':''}" data-lvgame="${e.src}|${e.id}">${U?upsetBadge(U, (U.side==='h'?e.h:e.a).n):''}<div class="lv-top"><span class="lv-lg">${esc(e.lbl)}</span><span class="lv-st">${live?'<span class="live">LIVE</span> ':''}${esc(e.state==='pre' ? new Date(e.t).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) : e.detail)}</span></div>
     ${e.sp==='soc' ? row(e.h, hW, e.h)+row(e.a, aW, e.a) : row(e.a, aW, e.a)+row(e.h, hW, e.h)}${e.note?`<div class="lv-note">${esc(e.note)}</div>`:''}${live||post ? lvStats(e) : ''}
@@ -7660,9 +7744,9 @@ function cfbBannerFix(g){ if(!NF || !NF.college) return; const hd = document.que
 /* ---- game cards open with the new panels in place ---- */
 const _openLgGame0 = openLgGame; openLgGame = function(id){ _openLgGame0(id); try{ const g = NF && NF.games.find(x => x.id===id); if(!g) return; const sp = sportOf(LGK), soc = sp==='soc'; const path = LG_PATH(LGK);
     const post = g.state==='post' && g.hs!=null, live = g.state==='in'; const body = document.querySelector('#gamePanel .g-body'); const p = g.pred;
-    const mrows = [[soc ? 'Courtside expected' : 'Courtside projection', soc ? `${esc(tName(g.h))} ${p.xh.toFixed(1)} – ${p.xa.toFixed(1)} ${esc(tName(g.a))}` : `${esc(tName(g.a))} ${p.as} – ${p.hs} ${esc(tName(g.h))}`],
+    const mrows = [[soc ? 'Clutch Matrix expected' : 'Clutch Matrix projection', soc ? `${esc(tName(g.h))} ${p.xh.toFixed(1)} – ${p.xa.toFixed(1)} ${esc(tName(g.a))}` : `${esc(tName(g.a))} ${p.as} – ${p.hs} ${esc(tName(g.h))}`],
       ['Win chance', soc ? `${esc(tName(g.h))} ${Math.round(p.ph*100)}% · draw ${Math.round(p.pd*100)}% · ${esc(tName(g.a))} ${Math.round(p.pa*100)}%` : `${esc(tName(p.ph>=.5?g.h:g.a))} ${Math.round(Math.max(p.ph,1-p.ph)*100)}%`]];
-    if(!soc) mrows.push(['Courtside spread', esc(lgSpread(g))]); if(g.odds) mrows.push(['Sportsbook', `${esc(bookTxt(g.odds))}${g.ou ? ` · total ${g.ou}` : ''}`]);
+    if(!soc) mrows.push(['Clutch Matrix spread', esc(lgSpread(g))]); if(g.odds) mrows.push(['Sportsbook', `${esc(bookTxt(g.odds))}${g.ou ? ` · total ${g.ou}` : ''}`]);
     if(NF.college) cfbBannerFix(g);
     if(body && (live || post) && soc){ // Match Center order: timeline, stats + live odds, latest plays, line-ups; the pre-match model folds away
       const lb = body.querySelector(':scope > .lbox'), ms = body.querySelector(':scope > .msheet'), pb = body.querySelector(':scope > [data-pbp]'); const vv = [...body.children].filter(c => c.classList.contains('vv') || (c.tagName==='H4' && /Vegas/.test(c.textContent)));
@@ -7679,7 +7763,7 @@ const _openLiveGame0 = openLiveGame; openLiveGame = function(e){ _openLiveGame0(
     else if(e.sp==='mlb' && e.state==='post'){ body.insertAdjacentHTML('afterbegin', gbSlot(e.path, e.id)); }
     gFlipSetup(e.path, e.id, []); gxLoad(); }catch(err){ console.warn('openLiveGame+', err); } };
 const _openGame0 = openGame; openGame = function(id){ _openGame0(id); try{ const g = M.games.find(x => x.id===id); if(!g) return; const p = g.pred;
-    gFlipSetup('basketball/nba', id, [['Courtside projection', `${esc(T[g.a].n)} ${p.as} – ${p.hs} ${esc(T[g.h].n)}`], ['Win chance', `${esc(T[p.ph>=.5?g.h:g.a].n)} ${Math.round(Math.max(p.ph,1-p.ph)*100)}%`], ['Courtside spread', esc(modelSpread(g))]]); gxLoad(); }catch(e){} };
+    gFlipSetup('basketball/nba', id, [['Clutch Matrix projection', `${esc(T[g.a].n)} ${p.as} – ${p.hs} ${esc(T[g.h].n)}`], ['Win chance', `${esc(T[p.ph>=.5?g.h:g.a].n)} ${Math.round(Math.max(p.ph,1-p.ph)*100)}%`], ['Clutch Matrix spread', esc(modelSpread(g))]]); gxLoad(); }catch(e){} };
 
 /* ================= COLLEGE FOOTBALL CARDS: rank above the crest, record right under it ================= */
 const _lgCard0 = lgCard; lgCard = function(g){ if(LGK!=='cfb') return _lgCard0(g); const p = g.pred; const post = g.state==='post' && g.hs!=null, live = g.state==='in';
@@ -8119,7 +8203,7 @@ function finalsRecap(key, teams, ids, over, season){ const H = TEAM_HIST[key] ||
   const hist = teams.filter(t => t && H[t.ab]).map(t => `<div class="evh-rc"><b>${esc(t.n)}</b>${champ(t)}<p>${esc(H[t.ab])}</p></div>`).join('');
   const mk = key + ':' + ids.join(','), mv = FIN_MVP[mk]; if(ids.length && mv===undefined && !STATIC){ FIN_MVP[mk] = null; finalsMvp(key, ids).then(r => { FIN_MVP[mk] = r || false; try{ evHero(CUR); }catch(e){} }); }
   // official MVP first (named in the recap of the clinching game), then the model's pick
-  const mvp = mv ? `${mv.official ? `<div class="evh-mvp off"><span>Official series MVP</span><b>${esc(mv.official)}</b></div>` : ''}${mv.name ? `<div class="evh-mvp"><span>${over ? 'Courtside MVP' : 'Series standout so far'}</span><b>${esc(mv.name)}</b><em>${esc(mv.line)}</em></div>` : ''}` : '';
+  const mvp = mv ? `${mv.official ? `<div class="evh-mvp off"><span>Official series MVP</span><b>${esc(mv.official)}</b></div>` : ''}${mv.name ? `<div class="evh-mvp"><span>${over ? 'Clutch Matrix MVP' : 'Series standout so far'}</span><b>${esc(mv.name)}</b><em>${esc(mv.line)}</em></div>` : ''}` : '';
   return hist || mvp ? `<div class="evh-recap">${mvp}${hist ? `<div class="evh-rcs">${hist}</div>` : ''}</div>` : ''; }
 async function finalsMvp(key, ids){ const path = LG_PATH(key); await Promise.all(ids.map(id => LBOX[id] ? null : lboxFetch(path, id)));
   const by = {}; ids.forEach(id => { const B = LBOX[id]; if(!B) return; espnBoxPlayers(B.j, path).forEach(P => { if(!P.G || P.G.v==null) return; const k = P.id; const o = by[k] = by[k] || {name:P.name, ab:P.ab, v:0, n:0, g:new Set(), s:{}, kind:P.kind}; o.v += P.G.v; o.g.add(id); o.n = o.g.size; Object.entries(P.s).forEach(([sk, x]) => { o.s[sk] = (o.s[sk]||0) + x; }); }); });
@@ -8359,13 +8443,13 @@ let NOTIF_ON = (LS.get('cs14_notif') || {}).on !== false;
 function requestPerm(){ return new Promise(res => { try{ const p = Notification.requestPermission(r => res(r)); if(p && p.then) p.then(res, () => res(notifState())); }catch(e){ res(notifState()); } }); }
 function saveNotif(){ const s = {perm:notifState(), on:NOTIF_ON, standalone:isStandalone(), at:Date.now()}; LS.set('cs14_notif', s); try{ FAVDB.set('notif', s); }catch(e){} updBell(); }
 function updBell(){ const b = document.getElementById('notifBtn'); if(!b) return; const st = notifState(), on = st==='granted' && NOTIF_ON; b.classList.toggle('on', on); b.textContent = on ? '🔔' : '🔕'; b.setAttribute('aria-pressed', String(on)); b.title = on ? 'Alerts on (tap to mute)' : st==='denied' ? 'Alerts blocked in your browser settings' : 'Turn on alerts'; }
-function iosHint(){ toast('On iPhone: tap Share → Add to Home Screen, open Courtside from the Home Screen icon, then tap the bell to turn alerts on.'); }
+function iosHint(){ toast('On iPhone: tap Share → Add to Home Screen, open Clutch Matrix from the Home Screen icon, then tap the bell to turn alerts on.'); }
 function notifAsk(){ if(notifState()==='na'){ if(isIOS() && !isStandalone() && !LS.get('cs14_ioshint')){ LS.set('cs14_ioshint', 1); setTimeout(iosHint, 2700); } return; }
   if(notifState()!=='default' || notifAsk.done) return; notifAsk.done = 1;
   requestPerm().then(p => { NOTIF_ON = true; saveNotif(); if(p==='granted'){ setTimeout(() => toast('🔔 Alerts on: favorites, injuries, game milestones and upset watches'), 2700); favWatchSoon(); } }); }
 function notifToggle(){ const st = notifState();
   if(st==='na') return isIOS() && !isStandalone() ? iosHint() : toast('This browser doesn’t support notifications.');
-  if(st==='denied') return toast('Alerts are blocked for this site. Allow notifications in your browser (or iPhone Settings → Notifications → Courtside).');
+  if(st==='denied') return toast('Alerts are blocked for this site. Allow notifications in your browser (or iPhone Settings → Notifications → Clutch Matrix).');
   if(st==='granted'){ NOTIF_ON = !NOTIF_ON; saveNotif(); return toast(NOTIF_ON ? '🔔 Alerts on' : '🔕 Alerts muted'); }
   requestPerm().then(p => { NOTIF_ON = true; saveNotif(); if(p==='granted'){ toast('🔔 Alerts on'); favWatchSoon(); try{ swBackground(); }catch(e){} } }); }
 async function csNotify(title, body, tag, url){ const vis = document.visibilityState==='visible';
@@ -8565,12 +8649,133 @@ document.addEventListener('click', e => { const b = e.target.closest && e.target
     teamInfo(lg, ab).then(info => { const bd = back.querySelector('.tb-body'); if(bd) bd.innerHTML = teamBack(lg, ab, info); }); }
   card.classList.toggle('flipped'); }, true);
 
+/* ================= v1.7: Clutch Matrix, steady sports bar, rosters by season, metallic medals, sortable career tables, a bell that always shows its state ================= */
+
+/* ---- One brand on every sport: the name next to the sports switch never changes width, so nothing beside or under it moves ---- */
+const CM_BRAND = 'Clutch Matrix';
+function cmBrand(){ document.querySelectorAll('.brand-name').forEach(b => { if(b.textContent!==CM_BRAND) b.textContent = CM_BRAND; }); const t = document.title.split(' · '); if(t[0]!==CM_BRAND){ t[0] = CM_BRAND; document.title = t.join(' · '); } }
+const _setSport17 = setSport; setSport = function(...a){ _setSport17(...a); cmBrand(); };
+const _setLeague17 = setLeague; setLeague = function(...a){ _setLeague17(...a); cmBrand(); };
+// the sub-tab row keeps its scroll position across sports; it only scrolls when the active tab would be out of view
+const _go17 = go; go = function(k, scroll){ const bar = document.getElementById('tabs'), x0 = bar ? bar.scrollLeft : 0; _go17(k, scroll);
+  try{ const t = bar && bar.querySelector('.tab.active'); if(!t || bar.scrollWidth <= bar.clientWidth + 4) return; const at = t.getBoundingClientRect().left - bar.getBoundingClientRect().left + bar.scrollLeft;
+    const vis = x => at >= x && at + t.offsetWidth <= x + bar.clientWidth; if(vis(x0)) bar.scrollLeft = x0; else if(vis(0)) bar.scrollLeft = 0; }catch(e){} };
+
+/* ---- NBA team pages: the roster opens on this season's real numbers; projections and past seasons (final per-game stats) sit in the season menu ---- */
+UI.rSeason = 'cur';
+const RS_YEARS = Array.from({length:30}, (_, i) => 2026 - i);   // season end years: 2025–26 back to 1996–97
+const rsLbl = y => `${y-1}–${String(y).slice(2)}`;
+const HIST_R = {}, RS_LOADING = new Set();
+const RS_COLS = [['GP','gamesPlayed',0],['MIN','avgMinutes'],['PTS','avgPoints'],['REB','avgRebounds'],['AST','avgAssists'],['STL','avgSteals'],['BLK','avgBlocks'],['TOV','avgTurnovers'],['FGM','avgFieldGoalsMade'],['FGA','avgFieldGoalsAttempted'],['FG%','fieldGoalPct'],['3PM','avgThreePointFieldGoalsMade'],['3PA','avgThreePointFieldGoalsAttempted'],['3P%','threePointFieldGoalPct'],['FTM','avgFreeThrowsMade'],['FTA','avgFreeThrowsAttempted'],['FT%','freeThrowPct']];
+function rsPicker(ab){ const v = String(UI.rSeason || 'cur');
+  return `<label class="rs-pick"><span>Season</span><select data-rseason="${ab}" aria-label="Roster season"><option value="cur"${v==='cur'?' selected':''}>2026–27 · Current season</option><option value="proj"${v==='proj'?' selected':''}>2026–27 · Projected</option><optgroup label="Past seasons">${RS_YEARS.map(y => `<option value="${y}"${v===String(y)?' selected':''}>${rsLbl(y)}</option>`).join('')}</optgroup></select></label>`; }
+function rsNowHTML(r, ab, mode){ const proj = mode==='proj', L = p => proj ? p.L : p.C;
+  const val = (p, k) => k==='name' ? p.name : k==='gp' ? (proj ? p.gp : p.C ? p.C.gp : null) : (L(p) || {})[k];
+  const fmt = (p, k) => { const v = val(p, k); return v==null ? '–' : k==='gp' ? v : ['fgp','tpp','ftp','ts'].includes(k) ? pct(v) : f1(v); };
+  const cards = r.roster.slice().sort((a,b)=> (b.rot-a.rot) || (b.L.min-a.L.min)).map(p => `
+    <div class="pcard ${p.outUntil>M.now?'out':''}" data-pid="${p.id}">
+      <div class="st">${injTag(p)}</div><div class="st-fav">${favStar('p','nba',p.id,p.name,p.tm)}</div><div class="jw jw-face">${face(p,'pc-face')}</div>
+      <div class="nm">${esc(p.name)}</div><div class="ps">#${p.num||'–'} · ${p.pos} · ${p.ht||''}</div>
+      <div class="ln">${L(p) ? `${f1(L(p).pts)} / ${f1(L(p).reb)} / ${f1(L(p).ast)}` : '<span class="muted">No games yet</span>'}</div>
+    </div>`).join('');
+  const sk = UI.sort.k, sd = UI.sort.d;
+  const rows = r.roster.slice().sort((a,b) => { const x = val(a,sk), y = val(b,sk); if(sk==='name') return sd*String(x).localeCompare(String(y)); if(x==null) return 1; if(y==null) return -1; return sd*(x-y); });
+  const table = `<div class="tbl-wrap"><table><thead><tr>${TCOLS.map(c=>`<th class="sortable ${c[2]||''} ${sk===c[0]?'sorted':''}" data-sort="${c[0]}">${c[1]}${sk===c[0]?(sd<0?' ↓':' ↑'):''}</th>`).join('')}</tr></thead><tbody>
+    ${rows.map(p=>`<tr class="hov" data-pid="${p.id}">${TCOLS.map(c=>c[0]==='name'?`<td class="l"><div class="tn"><span class="mj">${jersey(p,{mini:true})}</span>${esc(p.name)}${injTag(p)}<span class="tn-fav">${favStar('p','nba',p.id,p.name,p.tm)}</span></div></td>`:`<td>${fmt(p,c[0])}</td>`).join('')}</tr>`).join('')}
+    </tbody></table></div>`;
+  return `<div class="sub-h rs-head">Roster <small>Click a jersey for every stat and the game log · ${proj ? 'projected' : 'this season’s'} PTS / REB / AST</small>${rsPicker(ab)}</div>
+   <div class="roster-grid">${cards}</div>
+   <div class="sub-h">${proj ? 'Projected per-game stats' : '2026–27 per-game stats'} <small>Click a column to sort</small></div>${table}`; }
+// one ESPN call returns the whole league's season; the team's players are picked out by ESPN team id
+async function histRoster(ab, y){ const k = ab + '|' + y; if(HIST_R[k]) return HIST_R[k]; const tid = String(NBA_ESPN_ID[ab]);
+  const j = await (await fetch(`https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/statistics/byathlete?region=us&lang=en&contentorigin=espn&isqualified=false&limit=1000&sort=offensive.avgPoints:desc&season=${y}&seasontype=2`)).json();
+  const names = {}; (j.categories||[]).forEach(c => names[c.name] = c.names || []); let team = null;
+  const rows = (j.athletes||[]).filter(x => { const a = x.athlete || {}, t = (a.teams||[]).find(t => String(t.id)===tid); if(t && !team) team = t; return String(a.teamId)===tid || !!t; })
+    .map(x => { const a = x.athlete, st = {}; (x.categories||[]).forEach(c => (names[c.name]||[]).forEach((n, i) => { const v = (c.values||[])[i]; if(st[n]==null && v!=null && isFinite(v)) st[n] = +v; }));
+      return {id:String(a.id), name:a.displayName || '', pos:(a.position||{}).abbreviation || '', hs:(a.headshot||{}).href || '', st}; });
+  return (HIST_R[k] = {rows, team}); }
+async function rsLoad(ab, y){ const k = ab + '|' + y; if(RS_LOADING.has(k)) return; RS_LOADING.add(k);
+  try{ await histRoster(ab, y); }catch(e){ HIST_R[k] = {err:true}; } RS_LOADING.delete(k);
+  if(CUR==='team' && UI.team===ab && String(UI.rSeason)===String(y)){ const sy = scrollY; go('team', false); window.scrollTo(0, sy); } }
+function rsHistHTML(ab, y){ const H = HIST_R[ab + '|' + y], who = H && H.team ? H.team.displayName : `${T[ab].c} ${T[ab].n}`;
+  const head = `<div class="sub-h rs-head">${rsLbl(y)} roster <small>${esc(who)} · final per-game stats for that season · click a player for his career</small>${rsPicker(ab)}</div>`;
+  if(!H) return head + `<p class="muted">Loading the ${rsLbl(y)} roster…</p>`;
+  if(H.err) return head + `<p class="muted">Couldn’t load that season from ESPN${STATIC ? ' (past rosters need the internet version)' : ''}. Pick it again to retry.</p>`;
+  if(!H.rows.length) return head + '<p class="muted">No roster on file for that season.</p>';
+  const rows = H.rows.slice().sort((a,b) => (b.st.avgMinutes||0)*(b.st.gamesPlayed||0) - (a.st.avgMinutes||0)*(a.st.gamesPlayed||0));
+  const fx = (v, c) => v==null || !isFinite(v) ? '–' : c && c[2]===0 ? String(Math.round(v)) : v.toFixed(1);
+  const cards = rows.map(p => `<div class="pcard" data-histp="${esc(p.id)}|${esc(p.name)}"><div class="rs-ph"><em>${esc(p.name.split(' ').map(s => s[0]).slice(0,2).join(''))}</em>${p.hs ? `<img src="${esc(p.hs)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</div>
+    <div class="nm">${esc(p.name)}</div><div class="ps">${esc(p.pos)} · ${fx(p.st.gamesPlayed, RS_COLS[0])} GP</div><div class="ln">${fx(p.st.avgPoints)} / ${fx(p.st.avgRebounds)} / ${fx(p.st.avgAssists)}</div></div>`).join('');
+  const table = `<div class="tbl-wrap"><table><thead><tr><th class="l">Player</th>${RS_COLS.map(c => `<th>${c[0]}</th>`).join('')}</tr></thead><tbody>${rows.map(p => `<tr class="hov" data-histp="${esc(p.id)}|${esc(p.name)}"><td class="l">${esc(p.name)} <small class="muted">${esc(p.pos)}</small></td>${RS_COLS.map(c => `<td>${fx(p.st[c[1]], c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  return head + `<div class="roster-grid">${cards}</div><div class="sub-h">${rsLbl(y)} per-game stats <small>Click a column to sort</small></div>${table}`; }
+const _teamPage17 = teamPage; teamPage = function(ab){ let h = _teamPage17(ab); const r = M.teamMap[ab]; if(!h || !r) return h;
+  const a = h.indexOf('<div class="sub-h">Roster <small>'), b = h.indexOf('<div class="sub-h">Recent results</div>');
+  if(a >= 0 && b > a){ const v = String(UI.rSeason || 'cur'), y = +v; h = h.slice(0, a) + (y ? rsHistHTML(ab, y) : rsNowHTML(r, ab, v)) + h.slice(b); if(y && !HIST_R[ab + '|' + y]) setTimeout(() => rsLoad(ab, y), 0); }
+  return h.replace('<div class="team-hero th-flip">', `<div class="team-hero th-flip" style="--tp:${r.p}">`); };
+const _openTeam17 = openTeam; openTeam = function(ab){ if(ab!==UI.team) UI.rSeason = 'cur'; _openTeam17(ab); };
+document.addEventListener('change', e => { const s = e.target.closest && e.target.closest('select[data-rseason]'); if(!s) return; UI.rSeason = s.value;
+  const k = s.dataset.rseason + '|' + s.value; if(HIST_R[k] && HIST_R[k].err) delete HIST_R[k]; const sy = scrollY; go('team', false); window.scrollTo(0, sy); });
+document.addEventListener('click', e => { const hp = e.target.closest && e.target.closest('[data-histp]'); if(!hp || e.target.closest('.fav-star')) return; e.stopPropagation(); e.preventDefault();
+  if(STATIC) return toast('Player careers need the internet version'); const [id, ...nm] = hp.dataset.histp.split('|'); openHistPlayer('basketball', 'nba', id, nm.join('|')); }, true);
+
+/* ---- League team pages flip with the club's own colour behind the back ---- */
+const _lgTeamPage17 = lgTeamPage; lgTeamPage = function(ab){ const h = _lgTeamPage17(ab); return NF && NF.T[ab] ? h.replace('<div class="pb-top th-flip" style="margin-bottom:26px">', `<div class="pb-top th-flip" style="margin-bottom:26px;--tp:${NF.T[ab].p}">`) : h; };
+/* ---- Club history: no stray full stops at the end of each entry ---- */
+const _teamBack17 = teamBack; teamBack = function(lg, ab, info){ return _teamBack17(lg, ab, info).replace(/\.\s*(<\/(?:p|b|small|li)>)/g, '$1'); };
+
+/* ---- Scores: a game still marked live long after it should have ended is shown as final (the poll fetches its day for the real result) ---- */
+const _lgModel17 = lgModel; lgModel = function(key){ const m = _lgModel17(key); try{ if(m && m.games && !m.__stale){ m.__stale = 1; const lim = (sportOf(key)==='soc' ? 4 : 7)*3600e3, now = Date.now();
+  m.games.forEach(g => { if(g.state==='in' && g.hs!=null && now - g.t > lim){ g.state = 'post'; g.detail = sportOf(key)==='soc' ? 'FT' : 'Final'; } }); } }catch(e){} return m; };
+
+/* ---- NBA player cards: a stat he leads (with the same qualifiers as the Leaders page) lights up gold, silver or bronze with its rank ---- */
+const CM_RK = {PTS:'pts', REB:'reb', AST:'ast', STL:'stl', BLK:'blk', 'FG%':'fgp', '3P%':'tpp', 'FT%':'ftp', 'TS%':'ts'};
+const CM_RL = {pts:'PPG', reb:'RPG', ast:'APG', stl:'SPG', blk:'BPG', fgp:'FG%', tpp:'3P%', ftp:'FT%', ts:'TS%'};
+function nbaRank(p, k){ const s = STATS.find(x => x.k===k); if(!s || !p.C || p.C[k]==null) return null;
+  const ok = q => q.C && q.C.gp >= Math.max(1, Math.ceil(tgp(q)*0.5)) && q.C.min >= 12 && (!s.min || s.min(q.C)) && q.C[k]!=null; if(!ok(p)) return null;
+  const pool = M.players.filter(ok), v = p.C[k]; return {r: pool.filter(q => q.C[k] > v).length + 1, tie: pool.some(q => q.id!==p.id && q.C[k]===v)}; }
+const _openPlayer17 = openPlayer; openPlayer = function(id){ _openPlayer17(id); try{ const p = M.players.find(x => x.id===id), bs = document.querySelector('#playerPanel .bigstats'); if(!p || !p.C || !bs) return;
+  const pg = bs.nextElementSibling, tiles = [...bs.children].map(d => [d, true]).concat(pg && pg.classList.contains('proj-grid') ? [...pg.children].map(d => [d, false]) : []);
+  tiles.forEach(([d, big]) => { const k = CM_RK[((d.querySelector('span')||{}).textContent||'').trim()]; if(!k) return; const R = nbaRank(p, k); d.classList.remove('rk-m','rk1','rk2','rk3');
+    let em = d.querySelector('em'); if(!big && em && !em.classList.contains('cm-rk')) return;
+    if(!R || (!big && R.r > 3)){ if(em && big) em.textContent = R ? `#${R.r} in NBA` : ''; return; }
+    if(R.r <= 3) d.classList.add(...medalCls(R.r).split(' ')); if(!em){ em = document.createElement('em'); em.className = 'cm-rk'; d.appendChild(em); } em.textContent = medalTxt(R.r, R.tie, CM_RL[k], 'NBA'); }); }catch(e){} };
+
+/* ---- Career tables on player cards: tap a column for high → low, again for low → high, a third time for the original order; totals stay at the bottom ---- */
+const OSORT = new WeakMap();
+document.addEventListener('click', e => { const th = e.target.closest && e.target.closest('.overlay table thead th'); if(!th || th.closest('#gamePanel')) return; const tb = th.closest('table'), body = tb.tBodies[0]; if(!body) return;
+  if([...th.parentNode.cells].some(c => Object.keys(c.dataset).some(k => k!=='arr' && k!=='tip')) || tb.classList.contains('nfl-cmp')) return;
+  const i = [...th.parentNode.cells].indexOf(th); if(i < 0 || !th.textContent.trim()) return;
+  const st = OSORT.get(tb) || {i:-1, d:0}, d = st.i!==i ? -1 : st.d===-1 ? 1 : 0; OSORT.set(tb, {i, d}); if(!tb.__orig) tb.__orig = [...body.rows];
+  const pin = r => r.classList.contains('cc-tot') || /^(total|career)\b/i.test(((r.cells[0]||{}).textContent||'').trim());
+  const num = t => { const m = String(t).replace(/[,%+]/g,'').replace('−','-').match(/-?\d+(\.\d+)?/); return m ? parseFloat(m[0]) : null; };
+  const val = r => { const c = r.cells[i]; if(!c) return null; const t = c.textContent.trim(); if(!t || /^[–—-]$/.test(t)) return null; const n = num(t); return n==null || /[A-Za-z]{2,}/.test(t) ? t.toLowerCase() : n; };
+  const rows = tb.__orig.filter(r => !pin(r)), tail = tb.__orig.filter(pin);
+  const list = d ? rows.slice().sort((a, b) => { const x = val(a), y = val(b); if(x==null) return 1; if(y==null) return -1; return typeof x==='string' || typeof y==='string' ? d*String(x).localeCompare(String(y)) : d*(x - y); }) : rows;
+  list.concat(tail).forEach(r => body.appendChild(r)); [...th.parentNode.cells].forEach((c, j) => { c.classList.toggle('on', !!d && j===i); c.dataset.arr = d && j===i ? (d<0 ? ' ▾' : ' ▴') : ''; }); });
+
+/* ---- Alerts bell: a drawn bell (on) or struck-through bell (muted) that switches the moment it's clicked ---- */
+const BELL_PATH = '<path fill="currentColor" d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6v-5a7 7 0 0 0-5.5-6.84V3.5a1.5 1.5 0 0 0-3 0v.66A7 7 0 0 0 5 11v5l-2 2v1h18v-1l-2-2Z"/>';
+const BELL_ON = `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">${BELL_PATH}</svg>`;
+const BELL_OFF = `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><g opacity=".75">${BELL_PATH}</g><path d="M3.5 3.5l17 17" stroke="#000" stroke-width="5" stroke-linecap="round"/><path d="M3.5 3.5l17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+let BELL_PEND = false;
+updBell = function(){ const b = document.getElementById('notifBtn'); if(!b) return; const st = notifState(), on = BELL_PEND || (st==='granted' && NOTIF_ON);
+  b.classList.toggle('on', on); b.classList.toggle('off', !on); if(b.dataset.st!==String(on)){ b.innerHTML = on ? BELL_ON : BELL_OFF; b.dataset.st = String(on); }
+  b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-label', on ? 'Alerts on' : 'Alerts off'); b.title = on ? 'Alerts on (click to mute)' : st==='denied' ? 'Alerts blocked in your browser settings' : 'Alerts off (click to turn on)'; };
+const _notifToggle17 = notifToggle; notifToggle = function(){ if(notifState()!=='default') return _notifToggle17();
+  BELL_PEND = true; updBell(); requestPerm().then(p => { BELL_PEND = false; NOTIF_ON = true; saveNotif(); if(p==='granted'){ toast('🔔 Alerts on'); favWatchSoon(); try{ swBackground(); }catch(e){} } else toast('🔕 Alerts stay off: the browser didn’t give permission'); }); };
+updBell();
+
+/* ---- Game cards: a team's name or logo opens that team; the rest of the card (and its series banner) still opens the game ---- */
+document.addEventListener('click', e => { const el = e.target; if(!el.closest) return; const t = el.closest('#main .mu [data-nteam], #main .mu [data-team]'); if(!t || el.closest('[data-sbook],.po-tag,.fav-star,[data-fav]')) return;
+  e.stopPropagation(); e.preventDefault(); closeOv('ovPlayer'); if(t.dataset.nteam) openNflTeam(t.dataset.nteam); else openTeam(t.dataset.team); }, true);
+cmBrand();
+
 /* ================= BOOT ================= */
 const stEl = document.getElementById('stars');
 for(let i=0;i<140;i++){const d=document.createElement('div');d.className='star';const s=Math.random()*1.6+.3; d.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;top:${Math.random()*70}%;opacity:${Math.random()*.7+.15}`;stEl.appendChild(d);}
 // Sport switch next to the brand
-(() => { const br = document.querySelector('#nav .brand'); if(br){ br.innerHTML = '<span class="brand-name">Courtside</span>'; br.insertAdjacentHTML('afterend', '<div class="sport-sw"><button data-sport="nba" class="on">NBA</button><button data-sport="nfl">NFL</button><button data-sport="mlb">MLB</button><button data-sport="soc">Soccer</button><button data-sport="ncaam">NCAAM</button><button data-sport="ncaaf">NCAAF</button></div>'); }
-  const fb = document.querySelector('footer .brand'); if(fb) fb.innerHTML = '<span class="brand-name">Courtside</span>'; })();
+(() => { const br = document.querySelector('#nav .brand'); if(br){ br.innerHTML = '<span class="brand-name">Clutch Matrix</span>'; br.insertAdjacentHTML('afterend', '<div class="sport-sw"><button data-sport="nba" class="on">NBA</button><button data-sport="nfl">NFL</button><button data-sport="mlb">MLB</button><button data-sport="soc">Soccer</button><button data-sport="ncaam">NCAAM</button><button data-sport="ncaaf">NCAAF</button></div>'); }
+  const fb = document.querySelector('footer .brand'); if(fb) fb.innerHTML = '<span class="brand-name">Clutch Matrix</span>'; })();
 build(); renderHero();
 const start = (location.hash||'').slice(1);
 if(start.startsWith('nfl') || start.startsWith('lg-') || (UI.sport && UI.sport!=='nba' && !start)){ setSport(start.startsWith('nfl') ? 'nfl' : (UI.sport && UI.sport!=='nba' ? UI.sport : 'nfl'), true); const ts = start.replace(/^(nfl|lg)-team-/, ''); if(/^(nfl|lg)-team-/.test(start) && NF && NF.T[ts]){ UI.nflTeam = ts; go('lg-team', false); } else go(LG_VIEWS.some(v=>v.k===start) ? start : start.startsWith('nfl-') && LG_VIEWS.some(v=>v.k==='lg-'+start.slice(4)) ? 'lg-'+start.slice(4) : 'lg-games', false); }
@@ -8584,7 +8789,7 @@ if(!STATIC) pollLive();   // live scores as soon as the page opens
 </script>
 <script type="text/plain" id="updater">
 #!/usr/bin/env python3
-# Courtside weekly updater, used by the scheduled weekly update.
+# Clutch Matrix weekly updater, used by the scheduled weekly update.
 #   python3 updater.py ids   FILE.html          -> prints {"have":[...],"need26":bool} to pass into syncLive()
 #   python3 updater.py call  FILE.html          -> prints the JavaScript to run in a browser tab on https://site.api.espn.com
 #   python3 updater.py merge FILE.html RESULT   -> merges fresh ESPN data (saved output of that JavaScript) into FILE.html in place
@@ -8805,7 +9010,7 @@ if __name__ == '__main__':
         h = h.replace('<head>', '', 1).replace('</head>', '', 1)
         h = re.sub(r'<body[^>]*>', '', h, count=1).replace('</body>', '')
         h = re.sub(r'<meta name="viewport"[^>]*>\s*', '', h, count=1)
-        h = re.sub(r'<title>.*?</title>', '<title>Courtside</title>\n<script>window.CS_STATIC=1<' + '/script>\n<style>:root{color-scheme:dark}#exportBtn,#resetBtn{display:none}</style>', h, count=1, flags=re.S)
+        h = re.sub(r'<title>.*?</title>', '<title>Clutch Matrix</title>\n<script>window.CS_STATIC=1<' + '/script>\n<style>:root{color-scheme:dark}#exportBtn,#resetBtn{display:none}</style>', h, count=1, flags=re.S)
         open(os.path.join(out, 'index.html'), 'w', encoding='utf-8').write(h)
         print(json.dumps({'ok': True, 'bytes': len(h.encode('utf-8')), 'path': os.path.join(out, 'index.html')}))
     elif cmd == 'extract':
