@@ -2065,8 +2065,8 @@ tr.slog-row{cursor:pointer}tr.slog-row:hover td{background:rgba(255,255,255,.05)
 /* gold / silver / bronze for the top three, crimson for last */
 td.rk2,em.rk2{color:#e3e8ee!important;font-weight:700}#main table td.rk2{background:rgba(200,210,225,.10)}
 td.rk3,em.rk3{color:#e0a36b!important;font-weight:700}#main table td.rk3{background:rgba(205,127,50,.12)}
-.podium .pod:nth-child(1) .val b,.podium .pod:nth-child(1) .rank{color:#ffd54a}.podium .pod:nth-child(2) .val b,.podium .pod:nth-child(2) .rank{color:#dfe5ec}.podium .pod:nth-child(3) .val b,.podium .pod:nth-child(3) .rank{color:#e0a36b}
-.podium .pod:nth-child(1){box-shadow:inset 0 3px 0 #ffd54a}.podium .pod:nth-child(2){box-shadow:inset 0 3px 0 #c9d1da}.podium .pod:nth-child(3){box-shadow:inset 0 3px 0 #cd7f32}
+.podium .pod.pm1 .val b,.podium .pod.pm1 .rank{color:#ffd54a}.podium .pod.pm2 .val b,.podium .pod.pm2 .rank{color:#dfe5ec}.podium .pod.pm3 .val b,.podium .pod.pm3 .rank{color:#e0a36b}
+.podium .pod.pm1{box-shadow:inset 0 3px 0 #ffd54a}.podium .pod.pm2{box-shadow:inset 0 3px 0 #c9d1da}.podium .pod.pm3{box-shadow:inset 0 3px 0 #cd7f32}
 .rk-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
 .rk-chip{font-family:"Barlow Condensed",sans-serif;letter-spacing:.08em;text-transform:uppercase;font-size:11px;padding:2px 7px;border-radius:999px;border:1px solid;cursor:help}
 .rk-chip.rk1{color:#ffd54a;border-color:#ffd54a;background:rgba(255,213,74,.12)}.rk-chip.rk2{color:#e3e8ee;border-color:#c9d1da}.rk-chip.rk3{color:#e0a36b;border-color:#cd7f32}.rk-chip.rk-bot{color:#ff4d85;border-color:#c2185b;background:rgba(194,24,91,.12)}
@@ -2145,8 +2145,8 @@ td.rk2,em.rk2{color:var(--silver)!important;font-weight:700;box-shadow:inset 0 -
 td.rk3,em.rk3{color:var(--bronze)!important;font-weight:700;box-shadow:inset 0 -2px 0 var(--bronze)}
 #main table td.rk2{background:rgba(185,198,212,.13)}#main table td.rk3{background:rgba(217,140,74,.14)}
 .tp-row em.rk-top,.tp-row em.rk2,.tp-row em.rk3{box-shadow:none}
-.podium .pod:nth-child(2) .val b,.podium .pod:nth-child(2) .rank{color:var(--silver)}.podium .pod:nth-child(3) .val b,.podium .pod:nth-child(3) .rank{color:var(--bronze)}
-.podium .pod:nth-child(2){box-shadow:inset 0 3px 0 var(--silver)}.podium .pod:nth-child(3){box-shadow:inset 0 3px 0 var(--bronze)}
+.podium .pod.pm2 .val b,.podium .pod.pm2 .rank{color:var(--silver)}.podium .pod.pm3 .val b,.podium .pod.pm3 .rank{color:var(--bronze)}
+.podium .pod.pm2{box-shadow:inset 0 3px 0 var(--silver)}.podium .pod.pm3{box-shadow:inset 0 3px 0 var(--bronze)}
 .rk-chip.rk2{color:var(--silver);border-color:var(--silver);background:rgba(185,198,212,.1)}.rk-chip.rk3{color:var(--bronze);border-color:var(--bronze);background:rgba(217,140,74,.1)}
 .bigstats > div.rk-m{box-shadow:inset 0 3px 0 var(--mc)}
 .bigstats > div.rk1{--mc:var(--gold)}.bigstats > div.rk2{--mc:var(--silver)}.bigstats > div.rk3{--mc:var(--bronze)}
@@ -2213,17 +2213,17 @@ nav .brand{flex:none}
 /* medals: real metal, with a slow shine; the leader's whole box goes gold */
 :root{--gold-grad:linear-gradient(100deg,#9a6b0c 0%,#e0ad2c 20%,#fff4b8 38%,#ffd54a 50%,#fff9dc 60%,#d29a1c 78%,#9a6b0c 100%);--silver-grad:linear-gradient(100deg,#77828f 0%,#c5cfd9 22%,#ffffff 40%,#a9b6c4 58%,#eef3f8 72%,#77828f 100%);--bronze-grad:linear-gradient(100deg,#7a4217 0%,#c47a3a 22%,#ffd2a6 40%,#d98c4a 58%,#f5b985 72%,#7a4217 100%)}
 @keyframes cmShine{from{background-position:120% 0}to{background-position:-120% 0}}
-.bigstats > div.rk1 b,.bigstats > div.rk1 em,.proj-grid > div.rk1 b,.proj-grid > div.rk1 em,.podium .pod:nth-child(1) .val b,.podium .pod:nth-child(1) .rank,td.rk-top,em.rk-top{background:var(--gold-grad)}
-.bigstats > div.rk2 b,.bigstats > div.rk2 em,.proj-grid > div.rk2 b,.proj-grid > div.rk2 em,.podium .pod:nth-child(2) .val b,.podium .pod:nth-child(2) .rank,td.rk2,em.rk2{background:var(--silver-grad)}
-.bigstats > div.rk3 b,.bigstats > div.rk3 em,.proj-grid > div.rk3 b,.proj-grid > div.rk3 em,.podium .pod:nth-child(3) .val b,.podium .pod:nth-child(3) .rank,td.rk3,em.rk3{background:var(--bronze-grad)}
-.bigstats > div.rk-m b,.bigstats > div.rk-m em,.proj-grid > div.rk-m b,.proj-grid > div.rk-m em,.podium .pod:nth-child(-n+3) .val b,.podium .pod:nth-child(-n+3) .rank,td.rk-top,td.rk2,td.rk3,em.rk-top,em.rk2,em.rk3{background-size:250% 100%!important;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent;text-shadow:none!important;animation:cmShine 3.6s linear infinite}
-.bigstats > div.rk-m b,.proj-grid > div.rk-m b,.podium .pod:nth-child(-n+3) .val b{filter:drop-shadow(0 0 10px color-mix(in srgb,var(--mc,#ffd54a) 45%,transparent))}
+.bigstats > div.rk1 b,.bigstats > div.rk1 em,.proj-grid > div.rk1 b,.proj-grid > div.rk1 em,.podium .pod.pm1 .val b,.podium .pod.pm1 .rank,td.rk-top,em.rk-top{background:var(--gold-grad)}
+.bigstats > div.rk2 b,.bigstats > div.rk2 em,.proj-grid > div.rk2 b,.proj-grid > div.rk2 em,.podium .pod.pm2 .val b,.podium .pod.pm2 .rank,td.rk2,em.rk2{background:var(--silver-grad)}
+.bigstats > div.rk3 b,.bigstats > div.rk3 em,.proj-grid > div.rk3 b,.proj-grid > div.rk3 em,.podium .pod.pm3 .val b,.podium .pod.pm3 .rank,td.rk3,em.rk3{background:var(--bronze-grad)}
+.bigstats > div.rk-m b,.bigstats > div.rk-m em,.proj-grid > div.rk-m b,.proj-grid > div.rk-m em,.podium .pod:is(.pm1,.pm2,.pm3) .val b,.podium .pod:is(.pm1,.pm2,.pm3) .rank,td.rk-top,td.rk2,td.rk3,em.rk-top,em.rk2,em.rk3{background-size:250% 100%!important;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent;text-shadow:none!important;animation:cmShine 3.6s linear infinite}
+.bigstats > div.rk-m b,.proj-grid > div.rk-m b,.podium .pod:is(.pm1,.pm2,.pm3) .val b{filter:drop-shadow(0 0 10px color-mix(in srgb,var(--mc,#ffd54a) 45%,transparent))}
 .bigstats > div.rk1,.proj-grid > div.rk1{background:linear-gradient(160deg,rgba(255,213,74,.22),rgba(255,213,74,.05) 70%)!important;box-shadow:inset 0 0 0 1px rgba(255,213,74,.4),inset 0 3px 0 var(--gold)!important}
 .bigstats > div.rk2,.proj-grid > div.rk2{background:linear-gradient(160deg,rgba(185,198,212,.14),transparent 70%)!important;box-shadow:inset 0 3px 0 var(--silver)!important}
 .bigstats > div.rk3,.proj-grid > div.rk3{background:linear-gradient(160deg,rgba(217,140,74,.14),transparent 70%)!important;box-shadow:inset 0 3px 0 var(--bronze)!important}
 .proj-grid > div.rk1{--mc:var(--gold)}.proj-grid > div.rk2{--mc:var(--silver)}.proj-grid > div.rk3{--mc:var(--bronze)}
 .proj-grid > div > em.cm-rk{display:block;font-style:normal;font-weight:600;font-size:10.5px;letter-spacing:.08em;margin-top:3px}
-.podium .pod:nth-child(1){background-image:linear-gradient(180deg,rgba(255,213,74,.17),rgba(255,213,74,.03) 65%);box-shadow:inset 0 3px 0 var(--gold),inset 0 0 0 1px rgba(255,213,74,.28)}
+.podium .pod.pm1{background-image:linear-gradient(180deg,rgba(255,213,74,.17),rgba(255,213,74,.03) 65%);box-shadow:inset 0 3px 0 var(--gold),inset 0 0 0 1px rgba(255,213,74,.28)}
 td.rk-top{box-shadow:inset 0 0 0 999px rgba(255,213,74,.13),inset 0 -2px 0 var(--gold)!important}
 td.rk2{box-shadow:inset 0 0 0 999px rgba(185,198,212,.12),inset 0 -2px 0 var(--silver)!important}
 td.rk3{box-shadow:inset 0 0 0 999px rgba(217,140,74,.13),inset 0 -2px 0 var(--bronze)!important}
@@ -2928,24 +2928,35 @@ function leaderPool(s){
   if(lmOf() === 'proj') return M.players.filter(p => p.gp >= 30 && p.L.min >= 12 && (!s.min || s.min(p.L)) && p.L[s.k]!=null);
   return M.players.filter(p => p.C && p.C.gp >= Math.max(1, Math.ceil(tgp(p)*0.5)) && p.C.min >= 12 && (!s.min || s.min(p.C)) && p.C[s.k]!=null);
 }
+// Leaderboard places, every sport: players showing the same value share the place (1, 2, 2, 4), so a tie shares the medal.
+// The podium holds everyone placed 1st–3rd (at least three players), and the list runs past its cutoff until the tie ends.
+function ldTiers(sorted, shown, cut){
+  const rk = []; sorted.forEach((p, i) => rk.push(i && shown(p)===shown(sorted[i-1]) ? rk[i-1] : i+1));
+  const tie = i => (i > 0 && rk[i-1]===rk[i]) || (i+1 < rk.length && rk[i+1]===rk[i]);
+  let np = Math.min(3, sorted.length); while(np < sorted.length && rk[np] <= 3) np++;
+  let end = Math.min(Math.max(cut, np), sorted.length); while(end < sorted.length && rk[end]===rk[end-1]) end++;
+  const lab = i => `${tie(i)?'T':''}${String(rk[i]).padStart(2,'0')}`, pm = i => rk[i] <= 3 ? ' pm'+rk[i] : '';
+  return {pod: sorted.slice(0, np), rows: sorted.slice(np, end), np, lab, pm};
+}
 function leadersSection(){
   const s = STATS.find(x=>x.k===UI.stat) || STATS[0]; const pre = nbaPre(), cur = lmOf() !== 'proj';
   const v = p => lineOf(p)[s.k];
   const sorted = leaderPool(s).sort((a,b)=>v(b)-v(a));
   const max = sorted.length ? v(sorted[0]) || 1 : 1;
   const sub = p => cur ? `${p.C.gp} GP · ${f1(p.C.min)} MPG` : `${f1(p.L.min)} MPG · ${p.gp} GP proj`;
-  const pod = sorted.slice(0,3).map((p,i)=>`
-   <div class="pod" data-pid="${p.id}">
+  const TR = ldTiers(sorted, p => fmtStat(s, v(p)), 40);
+  const pod = TR.pod.map((p,i)=>`
+   <div class="pod${TR.pm(i)}" data-pid="${p.id}">
      <div class="glow" style="background:${T[p.tm].p}"></div>
-     <div class="rank">0${i+1} / ${s.abbr} · ${cur?'current':pre?'pre-season proj':'projected'}</div>
+     <div class="rank">${TR.lab(i)} / ${s.abbr} · ${cur?'current':pre?'pre-season proj':'projected'}</div>
      <div class="jersey">${jersey(p)}</div>
      <div class="name">${esc(p.name)}${injTag(p)}</div>
      <div class="team">${logoImg(p.tm,'tm-lg')}${T[p.tm].c} ${T[p.tm].n} · ${p.pos} · ${sub(p)}</div>
      <div class="val"><b>${fmtStat(s,v(p))}</b><span>${s.abbr}</span>${deltaTag(s,p)}</div>
    </div>`).join('');
-  const rows = sorted.slice(3,40).map((p,i)=>`
+  const rows = TR.rows.map((p,i)=>`
    <div class="row" data-pid="${p.id}">
-     <div class="rk">${String(i+4).padStart(2,'0')}</div>
+     <div class="rk">${TR.lab(i+TR.np)}</div>
      <div class="mj">${jersey(p,{mini:true})}</div>
      <div class="pn">${esc(p.name)}${injTag(p)}<small>${p.pos} · ${sub(p)}</small></div>
      <div class="tm">${logoImg(p.tm,'tm-lg')}${T[p.tm].c} ${T[p.tm].n}</div>
@@ -4103,7 +4114,8 @@ function openPlayer(id){
   const played = C ? C.gp : 0, TOT = k => (C ? C[k]*C.gp : 0) + L[k]*Math.max(0, p.gp - played);
   const glp = BX.glog[p.id] || []; const pm = {n: glp.length, v: glp.length ? glp.reduce((s,x)=>s+x.r[BP.pm],0)/glp.length : 0};
   const ranks = k => { const pool = M.players.filter(q=>q.C && q.C.gp >= Math.max(1, Math.ceil(tgp(q)*0.5)) && q.C.min >= 12); if(!pool.some(q=>q.id===p.id)) return null; const v = C[k];
-    return {r: pool.filter(q=>q.C[k] > v).length + 1, tie: pool.some(q=>q.id!==p.id && q.C[k]===v), n: pool.length}; };
+    const S = STATS.find(x=>x.k===k), sh = x => S ? fmtStat(S, x) : x, sv = sh(v);
+    return {r: pool.filter(q=>sh(q.C[k])!==sv && q.C[k] > v).length + 1, tie: pool.some(q=>q.id!==p.id && sh(q.C[k])===sv), n: pool.length}; };
   const rkTile = (k, l) => { const R = ranks(k); return R ? [medalCls(R.r), medalTxt(R.r, R.tie, l, 'NBA')] : ['', '']; };
   const dl = (a, b, isPct) => { if(a==null || b==null) return ''; const d = isPct ? (a-b)*100 : a-b; if(Math.abs(d) < 0.05) return `<em class="dl">±0 vs now</em>`; return `<em class="dl ${d>0?'up':'down'}">${d>0?'▲':'▼'} ${Math.abs(d).toFixed(1)} vs now</em>`; };
   const cur = C ? `<div class="bigstats">
@@ -4325,6 +4337,7 @@ function lineText(p){ const s = p.st, t = pType(p);
   if(t==='bat') return s.ab ? `${lgFmt(s.avg,3)} / ${lgFmt(s.obp,3)} / ${lgFmt(s.slg,3)} · ${s.hr||0} HR · ${s.rbi||0} RBI` : '';
   if(t==='pit') return s.ip ? `${s.w||0}-${s.l||0}${s.sv?` · ${s.sv} SV`:''} · ${lgFmt(s.era,2)} ERA · ${lgFmt(s.ip,1)} IP · ${s.k||0} K` : '';
   if(t==='gk') return s.gp ? `${s.gp} apps · ${s.sv||0} saves · ${s.gc||0} conceded${s.svp!=null?` · ${s.svp.toFixed(0)}% saved`:''}` : '';
+  if(t==='bb' && lgPre()) return s.gp ? `Proj ${lgFmt(s.pts*1.05,1)} pts · ${lgFmt(s.reb*1.05,1)} reb · ${lgFmt(s.ast*1.05,1)} ast` : '';   // pre-season: projections only, same as Leaders
   if(t==='bb') return s.gp ? `${lgFmt(s.pts,1)} pts · ${lgFmt(s.reb,1)} reb · ${lgFmt(s.ast,1)} ast${p.st0?' · 2025–26':''}` : '';
   if(s.gp && s.mv!=null) return t==='df' ? `${Math.max(0,(s.gp||0)-(s.sub||0))} starts · ${s.g||0} G · ${s.a||0} A · value ${s.mv>=0?'+':''}${s.mv.toFixed(1)}` : `${s.gp} apps · ${s.g||0} G · ${s.a||0} A · value ${s.mv>=0?'+':''}${s.mv.toFixed(1)}`;
   return s.gp ? `${s.gp} apps · ${s.g||0} G · ${s.a||0} A` : '';
@@ -4618,7 +4631,7 @@ function keyPlayer(ab){ const sp = sportOf(LGK), ps = NF.byTeam[ab];
   if(!ps.length) return {lab:'', p:null};
   if(isFBs(sp)) return {lab:'Quarterback', p:NF.qb[ab]};
   if(sp==='mlb'){ const b = ps.filter(p=>pType(p)==='bat' && (p.st.ab||0)>=100).sort((x,y)=>(y.st.ops||0)-(x.st.ops||0))[0]; return {lab:'Best hitter', p:b || ps[0]}; }
-  if(sp==='cbb'){ const b = ps.slice().sort((x,y)=>impact(y)-impact(x))[0]; return {lab:b && b.st0 ? 'Top returner (2025–26)' : 'Top player', p:b}; }
+  if(sp==='cbb'){ const b = ps.slice().sort((x,y)=>impact(y)-impact(x))[0]; return {lab:b && lgPre() ? 'Top projected player' : b && b.st0 ? 'Top returner (2025–26)' : 'Top player', p:b}; }
   const f = ps.filter(p=>pType(p)!=='gk').sort((x,y)=>((y.st.g||0)+(y.st.a||0))-((x.st.g||0)+(x.st.a||0)))[0]; return {lab:'Top scorer', p:f || ps[0]}; }
 function lgTeams(){
   const sp = sportOf(LGK), soc = sp==='soc'; const allDone = !NF.regLeft;
@@ -4699,7 +4712,7 @@ function lgLeaders(){
   if(sp==='cba') return lgTeamLeaders();
   const PITK = ['w','era','whip','k','k9','kbb','bb9','sv','hld','ip','qs','pwar']; const mg = sp==='mlb' ? (UI.mlbGrp==='pit' ? 'pit' : 'bat') : null;
   const fp = isFBs(sp) ? ((UI.fbPos||{})[LGK] || 'ALL') : null; const FBP = fp && FB_POS_STATS[fp];
-  const cat0 = mg ? LEAD.mlb.filter(x => PITK.includes(x.k) === (mg==='pit')) : LEAD[sp]; const cat = FBP ? cat0.filter(x => FBP.includes(x.k)) : cat0; const s = cat.find(x=>x.k===(UI.lgStat||{})[LGK]) || cat[0]; const cbbAvg = sp==='cbb'; const pre = lgPre(), want = pre ? (UI.ldRatePre || 'proj') : UI.ldRate; const mode = want==='proj' && (pre || NF.regLeft) ? 'proj' : s.cnt ? (cbbAvg ? (want==='tot' ? 'tot' : 'pg') : want==='pg' ? 'pg' : 'tot') : 'tot'; const per = mode==='pg' && !cbbAvg; const colF = NF.college ? colFilter('colLead') : null; if(NF.college && !UI.colLead) UI.colLead = 'all';
+  const cat0 = mg ? LEAD.mlb.filter(x => PITK.includes(x.k) === (mg==='pit')) : LEAD[sp]; const cat = FBP ? cat0.filter(x => FBP.includes(x.k)) : cat0; const s = cat.find(x=>x.k===(UI.lgStat||{})[LGK]) || cat[0]; const cbbAvg = sp==='cbb'; const pre = lgPre(), want = pre ? 'proj' : UI.ldRate;   // before the opener only projections show: last season's lines would read as this season's const mode = want==='proj' && (pre || NF.regLeft) ? 'proj' : s.cnt ? (cbbAvg ? (want==='tot' ? 'tot' : 'pg') : want==='pg' ? 'pg' : 'tot') : 'tot'; const per = mode==='pg' && !cbbAvg; const colF = NF.college ? colFilter('colLead') : null; if(NF.college && !UI.colLead) UI.colLead = 'all';
   const gpS = p => sp==='mlb' && ['w','k','sv','hld','ip','qs','pwar','kbb','bb9'].includes(s.k) ? (p.st.pgp||0) : (p.st.gp||p.st.pgp||0);
   const maxGp = Math.max(1, ...NF.players.filter(p => !s.q || s.q(p)).map(gpS));
   const minGp = p => { if(sp==='cbb') return (p.st.gp||0) >= Math.max(3, Math.round(maxGp*0.4)); if(per || mode==='proj') return gpS(p) >= Math.max(3, Math.round(maxGp*(sp==='mlb' && ['sv','hld'].includes(s.k) ? 0.25 : 0.4))); return true; };
@@ -4710,14 +4723,15 @@ function lgLeaders(){
   const pool = NF.players.filter(p => { if(!inConf(p) || (qual && !qual(p)) || (FBP && !fbPosOk(p, fp))) return false; const v = val(p); return v!=null && (s.asc ? v >= 0 : v > 0) && (!s.q || s.q(p)) && minGp(p); }).sort((a,b)=> s.asc ? val(a)-val(b) : val(b)-val(a));
   const dec = per || mode==='proj' ? Math.max(sp==='mlb' || sp==='soc' ? 2 : 1, s.dec) : cbbAvg && mode==='tot' ? 0 : s.dec; const max = pool.length ? Math.max(...pool.slice(0,40).map(val)) || 1 : 1;
   const sub = p => `${esc(p.pos)} · ${sp==='cbb'?`${p.st.gp||0} GP · ${lgFmt(p.st.min,1)} MPG`:`${gpOf(p)} ${sp==='soc'?'apps':'GP'}`}`;
-  const pod = pool.slice(0,3).map((p,i)=>{ const t = NF.T[p.tm]; return `<div class="pod" data-npid="${p.id}"><div class="glow" style="background:${t.p}"></div><div class="rank">0${i+1} / ${s.abbr}${per||(cbbAvg&&mode==='pg')?' per game':mode==='proj'?(pre?' pre-season proj':' proj / game'):cbbAvg&&mode==='tot'?' total':''}</div>
+  const TR = ldTiers(pool, p => lgFmt(val(p),dec), 40);
+  const pod = TR.pod.map((p,i)=>{ const t = NF.T[p.tm]; return `<div class="pod${TR.pm(i)}" data-npid="${p.id}"><div class="glow" style="background:${t.p}"></div><div class="rank">${TR.lab(i)} / ${s.abbr}${per||(cbbAvg&&mode==='pg')?' per game':mode==='proj'?(pre?' pre-season proj':' proj / game'):cbbAvg&&mode==='tot'?' total':''}</div>
     <div class="jersey">${lgJersey(p)}</div><div class="name">${esc(p.name)}${NF.isOut(p)?' <span class="inj-tag">OUT</span>':''}</div><div class="team">${nLogo(p.tm,'tm-lg')}${esc(tFull(p.tm))} · ${sub(p)}</div><div class="val"><b>${lgFmt(val(p),dec)}</b><span>${s.abbr}</span>${dl(p)}</div></div>`; }).join('');
-  const rows = pool.slice(3,40).map((p,i)=>`<div class="row" data-npid="${p.id}"><div class="rk">${String(i+4).padStart(2,'0')}</div><div class="mj">${lgJersey(p,{mini:true})}</div>
+  const rows = TR.rows.map((p,i)=>`<div class="row" data-npid="${p.id}"><div class="rk">${TR.lab(i+TR.np)}</div><div class="mj">${lgJersey(p,{mini:true})}</div>
     <div class="pn">${esc(p.name)}<small>${sub(p)}</small></div><div class="tm">${nLogo(p.tm,'tm-lg')}${esc(tFull(p.tm))}</div><div class="bwrap"><div class="bar"><i style="width:${Math.max(2, s.asc ? (pool.length ? val(pool[0])/val(p)*100 : 0) : val(p)/max*100).toFixed(1)}%"></i></div></div><div class="v">${lgFmt(val(p),dec)}${dl(p)}</div></div>`).join('');
   const last = NF.statsLast && mode!=='proj';
   return `<div class="sec-head"><div><div class="kicker">${mode==='proj'?(pre?'Pre-season projections · per game':'Projected per game · rest of season'):last?(sp==='cbb'?'2025–26 season (2026–27 begins in November)':'Last season'):CF().seasonLbl+' so far'} · ${s.label}</div><h2>${s.label}${pre&&mode==='proj'?' <span class="pre-tag">Projected</span>':''}</h2></div>
     <p>${mode==='proj'?(pre?'The season hasn’t started yet, so these are pre-season estimates, not real stats: last season’s per-game rates carried forward (college counting stats get a small bump for returning players’ development). Current stats take over automatically once games are played. ':'Projected per-game rates for the rest of the season: each player’s current rate blended with last season’s, leaning on this year more as games pile up. Arrows show the change from his current average. '):''}${qual?`Conference view: only players with a real role count (at least 40% of their team’s games and a quarter of the top workload at their position), so cameo stat lines don’t skew the board. `:''}${last?'The new season hasn’t started, so these are last season’s actual numbers for players on this year’s rosters (transfers included). ':''}${sp==='cbb'?'Qualified players have played at least 40% of the most games anyone has.':per?'Per-game rates for counting stats; only players with at least 40% of the league-high games count.':'Season totals from ESPN’s stat feed.'}${s.q ? (isFBs(sp) && ['rtg','qbr','cmpPct','ypa'].includes(s.k) ? ' Quarterbacks qualify on playing time: every team’s primary starter (the main passer in at least half its games) counts, plus anyone averaging 14+ attempts per team game.' : ' Rate stats need a minimum workload.') : ''} Tap any player for his card and head-to-head.</p></div>
-    <div class="filters">${fp?`<div class="seg fb-pos" role="group" aria-label="Position">${FB_POS.map(x => `<button class="${fp===x?'on':''}" data-fbpos="${x}">${x}</button>`).join('')}</div><span class="seg-sep"></span>`:''}${mg?`<button class="chip bvp-open" data-bvpopen="1">⚾ Batter vs pitcher</button><span class="seg-sep"></span><div class="seg"><button class="${mg==='bat'?'on':''}" data-mlbgrp="bat">Batting</button><button class="${mg==='pit'?'on':''}" data-mlbgrp="pit">Pitching</button></div><span class="seg-sep"></span>`:''}<div class="seg"><button class="${mode==='tot'?'on':''}" data-ldrate="tot">${cbbAvg?'Season totals':'Totals'}</button><button class="${mode==='pg'?'on':''}" data-ldrate="pg" ${s.cnt?'':'disabled title="Already a rate stat"'}>Per game</button><button class="${mode==='proj'?'on':''}" data-ldrate="proj" ${pre || NF.regLeft ? '' : 'disabled title="No games left to project"'}>Projected</button></div><span class="seg-sep"></span>
+    <div class="filters">${fp?`<div class="seg fb-pos" role="group" aria-label="Position">${FB_POS.map(x => `<button class="${fp===x?'on':''}" data-fbpos="${x}">${x}</button>`).join('')}</div><span class="seg-sep"></span>`:''}${mg?`<button class="chip bvp-open" data-bvpopen="1">⚾ Batter vs pitcher</button><span class="seg-sep"></span><div class="seg"><button class="${mg==='bat'?'on':''}" data-mlbgrp="bat">Batting</button><button class="${mg==='pit'?'on':''}" data-mlbgrp="pit">Pitching</button></div><span class="seg-sep"></span>`:''}<div class="seg"><button class="${mode==='tot'?'on':''}" data-ldrate="tot" ${pre?'disabled title="The season hasn’t started yet"':''}>${cbbAvg?'Season totals':'Totals'}</button><button class="${mode==='pg'?'on':''}" data-ldrate="pg" ${pre?'disabled title="The season hasn’t started yet"':s.cnt?'':'disabled title="Already a rate stat"'}>Per game</button><button class="${mode==='proj'?'on':''}" data-ldrate="proj" ${pre || NF.regLeft ? '' : 'disabled title="No games left to project"'}>Projected</button></div><span class="seg-sep"></span>
       <select class="sel" data-lgstat>${cat.map(x=>`<option value="${typeof x.k==='string'?x.k:''}" ${x===s?'selected':''}>${x.label}</option>`).join('')}</select>
       ${cat.slice(0, 10).map(x=>`<button class="chip ${x===s?'on':''}" data-lgstatc="${x.k}">${x.abbr}</button>`).join('')}</div>
     ${NF.college ? colFilterUI('colLead', 'All players') : ''}${pool.length?`<div class="podium">${pod}</div><div class="colhead"><span>#</span><span></span><span>Player</span><span class="h-tm">Team</span><span class="h-bar">${per||(cbbAvg&&mode==='pg')?'Per game':mode==='proj'?'Projected / game':cbbAvg?'Season total':'Season'}</span><span>${s.abbr}</span></div><div class="list">${rows}</div>`:`<p class="muted">No qualified ${FBP && fp!=='ALL' ? fp + 's' : 'players'} yet for this stat.</p>`}` + lgScatter();
@@ -4879,7 +4893,7 @@ function lgPlaybook(){
     <div class="schemes">${sc.map(x=>`<div class="scheme"><div class="side">${x.side}</div><h3>${x.h}</h3><p>${x.p}</p><div class="ev">${x.ev}</div></div>`).join('')}</div>
     <div class="sub-h">Style profile <small>Bar = league percentile · rank out of ${NF.teams.length} (1 = best; for style stats 1 = highest) · green = strength, red = weakness</small></div>
     <div class="pct-grid">${sides.map(sd => { const rows = prof.filter(d=>d[4]===sd); return rows.length ? `<div><h4 class="cond muted" style="letter-spacing:.28em;font-size:13px;margin-bottom:8px">${sd.toUpperCase()}</h4>${rows.map(prow).join('')}</div>` : ''; }).join('')}</div>
-    ${core.length?`<div class="sub-h">Core players <small>Biggest current roles${core.some(p=>p.st0)?' · 2025–26 numbers until this season starts':''}</small></div>
+    ${core.length?`<div class="sub-h">Core players <small>Biggest current roles${lgPre()?' · pre-season projections per game':core.some(p=>p.st0)?' · 2025–26 numbers until this season starts':''}</small></div>
     <div class="five">${core.map(p=>`<div class="pcard" data-npid="${p.id}"><div class="jw">${lgJersey(p)}</div><div class="nm">${esc(p.name)}</div><div class="ps">${esc(p.pos)}${p.num?' · #'+esc(p.num):''}</div><div class="ln">${lineText(p)||'—'}</div></div>`).join('')}</div>`:''}
     <div class="sub-h">Trends <small>This season</small></div>
     <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr));margin-bottom:22px"><div><b>${nRec(r)}</b><span>Overall</span></div><div><b>${lastN(5)}</b><span>Last 5</span></div><div><b>${lastN(10)}</b><span>Last 10</span></div>
@@ -5086,22 +5100,26 @@ function openNflPlayer(id){ return openLgPlayer(id); }
 let LG_CUR = null;
 function openLgPlayer(id){
   const p = NF.players.find(x=>x.id===id); if(!p) return; LG_CUR = p.id; const t = NF.T[p.tm]; const s = p.st; const sp = sportOf(LGK);
-  const set = statSet(p); const prim = set.filter(k => s[k]!=null && isFinite(s[k]));
+  // Pre-season: the card shows projections only (last season's per-game rates carried forward, as on Leaders), never last season's lines as if current
+  const pre = lgPre(), pjOk = k => !pre || !['gp','pgp','gs'].includes(k);
+  const pj = k => { const v = s[k]; if(!pre || v==null || !LBL[k] || !LBL[k][3]) return v; const pg = sp==='cbb' ? v : v / Math.max(1, gpOf(p)); return sp==='cbb' || sp==='cfb' ? pg*1.05 : pg; };
+  const set = statSet(p); const prim = set.filter(k => s[k]!=null && isFinite(s[k]) && pjOk(k));
   // Rank among his position group for each headline number
   const pool = peerPool(p).concat([p]).filter(q => gpOf(q) >= Math.max(1, Math.floor(Math.max(...peerPool(p).map(gpOf).concat([1]))*0.3)));
   const rankOf = k => { if(SKIP2.has(k) || !LBL[k]) return ''; const inv = LBL[k][2]; const vs = pool.map(q=>q.st[k]).filter(v=>v!=null && isFinite(v)); if(vs.length < 6 || s[k]==null) return ''; const r = vs.filter(v => inv ? v < s[k] : v > s[k]).length + 1; return r <= Math.max(3, vs.length*0.25) ? `#${r} of ${vs.length}` : ''; };
   const big = prim.filter(k => !SKIP2.has(k)).slice(0, 6), small = prim.filter(k => !big.includes(k));
   const others = Object.keys(s).filter(k => LBL[k] && !set.includes(k) && !SKIP2.has(k) && s[k] && isFinite(s[k]) && !(sp==='mlb' && ((pType(p)==='bat' && ['pgp','gs','era','whip','k9','bb9','kbb','ip','k','pbb','w','l','sv','hld','qs','ph','er','phr','pwar'].includes(k)) || (pType(p)==='pit' && ['gp','ab','h','d2','d3','hr','rbi','r','tb','sb','bb','so','avg','obp','slg','ops','iso','war'].includes(k)))));
   const twoWay = sp==='mlb' && ((pType(p)==='bat' && (s.ip||0) > 5) || (pType(p)==='pit' && (s.ab||0) > 30));
-  const extra = twoWay ? (pType(p)==='bat' ? PRIMARY.pit : PRIMARY.bat).filter(k => s[k]!=null && !SKIP2.has(k)).slice(0,6) : [];
-  const tgp = NF.rec[p.tm].gp || 1, seasonN = NF.college ? seasonGamesOf(p.tm) : NF.seasonGames; const pace = sp==='cbb' ? (NF.regLeft > 0 ? ['pts','reb','ast','stl','blk','tpm'].filter(k => s[k] > 0) : []) : NF.regLeft > 0 && tgp >= 2 ? prim.filter(k => LBL[k][3] && s[k] > 0 && !['ip'].includes(k) || k==='ip' && s.ip > 0).slice(0, 6) : [];
-  const perG = sp==='cbb' ? [] : prim.filter(k => LBL[k][3] && s[k] > 0 && k!=='war' && k!=='pwar').slice(0, 6);
-  const fmtK = k => lgFmt(s[k], lblDec(k));
+  const extra = twoWay && !pre ? (pType(p)==='bat' ? PRIMARY.pit : PRIMARY.bat).filter(k => s[k]!=null && !SKIP2.has(k)).slice(0,6) : [];
+  const tgp = NF.rec[p.tm].gp || 1, seasonN = NF.college ? seasonGamesOf(p.tm) : NF.seasonGames; const pace = pre && sp!=='cbb' ? [] : sp==='cbb' ? (NF.regLeft > 0 ? ['pts','reb','ast','stl','blk','tpm'].filter(k => s[k] > 0) : []) : NF.regLeft > 0 && tgp >= 2 ? prim.filter(k => LBL[k][3] && s[k] > 0 && !['ip'].includes(k) || k==='ip' && s.ip > 0).slice(0, 6) : [];
+  const perG = sp==='cbb' || pre ? [] : prim.filter(k => LBL[k][3] && s[k] > 0 && k!=='war' && k!=='pwar').slice(0, 6);
+  const fmtK = k => lgFmt(pj(k), pre && sp!=='cbb' && LBL[k][3] ? Math.max(1, lblDec(k)) : lblDec(k));
+  const rankK = k => pre && sp!=='cbb' && LBL[k][3] ? null : lgLeagueRank(p, k);   // pre-season per-game rates don't follow last season's totals order
   const ink = nInk(p.tm); const wmName = (sp==='soc' ? t.n : t.n).toUpperCase();
   const stillOut = p.inj ? `${esc(p.inj[0])}${p.inj[1]?' · '+esc(p.inj[1]):''}${isFBs(sportOf(LGK)) && /reserve/i.test(p.inj[0]+' '+(p.grp||'')) ? ' · ' + esc(retEst(p)) : ''}` : injFeedless() ? (NF.sp==='cfb' ? 'Rostered · no reliable college injury feed, so availability isn’t shown' : 'Active · this league publishes no injury report') : 'Active';
   const rivals = peerPool(p).sort((a,b)=>Math.abs(impact(a)-impact(p))-Math.abs(impact(b)-impact(p))).slice(0,4);
   const meta = [p.num?`<span>#<b>${esc(p.num)}</b></span>`:'', `<span>Pos <b>${esc(p.pos||'–')}</b></span>`, p.age?`<span>Age <b>${p.age}</b></span>`:'', p.ht?`<span>Ht <b>${esc(p.ht)}</b></span>`:'', p.wt?`<span>Wt <b>${p.wt}</b></span>`:'', p.exp!=null && p.exp!=='' ? `<span>${NF.college?'Class':'Exp'} <b>${NF.college?esc(p.exp):p.exp?p.exp+' yr':'Rookie'}</b></span>`:''].join('');
-  const secLbl = p.st0 ? '2025–26 season (this season starts in November)' : `${CF().seasonLbl} so far`;
+  const secLbl = pre ? 'Pre-season projection · per game' : p.st0 ? '2025–26 season (this season starts in November)' : `${CF().seasonLbl} so far`;
   $('#playerPanel').innerHTML = `<button class="close" data-close="ovPlayer">✕</button>
     <div class="p-head lg-head${sp==='soc' ? ' soc-head' : ''}" style="--tp:${t.p};--ts:${t.s};--ti:${ink};--acc:${lum(t.p)>=0.2?t.p:lum(t.s)>=0.2?t.s:'#9aa3ad'};--wm:${lum(t.s)>=0.3?t.s:lum(t.p)>=0.25?t.p:'#ffffff'}">
       <div class="pglow" style="background:${lum(t.p)>=0.2?t.p:lum(t.s)>=0.2?t.s:'#5b6470'}"></div><div class="p-stripes"></div>${sp==='soc' ? '' : bioFace(LGK, p)}
@@ -5111,19 +5129,19 @@ function openLgPlayer(id){
       <div class="p-mid"><div class="kicker cond muted" style="letter-spacing:.3em;font-size:13px;margin-bottom:10px;cursor:pointer" data-nteam="${p.tm}">${esc(tFull(p.tm))} →</div><h2>${esc(p.name)} ${favStar('p',LGK,p.id,p.name,p.tm)}</h2>
         <div class="p-meta">${meta}</div>
         <div class="status ${p.inj?(NF.isOut(p)?'out':'dtd'):'ok'}">${stillOut}</div>
-        ${lineText(p)?`<div class="status-note">${lineText(p)}</div>`:''}</div>
+        ${lineText(p) && !pre?`<div class="status-note">${lineText(p)}</div>`:''}</div>
     </div>
     ${p.inj&&p.inj[2]?`<div class="p-notes"><div class="status-note">${esc(p.inj[2])}</div></div>`:''}
-    <div class="p-sec" style="border-top:3px solid ${ink}"><span>${secLbl}</span></div>
-    ${big.length ? `<div class="bigstats">${big.map(k=>{ const L = lgLeagueRank(p, k); return `<div class="${L ? medalCls(L.r) : ''}"${L ? ` title="${esc(rankTip(L, LBL[k][0]))}"` : ''}><b>${fmtK(k)}</b><span>${LBL[k][0]}</span><em>${L ? rankTxt(L) : ''}</em></div>`; }).join('')}</div>
-      ${small.length?`<div class="proj-grid">${small.map(k=>{ const L = lgLeagueRank(p, k); return `<div class="${L ? medalCls(L.r) : ''}"${L ? ` title="${esc(rankTip(L, LBL[k][0]))}"` : ''}><b>${fmtK(k)}</b><span>${LBL[k][0]}</span>${L ? `<em class="cm-rk">${rankTxt(L)}</em>` : ''}</div>`; }).join('')}</div>`:''}` : `<div class="cur-strip" style="padding:22px 36px"><span>No stats recorded yet${isFBs(sp)&&pType(p)==='ol'?' (ESPN doesn’t track individual offensive-line stats)':''}.</span></div>`}
+    <div class="p-sec" style="border-top:3px solid ${ink}"><span>${secLbl}</span>${pre?`<small>The season hasn’t started: estimates from his last season, not real stats</small>`:''}</div>
+    ${big.length ? `<div class="bigstats">${big.map(k=>{ const L = rankK(k); return `<div class="${L ? medalCls(L.r) : ''}"${L ? ` title="${esc(rankTip(L, LBL[k][0]))}"` : ''}><b>${fmtK(k)}</b><span>${LBL[k][0]}</span><em>${L ? rankTxt(L) : ''}</em></div>`; }).join('')}</div>
+      ${small.length?`<div class="proj-grid">${small.map(k=>{ const L = rankK(k); return `<div class="${L ? medalCls(L.r) : ''}"${L ? ` title="${esc(rankTip(L, LBL[k][0]))}"` : ''}><b>${fmtK(k)}</b><span>${LBL[k][0]}</span>${L ? `<em class="cm-rk">${rankTxt(L)}</em>` : ''}</div>`; }).join('')}</div>`:''}` : `<div class="cur-strip" style="padding:22px 36px"><span>${pre ? 'No projection yet: no stats from last season to build one. His numbers appear once he plays' : 'No stats recorded yet'}${isFBs(sp)&&pType(p)==='ol'?' (ESPN doesn’t track individual offensive-line stats)':''}.</span></div>`}
     ${extra.length?`<div class="p-sec"><span>${pType(p)==='bat'?'On the mound':'At the plate'}</span></div><div class="cur-strip">${extra.map(k=>`<span>${fmtK(k)} ${LBL[k][0]}</span>`).join('')}</div>`:''}
     ${perG.length?`<div class="p-sec"><span>Per game</span><small>Season totals ÷ his ${gpOf(p)} game${gpOf(p)===1?'':'s'}</small></div><div class="proj-grid">${perG.map(k=>`<div><b>${lgFmt(s[k]/gpOf(p), Math.max(1, lblDec(k)))}</b><span>${LBL[k][0]}</span></div>`).join('')}</div>`:''}
-    ${pace.length?`<div class="p-sec"><span>Projected season</span><small>${sp==='cbb'?`His averages × ${seasonN} scheduled games`:`His season so far × ${seasonN} ${sp==='soc'?'matches':'games'} ÷ the ${tgp} his team has played`}</small></div><div class="proj-grid">${pace.map(k=>`<div><b>${lgFmt(sp==='cbb' ? s[k]*seasonN : s[k]/tgp*seasonN, sp==='cbb' ? 0 : lblDec(k))}</b><span>${sp==='cbb' ? LBL[k][0].replace(/^Assists$/, 'Assists') : LBL[k][0]}</span></div>`).join('')}</div>`:''}
+    ${pace.length?`<div class="p-sec"><span>Projected season</span><small>${sp==='cbb'?`His ${pre?'projected ':''}averages × ${seasonN} scheduled games`:`His season so far × ${seasonN} ${sp==='soc'?'matches':'games'} ÷ the ${tgp} his team has played`}</small></div><div class="proj-grid">${pace.map(k=>`<div><b>${lgFmt(sp==='cbb' ? pj(k)*seasonN : s[k]/tgp*seasonN, sp==='cbb' ? 0 : lblDec(k))}</b><span>${sp==='cbb' ? LBL[k][0].replace(/^Assists$/, 'Assists') : LBL[k][0]}</span></div>`).join('')}</div>`:''}
     <div class="h2h-bar-card" style="--tp:${t.p}"><div class="h2h-cta"><span class="h2h-tag">Head-to-head</span><div class="h2h-pick"><input class="txt" id="lgQp" placeholder="${sp==='mlb'?(pType(p)==='pit'?'Pick a hitter to see every at-bat between them, or compare with any pitcher…':'Pick a pitcher to see every at-bat between them, or compare with any hitter…'):`Compare ${esc(p.name.split(' ').slice(-1)[0])} with anyone… type a name, press Enter`}" autocomplete="off" data-a="${p.id}"><div class="sres" id="lgResP"></div></div></div>
       ${rivals.length?`<div class="h2h-quick"><span>Quick picks</span>${rivals.map(q=>`<a class="lnk" data-lgh2h="${p.id}:${q.id}">${esc(q.name)} <em>${esc(q.tm.split('-')[0])}</em></a>`).join('')}</div>`:''}</div>
-    ${others.length?`<div class="p-sec"><span>Other numbers</span></div><div class="cur-strip">${others.map(k=>`<span>${fmtK(k)} ${LBL[k][0]}</span>`).join('')}</div>`:''}
-    <div class="p-body">${leagueHasPO(LGK) && NF.games.some(g => g.stype===3 && g.state==='post' && (g.h===p.tm || g.a===p.tm)) ? poBlock(LGK, p) : ''}${peerBlock(p)}${vsBlock(LGK, p)}</div>`;
+    ${others.length && !pre?`<div class="p-sec"><span>Other numbers</span></div><div class="cur-strip">${others.map(k=>`<span>${fmtK(k)} ${LBL[k][0]}</span>`).join('')}</div>`:''}
+    <div class="p-body">${leagueHasPO(LGK) && NF.games.some(g => g.stype===3 && g.state==='post' && (g.h===p.tm || g.a===p.tm)) ? poBlock(LGK, p) : ''}${pre ? '' : peerBlock(p)}${vsBlock(LGK, p)}</div>`;
   openOv('ovPlayer');
 }
 function lgSearch(q, aId, outSel){
@@ -5938,9 +5956,10 @@ function go(k, scroll){
 /* The big header says "This season" on current-stat leaderboards and "Projections" everywhere else */
 function heroMode(k){
   const h = document.querySelector('.hero h1'), pp = document.querySelector('.hero-content > p'); if(!h || !pp) return;
-  const cur = (k==='leaders' && lmOf()!=='proj') || (k==='lg-leaders' && !(lgPre() && (UI.ldRatePre || 'proj')==='proj'));
+  const cur = (k==='leaders' && lmOf()!=='proj') || (k==='lg-leaders' && !lgPre());
+  const eb = document.querySelector('.hero .eyebrow'); if(eb) eb.hidden = cur;   // one large title only: the eyebrow would repeat the brand above it
   if(!cur){ if(heroMode.on){ heroMode.on = 0; renderHero.__lg = true; renderHero(); } return; }
-  heroMode.on = 1; h.textContent = (!UI.sport || UI.sport==='nba') ? 'Courtside' : 'This Season'; pp.textContent = curBlurb();
+  heroMode.on = 1; h.textContent = (!UI.sport || UI.sport==='nba') ? 'Courtside' : CF().brand; pp.textContent = curBlurb();
 }
 function curBlurb(){
   if(!UI.sport || UI.sport==='nba'){
@@ -6918,7 +6937,7 @@ function bioText(lg, p){ const out = [];
   return withLg(lg, () => { const age = p.age ? `${p.age}-year-old ` : ''; const pw = posWord(p.pos); const yr = NF.college ? (p.exp ? ` ${esc(p.exp)}` : '') : '';
     out.push(`${esc(p.name)} is ${aAn((yr||age||pw).trim())}${yr} ${age}${pw} for ${NF.sp==='soc'?'':'the '}${esc(tFull(p.tm))}${p.ht?`, ${p.ht}${p.wt?`, ${p.wt} lb`:''}`:''}.`);
     if(!NF.college && p.exp!=null && p.exp!=='') out.push(+p.exp===0 ? 'He’s a rookie this season.' : `This is year ${+p.exp+1} of his pro career.`);
-    const lt = lineText(p); if(lt) out.push(`${p.st0 ? 'Last season' : 'This season'}: ${lt}.`);
+    const lt = lineText(p); if(lt) out.push(lgPre() && /^Proj /.test(lt) ? `Pre-season projection: ${lt.slice(5)} a game.` : `${p.st0 ? 'Last season' : 'This season'}: ${lt}.`);
     if(p.stP){ const s = p.stP; if((s.ab||0) >= 5) out.push(`Postseason: ${s.h||0} for ${s.ab}${s.hr?`, ${s.hr} HR`:''}${s.rbi?`, ${s.rbi} RBI`:''} (${lgFmt(s.ops,3)} OPS).`); else if(s.ip) out.push(`Postseason: ${lgFmt(s.era,2)} ERA in ${lgFmt(s.ip,1)} innings with ${s.k||0} strikeouts${s.sv?` and ${s.sv} save${s.sv>1?'s':''}`:''}.`); }
     if(p.inj) out.push(`Status: ${esc(p.inj[0])}${p.inj[1]?' · '+esc(p.inj[1]):''}.`);
     return out; }) || [esc(p.name)]; }
@@ -8888,7 +8907,8 @@ function lgLeagueRank(p, k){ try{ if(SKIP2.has(k) || !LBL[k]) return null; const
   // a counting stat still ranks a player short of the qualifiers, against everyone at his position who has recorded one
   if(!pool.some(q => q.id===p.id)){ if(!count || low || !v) return null; pool = peers.filter(q => has(q) && q.st[k] > 0); }
   if(!low && !v) return null; if(pool.length < 6 || !pool.some(q => q.id===p.id)) return null;
-  const r = pool.filter(q => low ? q.st[k] < v : q.st[k] > v).length + 1; return {r, n: pool.length, tie: pool.some(q => q.id!==p.id && q.st[k]===v), nat: !!NF.college}; }catch(e){ return null; } }
+  const sh = x => lgFmt(x, lblDec(k)), sv = sh(v);   // ties at the shown precision share the place
+  const r = pool.filter(q => sh(q.st[k])!==sv && (low ? q.st[k] < v : q.st[k] > v)).length + 1; return {r, n: pool.length, tie: pool.some(q => q.id!==p.id && sh(q.st[k])===sv), nat: !!NF.college}; }catch(e){ return null; } }
 
 /* ---- Table ranks: ties share a medal, and style stats (stolen bases, pitches per PA, pace) get medals too, just no green / red ---- */
 tierCls = function(vs, a, low, style){ if(vs.length < 6) return ''; const me = vs.find(x => x[0]===a); if(!me) return ''; const n = vs.length, k = Math.round(n/3), v = me[1];
@@ -9041,7 +9061,8 @@ const CM_RK = {PTS:'pts', REB:'reb', AST:'ast', STL:'stl', BLK:'blk', 'FG%':'fgp
 const CM_RL = {pts:'PPG', reb:'RPG', ast:'APG', stl:'SPG', blk:'BPG', fgp:'FG%', tpp:'3P%', ftp:'FT%', ts:'TS%'};
 function nbaRank(p, k){ const s = STATS.find(x => x.k===k); if(!s || !p.C || p.C[k]==null) return null;
   const ok = q => q.C && q.C.gp >= Math.max(1, Math.ceil(tgp(q)*0.5)) && q.C.min >= 12 && (!s.min || s.min(q.C)) && q.C[k]!=null; if(!ok(p)) return null;
-  const pool = M.players.filter(ok), v = p.C[k]; return {r: pool.filter(q => q.C[k] > v).length + 1, n: pool.length, tie: pool.some(q => q.id!==p.id && q.C[k]===v)}; }
+  const pool = M.players.filter(ok), sh = x => fmtStat(s, x), v = sh(p.C[k]);   // ranked at the precision shown, so a displayed tie shares the place (and medal) like the Leaders board
+  return {r: pool.filter(q => sh(q.C[k])!==v && q.C[k] > p.C[k]).length + 1, n: pool.length, tie: pool.some(q => q.id!==p.id && sh(q.C[k])===v)}; }
 const _openPlayer17 = openPlayer; openPlayer = function(id){ _openPlayer17(id); try{ const p = M.players.find(x => x.id===id), bs = document.querySelector('#playerPanel .bigstats'); if(!p || !p.C || !bs) return;
   const pg = bs.nextElementSibling, tiles = [...bs.children].map(d => [d, true]).concat(pg && pg.classList.contains('proj-grid') ? [...pg.children].map(d => [d, false]) : []);
   tiles.forEach(([d, big]) => { const k = CM_RK[((d.querySelector('span')||{}).textContent||'').trim()]; if(!k) return; const R = nbaRank(p, k); d.classList.remove('rk-m','rk1','rk2','rk3');
