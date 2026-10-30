@@ -1,5 +1,5 @@
 // Network first so each daily update shows up; falls back to the last copy when offline
-const C = 'clutch-matrix-v9';
+const C = 'clutch-matrix-v10';
 self.addEventListener('install', e => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k!==C).map(k => caches.delete(k)))).then(() => self.clients.claim())));
 self.addEventListener('fetch', e => {
@@ -11,7 +11,7 @@ self.addEventListener('fetch', e => {
    The page works out what happened (a favourite ruled out or back, an A-grade game, game start / halftime / final for a starred team,
    home runs, touchdowns, goals and assists, pitcher wins, no-hitters, hat tricks, 50-point games) and posts it; this shows it.
    With no window open, periodic sync (where the browser allows it) checks starred teams' games itself. */
-const show = (title, opt) => self.registration.showNotification(title, Object.assign({icon:'logo.png', badge:'logo.png'}, opt || {}));
+const show = (title, opt) => self.registration.showNotification(title, Object.assign({icon:'icon-192.png', badge:'icon-192.png'}, opt || {}));
 self.addEventListener('message', e => { const d = e.data || {}; if(d.type==='cs-notify' && d.title) e.waitUntil(show(d.title, d.opt).catch(() => {})); });
 self.addEventListener('notificationclick', e => {
   e.notification.close(); const url = new URL((e.notification.data && e.notification.data.url) || './', self.registration.scope).href;

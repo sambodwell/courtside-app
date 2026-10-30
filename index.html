@@ -10,8 +10,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Clutch Matrix">
-<link rel="apple-touch-icon" href="logo.png">
-<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <script>if("serviceWorker" in navigator && location.protocol==="https:") addEventListener("load", () => navigator.serviceWorker.register("sw.js"));</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1215,14 +1215,14 @@ td .vg-bar{margin-bottom:4px}
 <body>
 <div id="cmIntro" role="button" tabindex="0" aria-label="Enter the Clutch Matrix">
   <div class="cmi-grid"></div><div class="cmi-glow"></div>
-  <div class="cmi-in"><img class="cmi-logo" src="logo.png" alt="Clutch Matrix"><h1 class="cmi-title">Enter the <b>Clutch Matrix</b></h1><span class="cmi-btn">Click to Enter</span></div>
+  <div class="cmi-in"><img class="cmi-logo" src="logo.png" alt="Clutch Matrix"><h1 class="cmi-title">Enter the <b>Clutch Matrix</b></h1><span class="cmi-btn">Entering…</span></div>
 </div>
 <script>/* entry screen: shown once per visit; deep links (a team, a shared favorites link, a notification) go straight in */
 (function(){ var el = document.getElementById('cmIntro'), skip = false; try{ skip = sessionStorage.getItem('cm_in')==='1' || location.hash.length > 1; }catch(e){}
   if(skip){ el.remove(); return; } document.documentElement.classList.add('cm-intro');
   var enter = function(){ if(el.classList.contains('out')) return; try{ sessionStorage.setItem('cm_in', '1'); }catch(e){} el.classList.add('out'); document.documentElement.classList.remove('cm-intro'); setTimeout(function(){ el.remove(); }, 900); };
   el.addEventListener('click', function(e){ e.stopPropagation(); enter(); }); el.addEventListener('keydown', function(e){ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); enter(); } });
-  setTimeout(function(){ try{ el.focus({preventScroll:true}); }catch(e){} }, 60); })();</script>
+  setTimeout(function(){ try{ el.focus({preventScroll:true}); }catch(e){} }, 60); setTimeout(enter, 1000); })();</script>
 
 <nav id="nav">
   <div class="brand" onclick="window.scrollTo({top:0,behavior:'smooth'})">Clutch Matrix</div>
@@ -2190,6 +2190,26 @@ td.rk3{box-shadow:inset 0 0 0 999px rgba(217,140,74,.13),inset 0 -2px 0 var(--br
 .notif-btn.on{color:#ffd54a}
 .notif-btn.off{color:#aab1ba}
 @media (prefers-reduced-motion:reduce){ #cmIntro *,.bigstats *,.proj-grid *,.podium *,td.rk-top,td.rk2,td.rk3,em.rk-top,em.rk2,em.rk3{animation:none!important} }
+/* ---- v1.8 ---- */
+/* the logo keeps its shape everywhere: a square box, the whole crest inside it */
+#cmIntro .cmi-logo{aspect-ratio:1/1;object-fit:contain;width:min(320px,64vw);height:auto}
+#cmIntro.out{transition-duration:.6s}
+nav .brand{display:inline-flex;align-items:center;gap:10px}
+nav .brand .brand-logo{width:34px;height:34px;aspect-ratio:1/1;object-fit:contain;flex:none;max-width:none}
+@media (max-width:640px){ nav .brand .brand-logo{width:28px;height:28px} }
+/* period scores */
+.lsx{margin:8px 0 2px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.lsx table{border-collapse:collapse;width:100%;font-family:"Barlow Condensed",sans-serif;font-size:12.5px;letter-spacing:.04em}
+.lsx th,.lsx td{padding:3px 5px;text-align:center;white-space:nowrap;border:0;cursor:inherit}
+.lsx th{color:var(--muted);font-weight:600;font-size:10.5px;letter-spacing:.14em}
+.lsx td{color:#cfd3d8;border-top:1px solid rgba(255,255,255,.07)}
+.lsx .l{text-align:left;color:#fff;font-weight:600}
+.lsx .lsx-t{color:#fff;font-weight:700;border-left:1px solid rgba(255,255,255,.12)}
+.lsx.big{margin:0 0 18px}.lsx.big table{font-size:15px}.lsx.big th{font-size:12px}.lsx.big th,.lsx.big td{padding:6px 8px}
+/* positions on box scores: starters read brighter */
+.gb-pos.st{color:#fff;font-weight:600;letter-spacing:.06em}
+/* a game still on: no grade yet */
+.grd.none[title]{font-size:9px;letter-spacing:.08em}
 </style>
 <script type="application/json" id="favs">{}</script>
 <script type="application/json" id="edits">{}</script>
@@ -2790,7 +2810,7 @@ const STATS = [
  {k:"gs",label:"Impact",abbr:"GMSC",blurb:"Game Score: a one-number box-score summary of a player's projected nightly production."}
 ];
 const VIEWS = [{k:'leaders',label:'Leaders'},{k:'teams',label:'Teams'},{k:'playbook',label:'Playbook'},{k:'schedule',label:'Schedule'},{k:'favs',label:'★ Favorites'},{k:'live',label:'Live'},{k:'standings',label:'Standings'},{k:'injuries',label:'Injuries'},{k:'breakouts',label:'Breakouts'},{k:'tstats',label:'Team stats'},{k:'lab',label:'Lab'},{k:'method',label:'Method'},{k:'updates',label:'Updates'}];
-let UI = {pbMode:'now', stGroup:'conf', stSort:{cur:null, proj:null}, lmode:'cur', injMode:'list', injTeam:null, chartTeam:null, stat:'pts', conf:'all', team:null, schedTeam:null, schedMode:'team', slateDay:null, sort:{k:'gs', d:-1}, pbTeam:null, week:null};
+let UI = {pbMode:'now', stGroup:'conf', stSort:{cur:null, proj:null}, lmode:'cur', injMode:'list', injTeam:null, chartTeam:null, stat:'pts', conf:'all', team:null, schedTeam:null, schedMode:'date', slateDay:null, sort:{k:'gs', d:-1}, pbTeam:null, week:null};
 try{ const u = LS.get('cs27_ui'); if(u) UI = {...UI, ...u, team:null, week:null}; }catch(e){}
 const saveUI = () => LS.set('cs27_ui', {stSortLg:UI.stSortLg, injSortLg:UI.injSortLg, injTeamLg:UI.injTeamLg, lgBasis:UI.lgBasis, nflWeekLg:UI.nflWeekLg, pbMode:UI.pbMode, stGroup:UI.stGroup, lmode:UI.lmode, stat:UI.stat, schedTeam:UI.schedTeam, schedMode:UI.schedMode, pbTeam:UI.pbTeam, sport:UI.sport, socLeague:UI.socLeague, ncaaLeague:UI.ncaaLeague, nflGroup:UI.nflGroup, lgRate:UI.lgRate, lgStat:UI.lgStat, tsGroup:UI.tsGroup, tsGroupNba:UI.tsGroupNba, tsSort:UI.tsSort, lab:UI.lab, pbTeamLg:UI.pbTeamLg, colTeams:UI.colTeams, colStand:UI.colStand, colGames:UI.colGames, colTS:UI.colTS, colPB:UI.colPB, colLab:UI.colLab, fullCareer:UI.fullCareer, glStat:UI.glStat, cmpGroup:UI.cmpGroup, cmpBasis:UI.cmpBasis, cmpRate:UI.cmpRate, cmpStats:UI.cmpStats, h2hBasis:UI.h2hBasis, h2hRate:UI.h2hRate, tsRate:UI.tsRate, peerScope:UI.peerScope, ldRate:UI.ldRate, peerRate:UI.peerRate, h2hRateLg:UI.h2hRateLg, vsTeam:UI.vsTeam, vsMode:UI.vsMode, poMode:UI.poMode, liveF:UI.liveF, cup:UI.cup, cupTab:UI.cupTab, mlbGrp:UI.mlbGrp, fbPos:UI.fbPos});
 
@@ -2968,8 +2988,8 @@ function scheduleSection(){
   return nbaCupStrip() + `<div class="sec-head"><div><div class="kicker">${M.games.length} games scheduled · ${M.games.filter(g=>g.done).length} played</div><h2>Schedule</h2></div>
    <p>Every game with a predicted score and win probability, built from team strength, injuries, home court, rest, travel, recent form and streaks. ${M.acc.decided?`Model so far: ${M.acc.correct}/${M.acc.decided} winners (${(M.acc.correct/M.acc.decided*100).toFixed(0)}%).`:''}</p></div>
    <div class="filters">
-     <button class="chip ${UI.schedMode==='team'?'on':''}" data-smode="team">By team</button>
      <button class="chip ${UI.schedMode==='date'?'on':''}" data-smode="date">By date</button>
+     <button class="chip ${UI.schedMode==='team'?'on':''}" data-smode="team">By team</button>
      ${UI.schedMode==='team'?`<select class="sel" id="schedSel">${teamsSorted.map(t=>`<option value="${t.ab}" ${t.ab===UI.schedTeam?'selected':''}>${t.c} ${t.n}</option>`).join('')}</select>`:''}
    </div>${vvTallyHTML('nba', M.games, 'nba')}<div class="hint">Click any game for the full prediction breakdown</div>` + (UI.schedMode==='team' ? teamSchedule(UI.schedTeam) : slate());
 }
@@ -3104,7 +3124,7 @@ function boxTable(g, ab){
   const name = id => { const p = M.players.find(q=>q.id===String(id)); return p ? p.name : String(id); };
   const tl = b.t[ab] || []; const sum = k => rows.reduce((s,r)=>s+r[BP[k]],0);
   return `<div class="tbl-wrap box"><table><thead><tr><th class="l">${T[ab].n}</th><th>GRD</th><th>MIN</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th><th>TO</th><th>FG</th><th>3PT</th><th>FT</th><th>+/-</th></tr></thead><tbody>
-    ${rows.map((r,i)=>`<tr class="hov ${i===4?'cut':''}" data-pid="${r[0]}"><td class="l">${esc(name(r[0]))}${r[BP.st]?' <span class="muted" style="font-size:11px">S</span>':''}</td><td>${grPill(gradeNba(r))}</td><td>${r[BP.min]}</td><td><b>${r[BP.pts]}</b></td><td>${r[BP.reb]}</td><td>${r[BP.ast]}</td><td>${r[BP.stl]}</td><td>${r[BP.blk]}</td><td>${r[BP.tov]}</td><td>${r[BP.fgm]}-${r[BP.fga]}</td><td>${r[BP.tpm]}-${r[BP.tpa]}</td><td>${r[BP.ftm]}-${r[BP.fta]}</td><td>${r[BP.pm]>0?'+':''}${r[BP.pm]}</td></tr>`).join('')}
+    ${rows.map((r,i)=>`<tr class="hov ${i===4?'cut':''}" data-pid="${r[0]}"><td class="l">${esc(name(r[0]))}${r[BP.st]?` <span class="muted" style="font-size:11px">${esc(nbaPos(r[0]))}</span>`:''}</td><td>${grPill(gradeNba(r))}</td><td>${r[BP.min]}</td><td><b>${r[BP.pts]}</b></td><td>${r[BP.reb]}</td><td>${r[BP.ast]}</td><td>${r[BP.stl]}</td><td>${r[BP.blk]}</td><td>${r[BP.tov]}</td><td>${r[BP.fgm]}-${r[BP.fga]}</td><td>${r[BP.tpm]}-${r[BP.tpa]}</td><td>${r[BP.ftm]}-${r[BP.fta]}</td><td>${r[BP.pm]>0?'+':''}${r[BP.pm]}</td></tr>`).join('')}
     <tr class="tot"><td class="l">Team</td><td></td><td></td><td><b>${sum('pts')}</b></td><td>${sum('reb')}</td><td>${sum('ast')}</td><td>${sum('stl')}</td><td>${sum('blk')}</td><td>${tl[BT.tov]??sum('tov')}</td><td>${sum('fgm')}-${sum('fga')}</td><td>${sum('tpm')}-${sum('tpa')}</td><td>${sum('ftm')}-${sum('fta')}</td><td></td></tr>
   </tbody></table></div>`;
 }
@@ -4372,7 +4392,7 @@ function lgGames(){
     const next = days[Math.min(days.length-1,i+1)];
     nav = `<div class="filters day-pager"><button class="chip" data-lgday="${prev}">← Prev</button><span class="cond" style="font-size:20px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:0 10px">${fmtDate(d0,{weekday:'long',month:'long',day:'numeric'})}</span><button class="chip" data-lgday="${next}">Next →</button><button class="chip" data-lgday="${NF.curDay}">Today</button></div>${NF.college?colFilterUI('colGames','All games'):''}`;
     kicker = gs.some(g=>g.stype===3) ? 'Postseason' : lgName(); }
-  gs.sort((x,y)=>x.t-y.t); if(sp!=='soc') gs = favFirst(LGK, gs);
+  gs.sort((x,y)=>x.t-y.t || String(x.id).localeCompare(String(y.id))); if(sp!=='soc' && !isFBs(sp)) gs = favFirst(LGK, gs);
   const done = NF.games.filter(g=>g.state==='post').length, pct = NF.acc.decided ? Math.round(NF.acc.correct/NF.acc.decided*100) : null;
   const soc = sp==='soc', runs = sp==='mlb' || sp==='cba';
   return `<div class="sec-head"><div><div class="kicker">${kicker} · ${done.toLocaleString()} games played</div><h2>Schedule</h2></div>
@@ -7382,7 +7402,7 @@ function msRow(x, E, lg, bench){ const a = x.athlete || {}; const id = String(a.
   const b = goals.map(c => MS_BADGE.g).join('') + (e.og||[]).map(() => MS_BADGE.og).join('') + (rc && yc >= 2 ? MS_BADGE.y2 : rc ? (yc ? MS_BADGE.yc : '') + MS_BADGE.rc : yc ? MS_BADGE.yc : '');
   const sub = e.off ? `<span class="ms-sub off" title="Substituted">▼ ${esc(e.off)}</span>` : e.on ? `<span class="ms-sub on" title="Came on">▲ ${esc(e.on)}</span>` : '';
   const clocks = [...(e.g||[]).map(c => c ? `goal ${c}` : ''), ...(e.og||[]).map(c => `own goal ${c}`), ...(e.yc||[]).map(c => `booked ${c}`), ...(e.rc||[]).map(c => `sent off ${c}`)].filter(Boolean).join(' · ');
-  const gr = MS_ST!=='pre' && (x.stats||[]).length && (!bench || e.on) ? gradeOf('soc', Object.assign(espnStats((x.stats||[]).map(q => q.name), (x.stats||[]).map(q => q.value), '', {}), {gk:/^G/i.test(((x.position||{}).abbreviation)||''), cs:/^G/i.test(((x.position||{}).abbreviation)||'') && !(+st.goalsConceded)})) : null;
+  const gr = MS_ST==='post' && (x.stats||[]).length && (!bench || e.on) ? gradeOf('soc', Object.assign(espnStats((x.stats||[]).map(q => q.name), (x.stats||[]).map(q => q.value), '', {}), {gk:/^G/i.test(((x.position||{}).abbreviation)||''), cs:/^G/i.test(((x.position||{}).abbreviation)||'') && !(+st.goalsConceded)})) : null;
   return `<div class="ms-p${bench && !e.on ? ' unused' : ''}${rc ? ' sent' : ''}" title="${esc(clocks)}"><span class="ms-no">${esc(x.jersey||'')}</span>${msFace(a, lg)}<span class="ms-nm"><b><span class="ms-n">${esc(a.displayName || a.shortName || '')}</span>${b ? `<span class="ms-bd">${b}</span>` : ''}</b><small>${esc((x.position||{}).abbreviation && !bench ? x.position.abbreviation : bench ? 'SUB' : '')}${clocks ? ` · ${esc(clocks)}` : ''}</small></span><span class="ms-s">${sub}${gr ? grPill(gr) : ''}</span></div>`; }
 function msSheetHTML(j, lg){ const R = (j.rosters||[]).filter(r => (r.roster||[]).length); const comp = (((j.header||{}).competitions)||[])[0] || {}; const state = ((comp.status||{}).type||{}).state || 'pre'; MS_ST = state;
   const teams = (comp.competitors||[]).slice().sort((a, b) => a.homeAway==='home' ? -1 : 1).map(c => { const t = c.team||{}; return {id:String(t.id||''), n:t.displayName||t.shortDisplayName||'', logo:(t.logos && t.logos[0] && t.logos[0].href) || t.logo || '', color:t.color, alt:t.alternateColor, ha:c.homeAway}; });
@@ -7552,7 +7572,7 @@ function gradeOf(kind, s){ if(!s) return null; const n = k => +s[k] || 0;
     const r = Math.max(3, Math.min(10, v)); return {g:grLetter('soc', r), v:r, t:`Match rating ${r.toFixed(1)}${grTop('soc', r)}`}; }
   return null; }
 const grCls = g => !g ? '' : g[0]==='A' ? 'ga' : g[0]==='B' ? 'gb' : g[0]==='C' ? 'gc' : g[0]==='D' ? 'gd' : 'gf';
-const grPill = (G, big) => G && G.g ? `<span class="grd ${grCls(G.g)}${big?' big':''}" title="${esc(G.t||'')}">${G.g}</span>` : '<span class="grd none">–</span>';
+const grPill = (G, big) => G && G.live ? `<span class="grd none" title="Graded once the game is final">LIVE</span>` : G && G.g ? `<span class="grd ${grCls(G.g)}${big?' big':''}" title="${esc(G.t||'')}">${G.g}</span>` : '<span class="grd none">–</span>';
 // NBA box rows (BP index arrays) → stat object
 const bpObj = r => ({min:r[BP.min], pts:r[BP.pts], tpm:r[BP.tpm], fgm:r[BP.fgm], fga:r[BP.fga], ftm:r[BP.ftm], fta:r[BP.fta], oreb:r[BP.oreb], dreb:r[BP.dreb], reb:r[BP.reb], ast:r[BP.ast], stl:r[BP.stl], blk:r[BP.blk], tov:r[BP.tov], pf:r[BP.pf]});
 const gradeNba = r => { const p = M.players.find(q => q.id===String(r[0])); return gradeOf('bb', Object.assign(bpObj(r), {pos: p ? p.pos : ''})); };
@@ -7598,7 +7618,7 @@ function gbHTML(id){ const B = LBOX[id]; if(!B) return ''; const j = B.j, path =
     const L = mlbKind || /basketball/.test(path) ? (rows.find(r => r.lines.length)||{lines:[{labels:[]}]}).lines[0] : null;
     if(L){ const labels = L.labels || []; const hide = /baseball/.test(path) ? new Set(['AVG','OBP','SLG','ERA','PC-ST','#P']) : new Set();
       return `<div class="tbl-wrap box gb-tbl"><table><thead><tr><th class="l">${mlbKind==='pit'?'Pitchers':mlbKind==='bat'?'Hitters':'Player'}</th><th>GRD</th>${labels.map(l => hide.has(l) ? '' : `<th>${esc(l)}</th>`).join('')}</tr></thead><tbody>
-        ${rows.map(r => { const ln = r.lines[0] || {vals:[]}; return `<tr data-gbp="${esc(r.id)}"><td class="l">${esc(r.short||r.name)}${r.pos?` <span class="muted" style="font-size:11px">${esc(r.pos)}</span>`:''}${r.starter && !mlbKind ? ' <span class="muted" style="font-size:11px">S</span>' : ''}</td><td>${grPill(r.G)}</td>${labels.map((l, i) => hide.has(l) ? '' : `<td>${esc(String(ln.vals[i] ?? ''))}</td>`).join('')}</tr>`; }).join('')}</tbody></table></div>`; }
+        ${rows.map(r => { const ln = r.lines[0] || {vals:[]}; return `<tr data-gbp="${esc(r.id)}"><td class="l">${esc(r.short||r.name)}${gbPos(r, path)}</td><td>${grPill(r.G)}</td>${labels.map((l, i) => hide.has(l) ? '' : `<td>${esc(String(ln.vals[i] ?? ''))}</td>`).join('')}</tr>`; }).join('')}</tbody></table></div>`; }
     // football: one line per player, the groups he appeared in summarised
     return `<div class="gb-fb">${rows.filter(r => r.lines.length).sort((a, b) => ((b.G&&b.G.v)||-99) - ((a.G&&a.G.v)||-99)).map(r => `<div class="gb-r">${grPill(r.G)}<div><b>${esc(r.short||r.name)}</b> <span class="muted" style="font-size:11px">${esc(r.pos||'')}</span><span>${r.lines.map(x => fbLine(x)).filter(Boolean).join(' · ')}</span></div></div>`).join('')}</div>`; };
   const body = tms.map(c => { const t = c.team || {}; const tid = String(t.id||''); const rows = P.filter(r => r.tm===tid);
@@ -7882,7 +7902,7 @@ const _openLgPlayer0 = openLgPlayer; openLgPlayer = function(id){ _openLgPlayer0
 function rgHTML(lg, p){ const g = glHave(lg, p, true); const head = `<div class="h4row"><h4>Recent games &amp; grades</h4></div>`;
   if(!g) return head + '<p class="muted vs-load">Loading…</p>'; if(g.na || !g.rows.length) return head + '<p class="muted">No game log from ESPN for this player yet.</p>';
   const ty = pTypeIn(lg, p); const sp = glSp(lg); const kind = sp==='mlb' ? (ty==='pit' ? 'pit' : 'bat') : isFBs(sp) ? 'fb' : sp==='soc' ? 'soc' : 'bb';
-  const rows = g.rows.slice().sort((a, b) => b.t - a.t).slice(0, 12).map(r => { const s = espnStats(r.names, r.v, ty==='def' ? 'def' : kind==='pit' ? 'pit' : '', {}); if(kind==='soc' && /^(gk|g)$/i.test(ty)) s.gk = true; s.pos = p.pos; return {r, G:gradeOf(kind, s)}; });
+  const rows = g.rows.slice().sort((a, b) => b.t - a.t).slice(0, 12).map(r => { const s = espnStats(r.names, r.v, ty==='def' ? 'def' : kind==='pit' ? 'pit' : '', {}); if(kind==='soc' && /^(gk|g)$/i.test(ty)) s.gk = true; s.pos = p.pos; return {r, G:rowLive(r) ? {live:1} : gradeOf(kind, s)}; });
   const nm = glOppName(lg); const avg = rows.filter(x => x.G && x.G.v!=null);
   return head + `<p class="muted" style="font-size:12px;margin:-4px 0 8px">${GR_NOTE(LG_PATH(lg))}</p><div class="rg-list">${rows.map(({r, G}) => `<div class="rg-r">${grPill(G)}<span class="rg-d">${new Date(r.t).toLocaleDateString('en-US', {month:'short', day:'numeric'})}</span><span class="rg-o">${oppLogo(LG_PATH(lg), r)}${esc(r.at)} ${esc(nm(r))} <em class="${/^W/i.test(r.res)?'hit':/^L/i.test(r.res)?'miss':''}">${esc(r.res)} ${esc(r.sc)}</em></span><span class="rg-l">${esc(glRowLine(r, lg, ty === 'pit' ? 'pit' : ty))}</span></div>`).join('')}</div>`; }
 
@@ -8097,7 +8117,7 @@ function glRowLine(r, lg, ty){ const sp = glSp(lg); const want = sp==='nba' || s
   return out.join(' · ') || 'No counting stats'; }
 const RG = {sort:'date', q:''};
 function rgRows(lg, p){ const g = glHave(lg, p, true); if(!g || g.na) return null; const ty = pTypeIn(lg, p), sp = glSp(lg); const kind = sp==='mlb' ? (ty==='pit' ? 'pit' : 'bat') : isFBs(sp) ? 'fb' : sp==='soc' ? 'soc' : 'bb';
-  return g.rows.map(r => { const s = espnStats(r.names, r.v, ty==='def' ? 'def' : kind==='pit' ? 'pit' : '', {}); if(kind==='soc' && /^(gk|g)$/i.test(ty)) s.gk = true; return {r, G:gradeOf(kind, s), ty}; }); }
+  return g.rows.map(r => { const s = espnStats(r.names, r.v, ty==='def' ? 'def' : kind==='pit' ? 'pit' : '', {}); if(kind==='soc' && /^(gk|g)$/i.test(ty)) s.gk = true; return {r, G:rowLive(r) ? {live:1} : gradeOf(kind, s), ty}; }); }
 function rgListHTML(lg, p){ const rows = rgRows(lg, p); if(!rows) return ''; const nm = glOppName(lg), q = RG.q.trim().toLowerCase();
   let list = rows.filter(x => !q || `${nm(x.r)} ${x.r.res} ${x.r.sc} ${glRowLine(x.r, lg, x.ty==='pit' ? 'pit' : x.ty)} ${x.G ? x.G.g : ''}`.toLowerCase().includes(q));
   const gv = x => x.G && x.G.v!=null ? x.G.v : null; if(RG.sort==='best') list.sort((a, b) => (gv(b) ?? -1e9) - (gv(a) ?? -1e9)); else if(RG.sort==='worst') list.sort((a, b) => (gv(a) ?? 1e9) - (gv(b) ?? 1e9)); else list.sort((a, b) => b.r.t - a.r.t);
@@ -8362,7 +8382,7 @@ function pAvatar(hs, logo, num, pos, team){ const ok = hs && hs!=='data:,';
 
 /* ---- Game lists everywhere (game log, vs a team, playoffs, a past season) share one grade sort ---- */
 function glKind(lg, ty){ const sp = glSp(lg); return sp==='mlb' ? (ty==='pit' ? 'pit' : 'bat') : isFBs(sp) ? 'fb' : sp==='soc' ? 'soc' : 'bb'; }
-function glGrades(rows, lg, ty){ const k = glKind(lg, ty); return new Map(rows.map(r => { let G = null; try{ const s = espnStats(r.names, r.v, ty==='def' ? 'def' : k==='pit' ? 'pit' : '', {}); if(k==='soc' && /^(gk|g)$/i.test(ty||'')) s.gk = true; G = gradeOf(k, s); }catch(e){} return [r, G]; })); }
+function glGrades(rows, lg, ty){ const k = glKind(lg, ty); return new Map(rows.map(r => { let G = null; try{ const s = espnStats(r.names, r.v, ty==='def' ? 'def' : k==='pit' ? 'pit' : '', {}); if(k==='soc' && /^(gk|g)$/i.test(ty||'')) s.gk = true; G = rowLive(r) ? {live:1} : gradeOf(k, s); }catch(e){} return [r, G]; })); }
 function glSorted(rows, G){ const gv = r => { const x = G.get(r); return x && x.v!=null ? x.v : null; }; const a = rows.slice();
   if(RG.sort==='best') a.sort((x, y) => (gv(y) ?? -1e9) - (gv(x) ?? -1e9)); else if(RG.sort==='worst') a.sort((x, y) => (gv(x) ?? 1e9) - (gv(y) ?? 1e9)); else a.sort((x, y) => y.t - x.t); return a; }
 const glSortSeg = () => `<div class="seg gl-sort">${[['date','Chronological'],['best','Best grade'],['worst','Worst grade']].map(([k, l]) => `<button class="${RG.sort===k?'on':''}" data-glsort="${k}">${l}</button>`).join('')}</div>`;
@@ -8383,7 +8403,7 @@ async function openSeasonLog(path, id, year, name){ const key = path + '|' + id 
 function slogLine(r){ const out = []; r.labels.forEach((l, i) => { const v = String(r.v[i] ?? '').trim(); if(!v || v==='-' || (/^0(\.0+)?$/.test(v) && out.length >= 2)) return; if(out.length < 9) out.push(`${v} ${l}`); }); return out.join(' · '); }
 function slogDraw(key){ if(SLOG.cur!==key) return; const S = SLOG[key], b = document.querySelector('#slogPanel .slog-body'); if(!b) return; if(!S || S.err || !S.rows.length){ b.innerHTML = '<p class="muted">No game log for that season.</p>'; return; }
   const path = S.path, L0 = S.rows[0].labels.map(x => String(x).toUpperCase()), kind = /basketball/.test(path) ? 'bb' : /football/.test(path) ? 'fb' : /baseball/.test(path) ? (L0.includes('IP') ? 'pit' : 'bat') : 'soc';
-  const G = new Map(S.rows.map(r => { let g = null; try{ g = gradeOf(kind, espnStats(r.names, r.v, kind==='pit' ? 'pit' : '', {})); }catch(e){} return [r, g]; }));
+  const G = new Map(S.rows.map(r => { let g = null; try{ g = rowLive(r) ? {live:1} : gradeOf(kind, espnStats(r.names, r.v, kind==='pit' ? 'pit' : '', {})); }catch(e){} return [r, g]; }));
   const avg = S.rows[0].labels.map((l, i) => { const vs = S.rows.map(r => String(r.v[i] ?? '')).filter(v => /^-?\d+(\.\d+)?$/.test(v)).map(Number); return vs.length >= S.rows.length*0.6 ? {l, v:vs.reduce((a, c) => a + c, 0)/vs.length, rate:/%|AVG|ERA|WHIP|RTG|OBP|SLG|QBR/i.test(l)} : null; }).filter(Boolean).slice(0, 11);
   const gd = [...G.values()].filter(x => x && x.g), aCnt = gd.filter(x => x.g[0]==='A').length;
   b.innerHTML = `<div class="proj-grid">${[[S.rows.length, 'Games'], ...avg.map(a => [a.rate ? a.v.toFixed(a.v < 1 ? 3 : 1).replace(/^0\./, '.') : a.v.toFixed(1), a.rate ? a.l : `${a.l} / G`])].map(([v, l]) => `<div><b>${v}</b><span>${esc(l)}</span></div>`).join('')}</div>
@@ -8528,7 +8548,7 @@ async function hvLoad(box){ const [sport, lg, id, name] = box.dataset.hv.split('
   body.innerHTML = `<div class="filters"><select class="sel" data-hvsel="1">${opps.map(([ab, n]) => `<option value="${esc(ab)}" ${ab===cur?'selected':''}>${esc(n)}</option>`).join('')}</select><span class="muted">${H.rows.length.toLocaleString()} games on file</span></div><div class="hv-list"></div>`; hvDraw(box, cur); }
 function hvDraw(box, ab){ const [, lg, id] = box.dataset.hv.split('|'), H = HV[lg + ':' + id]; HV.sel = ab; const rows = H.rows.filter(r => r.oab===ab), path = H.path, L0 = (rows[0] || {labels:[]}).labels.map(x => String(x).toUpperCase());
   const kind = /basketball/.test(path) ? 'bb' : /football/.test(path) ? 'fb' : /baseball/.test(path) ? (L0.includes('IP') ? 'pit' : 'bat') : 'soc';
-  const G = new Map(rows.map(r => { let g = null; try{ g = gradeOf(kind, espnStats(r.names, r.v, kind==='pit' ? 'pit' : '', {})); }catch(e){} return [r, g]; }));
+  const G = new Map(rows.map(r => { let g = null; try{ g = rowLive(r) ? {live:1} : gradeOf(kind, espnStats(r.names, r.v, kind==='pit' ? 'pit' : '', {})); }catch(e){} return [r, g]; }));
   const avg = rows.length ? rows[0].labels.map((l, i) => { const vs = rows.map(r => String(r.v[i] ?? '')).filter(v => /^-?\d+(\.\d+)?$/.test(v)).map(Number); return vs.length >= rows.length*0.6 ? {l, v:vs.reduce((a, c) => a + c, 0)/vs.length, rate:/%|AVG|ERA|WHIP|RTG/i.test(l)} : null; }).filter(Boolean).slice(0, 8) : [];
   box.querySelector('.hv-list').innerHTML = `<div class="proj-grid">${[[rows.length, 'Games'], [`${rows.filter(r => /^W/i.test(r.res)).length}–${rows.filter(r => /^L/i.test(r.res)).length}`, 'W–L'], ...avg.map(a => [a.v.toFixed(1), a.rate ? a.l : `${a.l} / G`])].map(([v, l]) => `<div><b>${v}</b><span>${esc(l)}</span></div>`).join('')}</div>
     <div class="h4row" style="margin-top:12px"><h4>Every game</h4>${glSortSeg()}</div><div class="rg-list">${glSorted(rows, G).map(r => `<div class="rg-r" data-pastbox="${esc(path)}|${esc(r.id)}">${grPill(G.get(r))}<span class="rg-d">${new Date(r.t).toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'})}${r.post ? ' ★' : ''}</span><span class="rg-o">${oppLogo(path, r)}${esc(r.at)} ${esc(r.oab)} <em class="${/^W/i.test(r.res)?'hit':/^L/i.test(r.res)?'miss':''}">${esc(r.res)} ${esc(r.sc)}</em></span><span class="rg-l">${esc(slogLine(r))}</span></div>`).join('')}</div>`; }
@@ -8769,6 +8789,79 @@ updBell();
 document.addEventListener('click', e => { const el = e.target; if(!el.closest) return; const t = el.closest('#main .mu [data-nteam], #main .mu [data-team]'); if(!t || el.closest('[data-sbook],.po-tag,.fav-star,[data-fav]')) return;
   e.stopPropagation(); e.preventDefault(); closeOv('ovPlayer'); if(t.dataset.nteam) openNflTeam(t.dataset.nteam); else openTeam(t.dataset.team); }, true);
 cmBrand();
+
+/* ================= v1.8: period scores, schedule by date, real positions on lineups, live play-by-play, no grades until the final ================= */
+
+/* ---- Schedule opens by date every visit; By team is one tap away ---- */
+UI.schedMode = 'date';
+
+/* ---- Header crest: the logo at its true shape, never stretched ---- */
+setTimeout(() => { const br = document.querySelector('#nav .brand'); if(br && !br.querySelector('.brand-logo')) br.insertAdjacentHTML('afterbegin', '<img class="brand-logo" src="logo.png" alt="">'); }, 0);
+
+/* ---- Grades wait for the final: a game-log row with no result yet, from the last few hours, is still being played ---- */
+function rowLive(r){ return !!r && !/^[WLDT]/i.test(String(r.res || '').trim()) && r.t <= Date.now() && Date.now() - r.t < 8*3600e3; }
+const _espnBoxPlayers18 = espnBoxPlayers; espnBoxPlayers = function(j, path){ const out = _espnBoxPlayers18(j, path); const st = ((((j||{}).header||{}).competitions||[])[0]||{}).status;
+  if(st && st.type && st.type.state==='in') out.forEach(P => { P.G = {live:1}; }); return out; };
+
+/* ---- Positions: the depth chart says where a player really plays (Sabonis is the Kings' center, not a generic "F") ---- */
+const POS_GENERIC = /^(G|F|C|GF|FC|G-F|F-C|F-G|C-F)$/i;
+function refinePos(){ (M.players || []).forEach(p => { if(p.dpos && (POS_GENERIC.test(p.pos || '') || !p.pos)) p.pos = p.dpos.toUpperCase(); }); }
+const _build18 = build; build = function(...a){ const r = _build18(...a); try{ refinePos(); }catch(e){} return r; };
+const nbaPos = id => { const p = M.players.find(q => q.id===String(id)); return p ? (p.dpos ? p.dpos.toUpperCase() : p.pos || '') : ''; };
+function gbPos(r, path){ const p = /basketball\/nba/.test(path) ? M.players.find(q => q.id===String(r.id)) : null; const pos = p && p.dpos ? p.dpos.toUpperCase() : r.pos;
+  return pos ? ` <span class="${r.starter ? 'gb-pos st' : 'muted'}" style="font-size:11px">${esc(pos)}</span>` : ''; }
+// Starters: each depth-chart slot keeps its own player and label; empty slots go to the closest fit by position. Anyone who hasn't played all season (once the team has 5+ games) isn't projected to start.
+startersFor = function(ab, lines){ const D = DEPTH[ab], used = new Set(), slot = {}, tm = M.teamMap[ab] || {}, played = (tm.aw||0) + (tm.al||0);
+  const pool = lines.filter(l => played < 5 || l.p.C);
+  if(D) DEPTH_POS.forEach(pos => { const id = (D.chart[pos]||[]).map(String).find(x => !used.has(x) && pool.some(l => l.p.id===x)); if(id){ used.add(id); slot[pos] = pool.find(l => l.p.id===id); } });
+  DEPTH_POS.filter(pos => !slot[pos]).forEach(pos => { const want = DPOS_NUM[pos];
+    const c = pool.filter(l => !used.has(l.p.id)).sort((a,b)=>b.L.min-a.L.min).slice(0, 6).sort((a,b) => Math.abs(posNum(a.p)-want) - Math.abs(posNum(b.p)-want) || b.L.min-a.L.min)[0];
+    if(c){ used.add(c.p.id); slot[pos] = c; } });
+  return DEPTH_POS.filter(pos => slot[pos]).map(pos => ({...slot[pos], pos})); };
+
+/* ---- Period scores: quarters, innings or halves under every game that has started, on the schedule and in the game view ---- */
+const LSC = {}, LSD = {};
+const lsDay = t => new Date(t).toLocaleDateString('en-CA', {timeZone:'America/New_York'}).replace(/-/g, '');
+async function lsFetch(path, day){ const k = path + '|' + day, d = LSD[k]; if(d && (d.busy || Date.now() - d.at < (d.live ? 30000 : d.pre ? 300000 : 36e5))) return; LSD[k] = {busy:1, at:Date.now()};
+  const grp = /college-basketball/.test(path) ? '&groups=50&limit=300' : /college-football/.test(path) ? '&groups=80&limit=300' : /college-baseball/.test(path) ? '&groups=26&limit=300' : '';
+  let live = false, pre = false, got = false;
+  try{ const j = await (await fetch(`https://site.web.api.espn.com/apis/site/v2/sports/${path}/scoreboard?dates=${day}${grp}`, {cache:'no-store'})).json();
+    (j.events||[]).forEach(e => { const c = (e.competitions||[])[0]; if(!c) return; const st = ((c.status||{}).type||{}).state; if(st==='in') live = true; if(st==='pre') pre = true;
+      const H = c.competitors.find(x => x.homeAway==='home'), A = c.competitors.find(x => x.homeAway==='away'); if(!H || !A || !((H.linescores||[]).length || (A.linescores||[]).length)) return;
+      const side = x => ({ab:(x.team||{}).abbreviation || '', ls:(x.linescores||[]).map(l => l.displayValue ?? l.value), sc:x.score, h:x.hits, e:x.errors});
+      LSC[String(e.id)] = {path, h:side(H), a:side(A), st}; got = true; });
+    // soccer scoreboards carry no half scores; each started match's summary does
+    if(/soccer/.test(path)) await Promise.all((j.events||[]).filter(e => ['in','post'].includes((((e.competitions||[])[0]||{}).status||{type:{}}).type.state) && !LSC[String(e.id)]).map(async e => { try{ const s = await (await fetch(`https://site.web.api.espn.com/apis/site/v2/sports/${path}/summary?event=${e.id}`, {cache:'no-store'})).json(); const c = ((s.header||{}).competitions||[])[0] || {}, cs = c.competitors || [];
+      const H = cs.find(x => x.homeAway==='home'), A = cs.find(x => x.homeAway==='away'); if(!H || !A || !(H.linescores||[]).length) return; const side = x => ({ab:(x.team||{}).abbreviation || '', ls:(x.linescores||[]).map(l => l.displayValue ?? l.value), sc:x.score});
+      LSC[String(e.id)] = {path, h:side(H), a:side(A), st:((c.status||{}).type||{}).state}; got = true; }catch(err){} })); }catch(e){}
+  LSD[k] = {at:Date.now(), live, pre}; if(got) lsDecorate(); }
+function lsHTML(id, big){ const L = LSC[id]; if(!L) return ''; const mlb = /baseball/.test(L.path), soc = /soccer/.test(L.path), half = /college-basketball/.test(L.path);
+  const n = Math.max(L.h.ls.length, L.a.ls.length, mlb ? 9 : soc || half ? 2 : 4);
+  const lab = i => mlb ? i + 1 : soc ? (i < 2 ? (i ? '2H' : '1H') : 'ET' + (i - 1)) : half ? (i < 2 ? 'H' + (i + 1) : 'OT' + (i > 2 ? i - 1 : '')) : (i < 4 ? 'Q' + (i + 1) : 'OT' + (i > 4 ? i - 3 : ''));
+  const sig = JSON.stringify([L.a, L.h]).replace(/"/g, '');
+  const row = s => `<tr><td class="l">${esc(s.ab)}</td>${Array.from({length:n}, (_, i) => `<td>${s.ls[i]!=null ? esc(String(s.ls[i])) : ''}</td>`).join('')}<td class="lsx-t">${esc(String(s.sc ?? ''))}</td>${mlb ? `<td>${s.h ?? ''}</td><td>${s.e ?? ''}</td>` : ''}</tr>`;
+  return `<div class="lsx${big ? ' big' : ''}" data-sig="${esc(sig)}"><table><thead><tr><th class="l" data-nosort="1"></th>${Array.from({length:n}, (_, i) => `<th data-nosort="1">${lab(i)}</th>`).join('')}<th class="lsx-t" data-nosort="1">${mlb ? 'R' : 'T'}</th>${mlb ? '<th data-nosort="1">H</th><th data-nosort="1">E</th>' : ''}</tr></thead><tbody>${(soc ? [L.h, L.a] : [L.a, L.h]).map(row).join('')}</tbody></table></div>`; }
+function lsPut(host, html, where){ const old = host.querySelector(':scope > .lsx'); const sig = (/data-sig="([^"]*)"/.exec(html) || [])[1];
+  if(old){ if(old.dataset.sig!==sig) old.outerHTML = html; return; } where(html); }
+function lsDecorate(){ const need = new Map(), want = (path, t) => { const d = lsDay(t); need.set(path + '|' + d, [path, d]); };
+  document.querySelectorAll('#main .mu[data-game], #main .mu[data-ngame]').forEach(card => { const nba = !!card.dataset.game, id = card.dataset.game || card.dataset.ngame;
+    const g = nba ? M.games.find(x => String(x.id)===id) : NF && NF.games.find(x => String(x.id)===id); if(!g) return;
+    const started = nba ? !!(g.done || liveOf(g)) : g.state==='in' || g.state==='post'; if(!started) return;
+    want(nba ? 'basketball/nba' : LG_PATH(LGK), g.t);
+    if(LSC[id]) lsPut(card, lsHTML(id), html => { const ft = card.querySelector(':scope > .ft'); ft ? ft.insertAdjacentHTML('beforebegin', html) : card.insertAdjacentHTML('beforeend', html); }); });
+  const pb = document.querySelector('#ovGame.open #gamePanel [data-pbp]'), body = document.querySelector('#ovGame.open #gamePanel .g-body');
+  if(pb && body && !body.querySelector('.mc-ls')){ const [path, id] = pb.dataset.pbp.split('|');
+    if(LSC[id]) lsPut(body, lsHTML(id, true), html => body.insertAdjacentHTML('afterbegin', html));
+    else { const g = /basketball\/nba/.test(path) ? M.games.find(x => String(x.id)===id) : NF && NF.games.find(x => String(x.id)===id); if(g) want(path, g.t); } }
+  else if(body && body.querySelector('.mc-ls')){ const x = body.querySelector(':scope > .lsx'); if(x) x.remove(); }
+  need.forEach(([path, day]) => lsFetch(path, day)); }
+(() => { if(STATIC) return; let q = 0; const run = () => { if(q) return; q = requestAnimationFrame(() => { q = 0; try{ lsDecorate(); }catch(e){} }); };
+  const mo = new MutationObserver(run); ['main', 'gamePanel'].forEach(id => { const el = document.getElementById(id); if(el) mo.observe(el, {childList:true, subtree:true}); });
+  setInterval(run, 30000); })();
+
+/* ---- Live games always open with a running play-by-play (even when the schedule hasn't caught up with kickoff yet) ---- */
+const _openLgGame18 = openLgGame; openLgGame = function(id){ _openLgGame18(id); try{ const g = NF && NF.games.find(x => x.id===id), body = document.querySelector('#gamePanel .g-body'); if(!g || !body || STATIC) return;
+  if(!body.querySelector('[data-pbp]') && g.state!=='post' && g.t <= Date.now() && Date.now() - g.t < 6*3600e3){ body.insertAdjacentHTML('beforeend', pbpSlot(LG_PATH(LGK), g.id, 'in')); pbpLoad(true); } }catch(e){} };
 
 /* ================= BOOT ================= */
 const stEl = document.getElementById('stars');
