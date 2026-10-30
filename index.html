@@ -22,7 +22,7 @@
   --text:#f0f0f0; --muted:#8a8f98; --accent:#ffffff; --win:#7ee2a8; --loss:#ff8a7a; --warn:#ffcf6e;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
+html{scroll-behavior:auto}
 body{background:var(--bg);color:var(--text);font-family:"Barlow",system-ui,sans-serif;font-weight:400;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 body.locked{overflow:hidden}
 .cond{font-family:"Barlow Condensed","Barlow",sans-serif}
@@ -77,7 +77,7 @@ nav.solid{background:rgba(0,0,0,.88);backdrop-filter:blur(8px);border-bottom:1px
 
 /* SECTIONS */
 main{position:relative}
-.section{display:none;padding:120px 40px 100px;max-width:1320px;margin:0 auto;animation:fade .6s ease}
+.section{display:none;padding:120px 40px 100px;max-width:1320px;margin:0 auto}
 .section.active{display:block}
 @keyframes fade{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:34px;flex-wrap:wrap}
@@ -4106,14 +4106,14 @@ function hiHead(p){
 function openOv(id){ $('#'+id).classList.add('open'); document.body.classList.add('locked'); }
 function closeOv(id){ $('#'+id).classList.remove('open'); if(!document.querySelector('.overlay.open')) document.body.classList.remove('locked'); }
 
-/* ================= MULTI-SPORT ENGINE: Sideline (NFL) · Dugout (MLB) · Touchline (soccer) · Campus (college) ================= */
+/* ================= MULTI-SPORT ENGINE: Sideline (NFL) · Clutch Matrix (MLB) · Touchline (soccer) · Campus (college) ================= */
 const SOC_LEAGUES = {'eng.1':{name:'Premier League', short:'EPL', top:4, rel:3, n:38}, 'esp.1':{name:'La Liga', short:'La Liga', top:4, rel:3, n:38}, 'ita.1':{name:'Serie A', short:'Serie A', top:4, rel:3, n:38},
   'ger.1':{name:'Bundesliga', short:'Bundesliga', top:4, rel:2, n:34}, 'fra.1':{name:'Ligue 1', short:'Ligue 1', top:3, rel:2, n:34}, 'usa.1':{name:'MLS', short:'MLS', top:18, rel:0, n:34}};
 const NCAA_LEAGUES = {'mcbb':{name:"Men's college basketball", short:'NCAAM'}, 'cfb':{name:'College football', short:'NCAAF'}};
 const isFBs = sp => sp==='nfl' || sp==='cfb';
 const SPORTS = {
   nfl:{brand:'Sideline', label:'NFL', model:'pts', HFA:1.3, SIG:14, LG:22.5, PRIOR_REG:0.55, LAMBDA:5, unit:'points', seasonLbl:'2026 NFL season', regGames:17, ab:'NFL'},
-  mlb:{brand:'Dugout', label:'MLB', model:'pts', HFA:0.25, SIG:3.7, LG:4.4, PRIOR_REG:0.5, LAMBDA:120, unit:'runs', seasonLbl:'2026 MLB season', regGames:162, ab:'MLB'},
+  mlb:{brand:'Clutch Matrix', label:'MLB', model:'pts', HFA:0.25, SIG:3.7, LG:4.4, PRIOR_REG:0.5, LAMBDA:120, unit:'runs', seasonLbl:'2026 MLB season', regGames:162, ab:'MLB'},
   soc:{brand:'Touchline', label:'Soccer', model:'goals', HFA:0.25, LAMBDA:5, HOMEX:0.5, PRIOR_G:15, PK:0.9, DECAY:150, DI:1.12, unit:'goals', seasonLbl:'2026–27 season', ab:'Soccer'},
   cfb:{brand:'Gridiron', label:'College football', model:'pts', HFA:3.2, SIG:15.5, LG:28, PRIOR_REG:0.6, LAMBDA:3, unit:'points', seasonLbl:'2026 season', regGames:12, ab:'NCAAF'},
   cbb:{brand:'Campus', label:"Men's college basketball", model:'pts', HFA:3.2, SIG:10.8, LG:72, PRIOR_REG:0.55, LAMBDA:6, unit:'points', seasonLbl:'2026–27 season', regGames:31, ab:'NCAA'},
@@ -5205,6 +5205,7 @@ function setSport(sp, first){
   document.querySelectorAll('.brand-name').forEach(b => b.textContent = brand);
   document.querySelectorAll('[data-sport]').forEach(b => b.classList.toggle('on', b.dataset.sport===UI.sport));
   LG_VIEWS = lgViews(); buildTabs();
+  window.scrollTo(0, 0);
   if(UI.sport!=='nba'){ NF = lgModel(LGK); lgEnsure(LGK); lgImgs(LGK); renderLgHero(); if(!first){ go('lg-games', false); window.scrollTo(0, 0); } if(!STATIC){ clearTimeout(lgPollT); lgPoll(); } }
   else { renderHero(); if(!first){ go('schedule', false); window.scrollTo(0, 0); } }
   SW_AT = Date.now();
@@ -5213,7 +5214,7 @@ function setSport(sp, first){
   if(fd[1]) fd[1].style.display = UI.sport==='nba' ? '' : 'none';
 }
 function setLeague(key){ LGK = key; if(isCollege(key)) UI.ncaaLeague = key; else UI.socLeague = key; saveUI(); NF = lgModel(key); lgEnsure(key); lgImgs(key); renderLgHero(); LG_VIEWS = lgViews(); buildTabs(); clearTimeout(lgPollT); lgPoll();
-  document.querySelectorAll('.brand-name').forEach(b => b.textContent = CF().brand); const k = CUR.startsWith('lg-team') ? 'lg-teams' : LG_VIEWS.some(v=>v.k===CUR) ? CUR : 'lg-leaders'; go(k, false); }
+  document.querySelectorAll('.brand-name').forEach(b => b.textContent = CF().brand); const k = CUR.startsWith('lg-team') ? 'lg-teams' : LG_VIEWS.some(v=>v.k===CUR) ? CUR : 'lg-leaders'; go(k, false); window.scrollTo(0, 0); }
 function renderNflHero(){ return renderLgHero(); }
 function renderLgHero(){
   if(window.renderHero) renderHero.__lg = true;
@@ -5818,6 +5819,7 @@ function renderSection(k){
   if(k.startsWith('nfl') || k.startsWith('lg')) return lgSection(k);
   return ({leaders:leadersSection, teams:teamsSection, team:()=>teamPage(UI.team), playbook:playbookSection, schedule:scheduleSection, live:liveSection, standings:standingsSection, injuries:injuriesSection, breakouts:breakoutsSection, tstats:nbaTeamStatsSection, favs:favsSection, vegas:vegasSection, lab:nbaLabSection, method:methodSection, updates:updatesSection}[k] || (()=>''))();
 }
+const EV_TABS = ['schedule','lg-games','lg-cups']; // tournament banners and event heroes live on the schedule/fixtures views only
 function go(k, scroll){
   if(k==='vegas' || k==='tstats' || k==='lg-tstats'){ if(k!=='vegas') UI.ldView = 'teams'; k = k==='vegas' ? (UI.sport && UI.sport!=='nba' ? 'lg-games' : 'schedule') : k==='tstats' ? 'leaders' : 'lg-leaders'; }
   const __same = CUR===k; CUR = k; let __ev = false; if(['schedule','lg-games'].includes(k)) try{ __ev = !!eventFor(UI.sport || 'nba'); }catch(e){} document.body.classList.toggle('no-hero', ['schedule','lg-games','favs','vegas'].includes(k) && !__ev);
@@ -5827,12 +5829,12 @@ function go(k, scroll){
   document.querySelectorAll('[data-topk]').forEach(b=>b.classList.toggle('on', b.dataset.topk===k));
   tabsEl.classList.remove('open');
   let html = ''; try{ html = renderSection(k); }catch(err){ console.error(err); html = `<div class="sec-head"><div><h2>Couldn’t load this page</h2></div><p>Something went wrong building it (${esc(String((err && err.message) || err))}). Try another tab or press ↻ Sync.</p></div>`; }
-  let ban = ''; if(!['favs','vegas'].includes(k)){ try{ ban = poBanner(); }catch(e){} } else document.body.classList.remove('po-on','po-mlb','po-nfl','po-soc','po-ncaaf','po-ncaam','po-nba');
+  let ban = ''; if(EV_TABS.includes(k)){ try{ ban = poBanner(); }catch(e){} } else document.body.classList.remove('po-on','po-mlb','po-nfl','po-soc','po-ncaaf','po-ncaam','po-nba');
   main.innerHTML = `<section class="section active${__same?' still':''}" id="sec-${k}">${ban}${html}</section>`; try{ evHero(k); }catch(e){} try{ tblSortRestore(); }catch(e){}
   try{ history.replaceState(null,'','#'+(k==='team'?'team-'+UI.team:k==='lg-team'?'lg-team-'+UI.nflTeam:k)); }catch(e){}
   if(k==='updates') wireUpdates();
   try{ heroMode(k); }catch(e){}
-  if(scroll!==false){ const sec = main.firstElementChild, hd = sec && (sec.querySelector('.sec-head') || sec); if(document.body.classList.contains('no-hero')) window.scrollTo({top:0, behavior:'smooth'}); else if(hd) hd.scrollIntoView({behavior:'smooth'}); }
+  if(scroll!==false){ const sec = main.firstElementChild, hd = sec && (sec.querySelector('.sec-head') || sec); if(document.body.classList.contains('no-hero')) window.scrollTo(0, 0); else if(hd) hd.scrollIntoView({behavior:'auto', block:'start'}); }
 }
 /* The big header says "This season" on current-stat leaderboards and "Projections" everywhere else */
 function heroMode(k){
@@ -5877,7 +5879,7 @@ document.addEventListener('click', e => {
   const ngr = el.closest('[data-ngroup]'); if(ngr){ UI.nflGroup = ngr.dataset.ngroup; saveUI(); go('lg-standings', false); return; }
   const lgl = el.closest('[data-lgleague]'); if(lgl){ const fromUcl = CUR==='lg-cups'; setLeague(lgl.dataset.lgleague); if(fromUcl) go('lg-games', true); return; }
   if(el.closest('[data-uclpick]')){ UI.cup = 'uefa.champions'; UI.cupTab = 'fix'; UI.cupAll = false; saveUI(); go('lg-cups', true); return; }
-  const lgd = el.closest('[data-lgday]'); if(lgd){ UI['day'+LGK] = lgd.dataset.lgday; go('lg-games', false); return; }
+  const lgd = el.closest('[data-lgday]'); if(lgd){ UI['day'+LGK] = lgd.dataset.lgday; go('lg-games', false); window.scrollTo(0, 0); return; }
   const lgh = el.closest('[data-lgh2h]'); if(lgh){ const [a,b] = lgh.dataset.lgh2h.split(':'); openLgH2H(a, b); return; }
   const mgp = el.closest('[data-mlbgrp]'); if(mgp){ UI.mlbGrp = mgp.dataset.mlbgrp; saveUI(); const y = scrollY; go('lg-leaders', false); window.scrollTo(0, y); return; }
   const lvf = el.closest('[data-livef]'); if(lvf){ UI.liveF = lvf.dataset.livef; saveUI(); const y = scrollY; go(CUR, false); window.scrollTo(0, y); return; }
@@ -5910,7 +5912,7 @@ document.addEventListener('click', e => {
   const st = el.closest('[data-stat]'); if(st){ UI.stat = st.dataset.stat; saveUI(); go('leaders', false); return; }
   const cf = el.closest('.chip[data-conf]'); if(cf){ UI.conf = cf.dataset.conf; go('teams', false); return; }
   const sm = el.closest('[data-smode]'); if(sm){ UI.schedMode = sm.dataset.smode; saveUI(); go('schedule', false); return; }
-  const dy = el.closest('[data-day]'); if(dy){ UI.slateDay = dy.dataset.day; go('schedule', false); return; }
+  const dy = el.closest('[data-day]'); if(dy){ UI.slateDay = dy.dataset.day; go('schedule', false); window.scrollTo(0, 0); return; }
   const wk = el.closest('[data-week]'); if(wk){ UI.week = +wk.dataset.week; go('updates', false); return; }
   const srt = el.closest('[data-sort]'); if(srt){ const k = srt.dataset.sort; UI.sort = {k, d: UI.sort.k===k ? -UI.sort.d : (k==='name'?1:-1)}; go('team', false); return; }
   const stm = el.closest('[data-schedteam]'); if(stm){ UI.schedTeam = stm.dataset.schedteam; UI.schedMode='team'; saveUI(); go('schedule', true); return; }
@@ -6871,7 +6873,7 @@ function favAlerts(){ const out = [], now = Date.now(), H = 3600e3, D = 864e5; c
     try{
     if(lg==='nba'){
       if(kind==='p'){ const p = M.players.find(x => x.id===id); if(!p) return; const nm = p.name;
-        if(p.inj && p.outUntil > M.now){ const dtd = /day/i.test(p.inj.status||''); add({k:`inj|${id}|${p.inj.status}|${p.inj.ret}`, ic:'inj', lvl:dtd?2:3, t:now, go, who:nm, ttl: dtd ? 'Day-to-day' : 'Out', txt:`${p.inj.type ? p.inj.type + ' · ' : ''}${p.inj.ret ? 'expected back ' + fmtDate(Date.parse(p.inj.ret+'T12:00:00Z')) : 'no return date yet'}${p.inj.note ? ' — ' + p.inj.note : ''}`}); }
+        if(p.inj && p.outUntil > M.now){ const dtd = /day/i.test(p.inj.status||''); add({k:`inj|${id}|${p.inj.status}`, ic:'inj', lvl:dtd?2:3, t:now, go, who:nm, ttl: dtd ? 'Day-to-day' : 'Out', txt:`${p.inj.type ? p.inj.type + ' · ' : ''}${p.inj.ret ? 'expected back ' + fmtDate(Date.parse(p.inj.ret+'T12:00:00Z')) : 'no return date yet'}${p.inj.note ? ' — ' + p.inj.note : ''}`}); }
         const gl = (BX.glog[id]||[]).filter(x => x.r[BP.min] > 0); const last = gl[gl.length-1];
         if(last && now - last.t < 3.5*D){ const r = last.r, prev = gl.slice(0, -1); const avg = (f, d) => prev.length ? prev.reduce((s, x) => s + f(x.r), 0)/prev.length : d;
           const aP = avg(x => x[BP.pts], p.L.pts), aG = avg(gsBox, p.L.gs); const g = gsBox(r); const vs = `${last.home?'vs':'@'} ${T[last.opp] ? T[last.opp].n : last.opp}`;
@@ -7392,7 +7394,7 @@ function evHeroHTML(ev){ const chip = (aL, aN, sc, bN, bL, sub, attr) => `<div c
     <div class="evh-chips">${ev.list.slice(0, 8).map(g => chip(lgLogo(g.a), tName(g.a), g.state==='pre' ? '@' : `${g.as}–${g.hs}`, tName(g.h), lgLogo(g.h), g.state==='pre' ? `${new Date(g.t).toLocaleString([], {weekday:'short', hour:'numeric', minute:'2-digit'})} · ${esc(tName(g.pred.ph>=.5?g.h:g.a))} ${Math.round(Math.max(g.pred.ph, 1-g.pred.ph)*100)}%` : g.state==='in' ? '<b class="live">LIVE</b>' : 'Final', `data-ngame="${g.id}"`)).join('')}</div>
     <div class="evh-btns"><button class="btn" data-evgo="${UI.sport}|lg-games">${UI.sport==='soc' ? 'Fixtures' : 'Schedule'}</button></div></div></div>`; }
 const nInkSafe = t => lum(t.p) >= 0.22 ? t.p : lum(t.s) >= 0.3 ? t.s : '#e8e8e8';
-function evHero(k){ const hero = document.querySelector('header.hero'); if(!hero) return; const sp = UI.sport || 'nba'; const ev = ['vegas'].includes(k) ? null : eventFor(sp);
+function evHero(k){ const hero = document.querySelector('header.hero'); if(!hero) return; const sp = UI.sport || 'nba'; const ev = EV_TABS.includes(k) ? eventFor(sp) : null;
   document.body.classList.toggle('ev-on', !!ev); ['ws','cup','ucl','sb','nflpo','cfp','mm','po'].forEach(x => document.body.classList.toggle('ev-'+x, !!ev && ev.kind===x));
   let box = document.getElementById('evHero'); if(!ev){ if(box) box.remove(); } else { if(!box){ box = document.createElement('div'); box.id = 'evHero'; hero.appendChild(box); } const html = evHeroHTML(ev); if(box.__h !== html){ box.innerHTML = html; box.__h = html; } }
   if(ev && !document.body.classList.contains('no-hero')){ const pb = document.querySelector('#main .po-ban' + (ev.kind==='ws' ? '.ws' : '')); if(pb && ev.kind!=='ucl' && ev.kind!=='cup') pb.remove(); }
@@ -7938,7 +7940,7 @@ function favAlerts(){ const out = [], now = Date.now(), D = 864e5; const add = (
     try{
     if(lg==='nba'){ const tgames = ab => M.games.filter(g => g.h===ab || g.a===ab).map(g => ({g, done:g.done && g.hs!=null, me:g.h===ab ? g.hs : g.as, th:g.h===ab ? g.as : g.hs, opp:g.h===ab ? g.a : g.h, home:g.h===ab, pw:g.pred ? (g.h===ab ? g.pred.ph : 1-g.pred.ph) : null, live: !!(LIVE[g.id] && LIVE[g.id].state==='in'), lv:LIVE[g.id]}));
       if(kind==='p'){ const p = M.players.find(x => x.id===id); if(!p) return; const nm = p.name;
-        if(p.inj && p.outUntil > M.now){ const dtd = /day/i.test(p.inj.status||''); add({k:`inj|${id}|${p.inj.status}|${p.inj.ret}`, ic:'inj', lvl:dtd?2:3, t:now, go, who:nm, ttl: dtd ? 'Day-to-day' : 'Out', txt:`${p.inj.type ? p.inj.type + ' · ' : ''}${p.inj.ret ? 'expected back ' + fmtDate(Date.parse(p.inj.ret+'T12:00:00Z')) : 'no return date yet'}${p.inj.note ? ' — ' + p.inj.note : ''}`}); }
+        if(p.inj && p.outUntil > M.now){ const dtd = /day/i.test(p.inj.status||''); add({k:`inj|${id}|${p.inj.status}`, ic:'inj', lvl:dtd?2:3, t:now, go, who:nm, ttl: dtd ? 'Day-to-day' : 'Out', txt:`${p.inj.type ? p.inj.type + ' · ' : ''}${p.inj.ret ? 'expected back ' + fmtDate(Date.parse(p.inj.ret+'T12:00:00Z')) : 'no return date yet'}${p.inj.note ? ' — ' + p.inj.note : ''}`}); }
         const gl = (BX.glog[id]||[]).filter(x => x.r[BP.min] > 0); const last = gl[gl.length-1];
         if(last && now - last.t < 3.5*D){ const r = last.r, prev = gl.slice(0, -1); const avg = (f, d) => prev.length ? prev.reduce((s, x) => s + f(x.r), 0)/prev.length : d;
           const aP = avg(x => x[BP.pts], p.L.pts), aG = avg(gsBox, p.L.gs); const g = gsBox(r); const vs = `${last.home?'vs':'@'} ${T[last.opp] ? T[last.opp].n : last.opp}`; const G = gradeNba(r);
@@ -7983,10 +7985,14 @@ function favsSection(){ const sp = curSp();
   const n = order.reduce((s, lg) => s + groups[lg].length, 0);
   const others = {}; Object.keys(groups).forEach(lg => { const s2 = favSpOf(lg); if(s2!==sp) others[s2] = (others[s2]||0) + groups[lg].length; });
   const elsewhere = Object.keys(others).length ? `<div class="fav-else"><span>Other sports:</span>${Object.entries(others).map(([s2, c]) => `<button class="chip" data-favsp="${esc(s2)}">${esc(({nba:'NBA',nfl:'NFL',mlb:'MLB',soc:'Soccer',ncaam:'NCAAM',ncaaf:'NCAAF'})[s2]||s2)} ★ ${c}</button>`).join('')}</div>` : '';
-  const head = `<div class="sec-head"><div><div class="kicker">${n} ${esc(SP_NAME[sp]||'')} favorite${n===1?'':'s'}</div><h2><span class="fav-h">★</span> Favorites</h2></div><p>Your ${esc(SP_NAME[sp]||'')} teams and players. Tap the star on any team page or player card to follow them; their games jump to the top of the schedule. Each sport keeps its own favorites on its own tab.</p></div>`;
+  const head = pinSportHTML() + `<div class="sec-head"><div><div class="kicker">${n} ${esc(SP_NAME[sp]||'')} favorite${n===1?'':'s'}</div><h2><span class="fav-h">★</span> Favorites</h2></div><p>Your ${esc(SP_NAME[sp]||'')} teams and players. Tap the star on any team page or player card to follow them; their games jump to the top of the schedule. Each sport keeps its own favorites on its own tab.</p></div>`;
   if(!order.length) return head + `<div class="fav-empty"><span class="fav-star on big">★</span><p>No ${esc(SP_NAME[sp]||'')} favorites yet. Open a team or a player and tap the <b>☆</b> next to the name.</p></div>` + elsewhere;
   return head + alertsHTML() + favBackupHTML() + order.map(lg => { const it = groups[lg]; const ts = it.filter(x => x.kind==='t'), ps = it.filter(x => x.kind==='p'); const card = x => lg==='nba' ? favCardNba(x.kind, x.id, x.v) : favCardLg(lg, x.kind, x.id, x.v);
     return `<div class="fav-sec"><div class="sub-h">${esc(lgTitle(lg))} <small>${lgBrand(lg)}</small></div>${ts.length?`<div class="fav-grid">${ts.map(card).join('')}</div>`:''}${ps.length?`<div class="fav-grid">${ps.map(card).join('')}</div>`:''}</div>`; }).join('') + elsewhere; }
+/* ---- Default sport on launch: NBA unless you pin another one ---- */
+function pinSportHTML(){ const cur = LS.get('cs_pinsport') || 'nba';
+  return `<div class="fav-else pin-sp"><span>Open the app on:</span><select class="sel" id="pinSport">${['nba','nfl','mlb','soc','ncaam','ncaaf'].map(s => `<option value="${s}" ${s===cur?'selected':''}>${esc(SP_NAME[s]||s.toUpperCase())}</option>`).join('')}</select></div>`; }
+document.addEventListener('change', e => { if(e.target.id!=='pinSport') return; const v = e.target.value; if(v==='nba') LS.del('cs_pinsport'); else LS.set('cs_pinsport', v); toast(`📌 Clutch Matrix will open on ${SP_NAME[v]||v}`); });
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-favsp]'); if(!b) return; e.stopPropagation(); setSport(b.dataset.favsp, true); go('favs', true); }, true);
 // the badge follows the sport you're on
 const _buildTabs0 = buildTabs; buildTabs = function(){ _buildTabs0(); FAV_AL2 = null; };
@@ -8160,7 +8166,7 @@ function champCele(x, season){ const key = `cs12_champ_${season}_${x.ab}`; if(LS
   const el = document.createElement('div'); el.className = 'champ-ov'; el.style.setProperty('--wc', nInkSafe(x));
   el.innerHTML = `${champConfetti(x, 120)}<div class="champ-card" role="dialog" aria-label="World Series champions">${TROPHY('champG')}<small>${esc(String(season))} World Series</small><b>${esc(x.c)} ${esc(x.n)}</b><em>Champions</em><button class="btn">Celebrate ✕</button></div>`;
   const close = () => { el.classList.add('out'); setTimeout(() => el.remove(), 600); }; el.addEventListener('click', close); document.body.appendChild(el); setTimeout(() => { if(el.isConnected) close(); }, 9000); }
-const _evHero12 = evHero; evHero = function(k){ _evHero12(k); try{ if((UI.sport||'nba')!=='mlb' || k==='vegas') return; const w = wsInfo(); if(w && w.over) champCele(w.x, w.season); }catch(e){} };
+const _evHero12 = evHero; evHero = function(k){ _evHero12(k); try{ if((UI.sport||'nba')!=='mlb' || k==='vegas') return; const w = wsInfo(); if(w && w.over && EV_TABS.includes(k)) champCele(w.x, w.season); }catch(e){} };
 
 /* ---- Football leaders: a position filter next to the stat picker ---- */
 const FB_POS = ['ALL','QB','RB','WR','TE','DEF','K'];
@@ -8362,10 +8368,14 @@ const NBA_AB = {GS:'GSW', NO:'NOP', NY:'NYK', SA:'SAS', UTAH:'UTA', WSH:'WAS'};
 const evAb = (k, ab) => k==='nba' ? (NBA_AB[ab] || ab) : ab;
 function favTeamsBy(){ const by = {}; Object.keys(FAV).forEach(k => { const [kind, lg, id] = k.split('|'); if(kind==='t') (by[lg] = by[lg] || new Set()).add(id); }); return by; }
 const INJST = LS.get('cs13_injst') || {};
+// Pushes fire only on a confirmed flip between healthy and out. Day-to-day / questionable / probable listings are unverified
+// and leave the stored state alone, and a new state has to show up on two checks in a row before it counts.
+const INJPEND = {}, INJ_SOFT_RX = /day.to.day|questionable|doubtful|probable|game.?time/i;
 function injWatch(){ let ch = false; Object.entries(FAV).forEach(([k, v]) => { const [kind, lg, id] = k.split('|'); if(kind!=='p') return; let st = null, txt = '';
-    try{ if(lg==='nba'){ const p = M.players.find(x => x.id===id); if(p){ st = p.inj && p.outUntil > M.now ? 'out' : 'ok'; txt = p.inj ? [p.inj.status, p.inj.type].filter(Boolean).join(' · ') : ''; } }
-      else if(lgData(lg)){ const m = lgModel(lg), p = m && m.players.find(x => x.id===id); if(p){ st = m.isOut(p) ? 'out' : 'ok'; txt = p.inj ? [p.inj[0], p.inj[1]].filter(Boolean).join(' · ') : ''; } } }catch(e){}
-    if(!st) return; const was = INJST[k]; if(was===st) return; INJST[k] = st; ch = true; if(!was) return;
+    try{ if(lg==='nba'){ const p = M.players.find(x => x.id===id); if(p){ st = !(p.inj && p.outUntil > M.now) ? 'ok' : INJ_SOFT_RX.test(p.inj.status||'') ? 'soft' : 'out'; txt = p.inj ? [p.inj.status, p.inj.type].filter(Boolean).join(' · ') : ''; } }
+      else if(lgData(lg)){ const m = lgModel(lg), p = m && m.players.find(x => x.id===id); if(p){ st = !p.inj ? 'ok' : m.isOut(p) && !INJ_SOFT_RX.test(p.inj[0]||'') ? 'out' : 'soft'; txt = p.inj ? [p.inj[0], p.inj[1]].filter(Boolean).join(' · ') : ''; } } }catch(e){}
+    if(!st || st==='soft'){ delete INJPEND[k]; return; } const was = INJST[k]; if(was===st){ delete INJPEND[k]; return; }
+    if(was && INJPEND[k]!==st){ INJPEND[k] = st; return; } delete INJPEND[k]; INJST[k] = st; ch = true; if(!was) return;
     if(st==='out') csNotify(`🩹 ${v.n} ruled OUT`, txt || 'Listed out on the latest injury report', 'inj-' + k); else csNotify(`✅ ${v.n} is back`, 'Off the injury report and available', 'inj-' + k); });
   if(ch) LS.set('cs13_injst', INJST); }
 const MS = {st:{}, done:new Set(LS.get('cs13_ms') || [])};
@@ -9083,6 +9093,7 @@ for(let i=0;i<140;i++){const d=document.createElement('div');d.className='star';
   const fb = document.querySelector('footer .brand'); if(fb) fb.innerHTML = '<span class="brand-name">Clutch Matrix</span>'; })();
 build(); renderHero();
 const start = (location.hash||'').slice(1);
+if(!start) UI.sport = LS.get('cs_pinsport') || 'nba';   // launch on the pinned sport, NBA by default
 if(start.startsWith('nfl') || start.startsWith('lg-') || (UI.sport && UI.sport!=='nba' && !start)){ setSport(start.startsWith('nfl') ? 'nfl' : (UI.sport && UI.sport!=='nba' ? UI.sport : 'nfl'), true); const ts = start.replace(/^(nfl|lg)-team-/, ''); if(/^(nfl|lg)-team-/.test(start) && NF && NF.T[ts]){ UI.nflTeam = ts; go('lg-team', false); } else go(LG_VIEWS.some(v=>v.k===start) ? start : start.startsWith('nfl-') && LG_VIEWS.some(v=>v.k==='lg-'+start.slice(4)) ? 'lg-'+start.slice(4) : 'lg-games', false); }
 else { if(UI.sport && UI.sport!=='nba') setSport('nba', true);
 if(start.startsWith('team-') && T[start.slice(5)]){ UI.team = start.slice(5); go('team', false); }
