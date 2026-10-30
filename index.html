@@ -1214,15 +1214,16 @@ td .vg-bar{margin-bottom:4px}
 </head>
 <body>
 <div id="cmIntro" role="button" tabindex="0" aria-label="Enter the Clutch Matrix">
-  <div class="cmi-grid"></div><div class="cmi-glow"></div>
+  <div class="cmi-grid"></div><div class="cmi-glow"></div><div class="cmi-warp"></div>
   <div class="cmi-in"><img class="cmi-logo" src="logo.png" alt="Clutch Matrix"><h1 class="cmi-title">Enter the <b>Clutch Matrix</b></h1><span class="cmi-btn">Entering…</span></div>
 </div>
 <script>/* entry screen: shown once per visit; deep links (a team, a shared favorites link, a notification) go straight in */
 (function(){ var el = document.getElementById('cmIntro'), skip = false; try{ skip = sessionStorage.getItem('cm_in')==='1' || location.hash.length > 1; }catch(e){}
   if(skip){ el.remove(); return; } document.documentElement.classList.add('cm-intro');
   var enter = function(){ if(el.classList.contains('out')) return; try{ sessionStorage.setItem('cm_in', '1'); }catch(e){} el.classList.add('out'); document.documentElement.classList.remove('cm-intro'); setTimeout(function(){ el.remove(); }, 900); };
-  el.addEventListener('click', function(e){ e.stopPropagation(); enter(); }); el.addEventListener('keydown', function(e){ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); enter(); } });
-  setTimeout(function(){ try{ el.focus({preventScroll:true}); }catch(e){} }, 60); setTimeout(enter, 1000); })();</script>
+  var warp = function(){ if(el.classList.contains('warp')) return; el.classList.add('warp'); setTimeout(enter, 650); };
+  el.addEventListener('click', function(e){ e.stopPropagation(); warp(); }); el.addEventListener('keydown', function(e){ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); warp(); } });
+  setTimeout(function(){ try{ el.focus({preventScroll:true}); }catch(e){} }, 60); setTimeout(warp, 850); })();</script>
 
 <nav id="nav">
   <div class="brand" onclick="window.scrollTo({top:0,behavior:'smooth'})">Clutch Matrix</div>
@@ -2210,6 +2211,58 @@ nav .brand .brand-logo{width:34px;height:34px;aspect-ratio:1/1;object-fit:contai
 .gb-pos.st{color:#fff;font-weight:600;letter-spacing:.06em}
 /* a game still on: no grade yet */
 .grd.none[title]{font-size:9px;letter-spacing:.08em}
+/* ---- v1.9 ---- */
+/* entry: a hyperspace jump into the crest */
+#cmIntro .cmi-warp{position:absolute;left:50%;top:40%;width:260vmax;height:260vmax;margin:-130vmax 0 0 -130vmax;opacity:0;pointer-events:none;background:repeating-conic-gradient(from 0deg,rgba(255,226,150,0) 0deg 1.6deg,rgba(255,226,150,.75) 1.9deg,rgba(255,226,150,0) 2.3deg 5.2deg);-webkit-mask:radial-gradient(circle,transparent 4%,#000 22%,transparent 60%);mask:radial-gradient(circle,transparent 4%,#000 22%,transparent 60%)}
+#cmIntro.warp .cmi-warp{animation:cmiWarp .75s cubic-bezier(.55,0,.8,.2) forwards}
+#cmIntro.warp .cmi-logo,#cmIntro.warp.out .cmi-logo{animation:cmiZoom .75s cubic-bezier(.6,0,.85,.25) forwards}
+#cmIntro.warp .cmi-title,#cmIntro.warp .cmi-btn{opacity:0;transform:scale(.9);transition:opacity .22s,transform .3s}
+#cmIntro.warp .cmi-glow{animation:cmiFlare .75s ease-in forwards}
+#cmIntro.warp .cmi-grid{animation-duration:.18s}
+@keyframes cmiWarp{0%{opacity:0;transform:scale(.25) rotate(0deg)}35%{opacity:1}100%{opacity:0;transform:scale(1.6) rotate(6deg)}}
+@keyframes cmiZoom{0%{transform:scale(1);opacity:1;filter:none}100%{transform:scale(7);opacity:0;filter:blur(5px) brightness(1.8)}}
+@keyframes cmiFlare{to{opacity:1;transform:translate(-50%,-50%) scale(3.2)}}
+/* level scores read level: neither side gets the leader's white */
+.mu .ln.tie,.mu .ln.tie b{color:#d5d9de}
+.mu .ln.tie .ln-rec{color:#9aa0a8}
+/* live situation: down & distance, who has the ball, the field, the last play */
+.sitx{margin:8px 0 2px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.035);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);font-size:12.5px}
+#gamePanel > .sitx{margin:0 0 14px;padding:12px 14px}
+.sx-top{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-bottom:6px;font-family:"Barlow Condensed",sans-serif;letter-spacing:.04em}
+.sx-top b{font-size:16px;color:#fff;font-weight:700}
+#gamePanel > .sitx .sx-top b{font-size:20px}
+.sx-poss{color:#ffd54a;font-weight:600}
+.sx-top em{font-style:normal;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#ff6b6b;border:1px solid rgba(255,107,107,.5);border-radius:999px;padding:1px 7px}
+.sx-field{display:block;width:100%;height:auto;border-radius:6px;overflow:hidden}
+#gamePanel > .sitx .sx-field{max-width:640px;margin:0 auto}
+.sx-field .turf{fill:#1d5a2c}
+.sx-field line{stroke:rgba(255,255,255,.35);stroke-width:.35}
+.sx-field line.mid{stroke:rgba(255,255,255,.7)}
+.sx-field .ez{opacity:.85}
+.sx-field .ezt{fill:#fff;font:700 4.4px "Barlow Condensed",sans-serif;letter-spacing:.3px;text-anchor:middle;dominant-baseline:central;opacity:.9}
+.sx-ball,.sx-fd{transition:transform .9s cubic-bezier(.3,.7,.2,1),opacity .4s}
+.sx-field .los{stroke:#5aa9ff;stroke-width:.7}
+.sx-fd line{stroke:#ffd54a;stroke-width:.7}
+.sx-field .ball{fill:#8a4b22;stroke:#f4e1c8;stroke-width:.35;animation:sxPulse 1.6s ease-in-out infinite}
+.sx-arr{stroke:#fff;stroke-width:1;stroke-dasharray:2 1.4;fill:none;animation:sxDash .8s linear infinite}
+.sx-head{fill:#fff}
+@keyframes sxDash{to{stroke-dashoffset:-3.4}}
+@keyframes sxPulse{0%,100%{filter:none}50%{filter:drop-shadow(0 0 1.5px #ffd54a)}}
+.sx-last{margin:6px 0 0;color:#cfd3d8;line-height:1.4}
+.sx-last span{font-family:"Barlow Condensed",sans-serif;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-right:6px}
+.mu .sx-last{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mu .ln.poss > span::after,.cf-t.poss .cf-nm::after,.g-head .tname.poss::after{content:"◀";color:#ffd54a;font-size:10px;margin-left:6px;vertical-align:middle}
+@media (prefers-reduced-motion:reduce){ .sx-ball,.sx-fd{transition:none} .sx-field .ball,.sx-arr{animation:none} }
+/* football box scores and position matchups fold away so the plays come first */
+.gb-fold,.fold-sec{margin-top:18px;border-top:1px solid rgba(255,255,255,.08)}
+.gb-fold > summary,.fold-sec > summary{cursor:pointer;padding:12px 0;font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:#fff}
+.gb-fold > summary em,.fold-sec > summary em{font-style:normal;color:var(--muted);font-size:12px;margin-left:8px;letter-spacing:.06em}
+.gb-fold > h4:first-of-type{display:none}
+/* player card on phones: the team badge is a faint watermark centred behind the portrait, clear of the name and the small badges */
+@media (max-width:900px){
+  #playerPanel .p-head:not(.soc-head) .p-photo .p-logo{top:50%!important;bottom:auto!important;left:50%!important;right:auto!important;width:min(78%,170px)!important;height:auto!important;aspect-ratio:1/1;transform:translate(-50%,-52%);opacity:.22!important;z-index:0!important;pointer-events:none;filter:saturate(1.1)!important}
+  #playerPanel .p-head:not(.soc-head) .p-photo .p-hs{z-index:2}
+}
 </style>
 <script type="application/json" id="favs">{}</script>
 <script type="application/json" id="edits">{}</script>
@@ -3049,17 +3102,17 @@ async function pollLive(){
   try{
     const etd = new Intl.DateTimeFormat('en-CA', {timeZone:'America/New_York'}).format(new Date()).replace(/-/g,''); const SBU = 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard'; const evm = {};
     for(const u of [SBU, `${SBU}?dates=${etd}`]){ try{ const r = await fetch(u, {cache:'no-store'}); if(r.ok) ((await r.json()).events||[]).forEach(e => evm[e.id] = e); }catch(e){} }
-    const s = {events: Object.values(evm)}; let any = false, changed = false, newFinal = false;
+    const s = {events: Object.values(evm)}; let any = false, changed = false, newFinal = false, newSit = false;
     (s.events||[]).forEach(e => { const c = e.competitions[0], h = c.competitors.find(x=>x.homeAway==='home'), a = c.competitors.find(x=>x.homeAway==='away');
       const st = c.status.type.state; if(st==='in') any = true;
       const nv = {state:st, hs:+h.score||0, as:+a.score||0, detail:c.status.type.shortDetail || c.status.type.detail};
       const ov = LIVE[e.id]; if(!ov || ov.hs!==nv.hs || ov.as!==nv.as || ov.state!==nv.state || ov.detail!==nv.detail) changed = true;
       scoreWatch({id:String(e.id), sp:'nba', src:'nba', state:st, h:{n:(h.team||{}).shortDisplayName||'', ab:(h.team||{}).abbreviation||'', sc:nv.hs, logo:(h.team||{}).logo||'', color:(h.team||{}).color||''}, a:{n:(a.team||{}).shortDisplayName||'', ab:(a.team||{}).abbreviation||'', sc:nv.as, logo:(a.team||{}).logo||'', color:(a.team||{}).color||''}}, ['schedule','live'].includes(CUR) && (!UI.sport || UI.sport==='nba'));
       if(st==='post' && (!ov || ov.state!=='post')){ const gg = M.games.find(x=>x.id===String(e.id)); if(gg && !gg.done) newFinal = true; }
-      LIVE[e.id] = nv; const cn = cupNote(e); if(cn && CUPN[e.id]!==cn){ CUPN[e.id] = cn; LS.set('cs27_cupn', CUPN); }
+      LIVE[e.id] = nv; if(sitPut(String(e.id), c, h, a, st)) newSit = true; const cn = cupNote(e); if(cn && CUPN[e.id]!==cn){ CUPN[e.id] = cn; LS.set('cs27_cupn', CUPN); }
       const o = c.odds && c.odds[0]; if(o && o.details && st==='pre'){ const mm = /^([A-Z]+)\s+([-+]?\d+(?:\.\d+)?)/.exec(o.details); const MAPX = {GS:'GSW',NO:'NOP',NY:'NYK',SA:'SAS',UTAH:'UTA',WSH:'WAS'}; const fxx = z => MAPX[z]||z;
         let line = 0; if(mm){ const v = Math.abs(+mm[2]); line = fxx(mm[1])===fxx(h.team.abbreviation) ? v : -v; } RAW.odds = RAW.odds || {}; RAW.odds[e.id] = [o.details, o.overUnder ?? null, line, (o.provider&&o.provider.name)||'']; } });
-    if(changed && (CUR==='schedule' || CUR==='team' || CUR==='leaders')){ const y = scrollY; go(CUR, false); window.scrollTo(0, y); }
+    if(changed && (CUR==='schedule' || CUR==='team' || CUR==='leaders')){ const y = scrollY; go(CUR, false); window.scrollTo(0, y); } else if(newSit) sitPaint();
     const gm = document.querySelector('#ovGame.open [data-gid]'); if(gm){ const lv = LIVE[gm.dataset.gid]; if(lv && lv.state==='in'){ fetchLiveBox(gm.dataset.gid); lvSlotEnsure('basketball/nba', gm.dataset.gid, 'nba'); } else if(changed) openGame(gm.dataset.gid); }
     if(newFinal && autoOn()){ clearTimeout(finalTimer); finalTimer = setTimeout(()=>{ if(!syncing) doSync(true); }, 90000); }
     clearTimeout(liveTimer); liveTimer = setTimeout(pollLive, any ? 30000 : 180000);
@@ -3089,15 +3142,15 @@ function gameRow(g, ab){
 }
 
 function slate(){
-  const days = [...new Set(M.games.map(g=>dayKey(g.t)))]; const today = dayKey(M.now);
-  if(!UI.slateDay || !days.includes(UI.slateDay)) UI.slateDay = days.find(d=>d>=today) || days[days.length-1];
-  const i = days.indexOf(UI.slateDay); const gs = favFirst('nba', M.games.filter(g=>dayKey(g.t)===UI.slateDay)); const d0 = gs[0] ? gs[0].t : M.now;
+  const days0 = [...new Set(M.games.map(g=>dayKey(g.t)))], today = dayKey(Date.now()), days = [...new Set(days0.concat(today))].sort();
+  if(!UI.slateDay || !days.includes(UI.slateDay)) UI.slateDay = days0.includes(today) ? today : days0.find(d=>d>=today) || days0[days0.length-1];
+  const i = days.indexOf(UI.slateDay); const gs = favFirst('nba', M.games.filter(g=>dayKey(g.t)===UI.slateDay)); const d0 = gs[0] ? gs[0].t : Date.parse(UI.slateDay+'T12:00:00');
   const rec = ab => `${M.teamMap[ab].aw}–${M.teamMap[ab].al}`;
   const cards = gs.map(g=>{
     const p = g.pred, done = g.done && g.hs!=null, lv = liveOf(g);
     if(done || lv){
       const hs = done ? g.hs : lv.hs, as = done ? g.as : lv.as; const hW = hs > as;
-      const line = (ab,sc,win) => `<div class="ln ${win?'win':'lose'}"><span data-team="${ab}">${dot(ab)}${T[ab].n}${favMark('nba',ab)}<small class="ln-rec" title="Record">${nbaRecNow(ab)}</small></span><b data-sc="${g.id}|${ab===g.h?'h':'a'}">${sc}</b></div>`;
+      const line = (ab,sc,win) => `<div class="ln ${hs===as?'tie':win?'win':'lose'}"><span data-team="${ab}">${dot(ab)}${T[ab].n}${favMark('nba',ab)}<small class="ln-rec" title="Record">${nbaRecNow(ab)}</small></span><b data-sc="${g.id}|${ab===g.h?'h':'a'}">${sc}</b></div>`;
       const hit = (p.ph>=.5)===(g.hs>g.as); const U = !done && lv && lv.state==='in' ? upsetInfo('nba', lv.detail, lv.hs, lv.as, p.ph, null, g.id) : null;
       return `<div class="mu${U?' is-live is-upset':''}" data-game="${g.id}">${cupTag(g)}${U?upsetBadge(U, T[U.side==='h'?g.h:g.a].n):''}${line(g.a, as, !hW)}${line(g.h, hs, hW)}
         <div class="ft">${done?`<span>Final · predicted ${p.as}–${p.hs}</span><span class="${hit?'hit':'miss'}">${hit?'✓ called':'✗ missed'}</span>`:`<span><span class="live">LIVE</span> ${esc(lv.detail)}</span><span>Pred ${p.as}–${p.hs}</span>`}</div>${done?vvCard('nba', g, p, g.hs, g.as):nbaOuts(g)}</div>`;
@@ -3112,7 +3165,7 @@ function slate(){
   }).join('');
   return `<div class="filters day-pager"><button class="chip" data-day="${days[Math.max(0,i-1)]}">← Prev</button>
     <span class="cond" style="font-size:22px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:0 10px">${fmtDate(d0,{weekday:'long',month:'long',day:'numeric'})}</span>
-    <button class="chip" data-day="${days[Math.min(days.length-1,i+1)]}">Next →</button><button class="chip" data-day="${days.find(d=>d>=today)||days[0]}">Today</button></div>
+    <button class="chip" data-day="${days[Math.min(days.length-1,i+1)]}">Next →</button><button class="chip" data-day="${today}">Today</button></div>
     <div class="slate">${cards || '<div class="mu muted">No games.</div>'}</div>
     <p class="muted" style="font-size:12px;margin-top:14px">Live scores update every 30 seconds while games are on (needs internet). Point spreads are the model's; tap one to see the sportsbook line.</p>`;
 }
@@ -4224,10 +4277,11 @@ function lgFitGoals(games, teams, K, now, prev){
 const pois = (l, k) => { let p = Math.exp(-l); for(let i=1;i<=k;i++) p *= l/i; return p; };
 function lgPredGoals(R, g){
   const lh = R.lgH*R.at[g.h]*R.df[g.a]*(g.neutral ? 0.9 : 1), la = R.lgA*R.at[g.a]*R.df[g.h]*(g.neutral ? 1.1 : 1);
-  let pH = 0, pD = 0, pA = 0, best = [1,1,0];
-  for(let i=0;i<=9;i++) for(let j=0;j<=9;j++){ const p = pois(lh,i)*pois(la,j); if(i>j) pH += p; else if(i===j) pD += p; else pA += p; if(p > best[2]) best = [i,j,p]; }
+  let pH = 0, pD = 0, pA = 0; const best = {h:[1,0,0], d:[1,1,0], a:[0,1,0]};
+  for(let i=0;i<=9;i++) for(let j=0;j<=9;j++){ const p = pois(lh,i)*pois(la,j), k = i>j ? 'h' : i===j ? 'd' : 'a'; if(k==='h') pH += p; else if(k==='d') pD += p; else pA += p; if(p > best[k][2]) best[k] = [i,j,p]; }
   const DI = (R.K && R.K.DI) || 1; if(DI!==1){ pD *= DI; const z = pH+pD+pA; pH /= z; pD /= z; pA /= z; } // Poisson undercounts draws
-  return {hs:best[0], as:best[1], xh:lh, xa:la, ph:pH, pd:pD, pa:pA, margin:lh-la, total:lh+la};
+  const pick = pH>=pA && pH>=pD ? 'h' : pA>=pD ? 'a' : 'd';
+  return {hs:best[pick][0], as:best[pick][1], xh:lh, xa:la, ph:pH, pd:pD, pa:pA, margin:lh-la, total:lh+la};
 }
 const poisSample = l => { let k = 0, p = Math.exp(-l), s = p, u = Math.random(); while(u > s && k < 12){ k++; p *= l/k; s += p; } return k; };
 const NFL_DIVS = {'AFC East':['BUF','MIA','NE','NYJ'],'AFC North':['BAL','CIN','CLE','PIT'],'AFC South':['HOU','IND','JAX','TEN'],'AFC West':['DEN','KC','LV','LAC'],
@@ -4363,7 +4417,7 @@ function lgSpread(g){ const m = g.pred.margin; if(sportOf(LGK)==='soc') return '
 const nflSpread = lgSpread;
 function lgCard(g){
   const p = g.pred, r = NF.rec, soc = sportOf(LGK)==='soc';
-  const line = (ab, sc, win, cls) => `<div class="ln ${cls||''} ${win?'win':'lose'}"><span data-nteam="${ab}">${nDot(ab)}${rankTag(ab)}${esc(tName(ab))}${favMark(LGK,ab)}${sc!=null?`<small class="ln-rec" title="${g.stype===3?'Postseason record':'Record'}">${g.stype===3 && serRec(g, ab) ? serRec(g, ab) : nRec(r[ab])}</small>`:''}</span>${sc!=null?`<b data-sc="${g.id}|${ab===g.h?'h':'a'}">${sc}</b>`:`<em>${g.stype===3 && serRec(g, ab) ? 'Series ' + serRec(g, ab) : nRec(r[ab])}</em>`}</div>`;
+  const line = (ab, sc, win, cls) => `<div class="ln ${cls||''} ${sc!=null && g.hs===g.as?'tie':win?'win':'lose'}"><span data-nteam="${ab}">${nDot(ab)}${rankTag(ab)}${esc(tName(ab))}${favMark(LGK,ab)}${sc!=null?`<small class="ln-rec" title="${g.stype===3?'Postseason record':'Record'}">${g.stype===3 && serRec(g, ab) ? serRec(g, ab) : nRec(r[ab])}</small>`:''}</span>${sc!=null?`<b data-sc="${g.id}|${ab===g.h?'h':'a'}">${sc}</b>`:`<em>${g.stype===3 && serRec(g, ab) ? 'Series ' + serRec(g, ab) : nRec(r[ab])}</em>`}</div>`;
   const tag = g.stype===3 ? `<div class="po-tag">${esc(serStatus(g) || 'Postseason')}</div>` : '';
   if(g.state==='post' && g.hs!=null){ const hW = g.hs > g.as; let hit;
     if(soc){ const res = g.hs>g.as?'h':g.hs<g.as?'a':'d'; const pick = p.ph>=p.pa && p.ph>=p.pd ? 'h' : p.pa>=p.pd ? 'a' : 'd'; hit = pick===res; } else hit = g.hs===g.as ? null : (p.ph>=.5)===hW;
@@ -4383,14 +4437,14 @@ function lgGames(){
   if(isFBs(sp)){ const nW = sp==='cfb' ? 17 : 18; let wk = (UI.nflWeekLg||{})[LGK] || NF.curWeek; if(wk > nW) wk = NF.curWeek; gs = NF.games.filter(g => g.wk===wk);
     if(NF.college){ const f = colFilter('colGames'); if(UI.colGames!=='all') gs = gs.filter(g => f(g.h) || f(g.a)); }
     nav = `<div class="filters wk-strip">${Array.from({length:nW},(_,i)=>i+1).map(w=>`<button class="chip ${w===wk?'on':''}" data-nweek="${w}">${sp==='cfb'&&w===17?'Bowls':w}</button>`).join('')}</div>${NF.college?colFilterUI('colGames','All games'):''}`; kicker = sp==='cfb'&&wk===17 ? 'Bowl season' : `Week ${wk}`; }
-  else { const days = [...new Set(NF.games.map(g=>dayKey(g.t)))]; const key = 'day'+LGK;
-    let d = UI[key]; if(!d || !days.includes(d)) d = NF.curDay || days[days.length-1];
+  else { const today = dayKey(Date.now()), days0 = [...new Set(NF.games.map(g=>dayKey(g.t)))], days = [...new Set(days0.concat(today))].sort(); const key = 'day'+LGK;
+    let d = UI[key]; if(!d || !days.includes(d)) d = days0.includes(today) ? today : NF.curDay || days0[days0.length-1];
     const span = 1; const i = days.indexOf(d); const d0 = Date.parse(d+'T00:00:00'), d1 = d0 + span*864e5;
     gs = NF.games.filter(g => { const t = Date.parse(dayKey(g.t)+'T00:00:00'); return t >= d0 && t < d1; });
     if(NF.college){ const f = colFilter('colGames'); if(UI.colGames!=='all') gs = gs.filter(g => f(g.h) || f(g.a)); }
     const prev = days[Math.max(0,i-1)];
     const next = days[Math.min(days.length-1,i+1)];
-    nav = `<div class="filters day-pager"><button class="chip" data-lgday="${prev}">← Prev</button><span class="cond" style="font-size:20px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:0 10px">${fmtDate(d0,{weekday:'long',month:'long',day:'numeric'})}</span><button class="chip" data-lgday="${next}">Next →</button><button class="chip" data-lgday="${NF.curDay}">Today</button></div>${NF.college?colFilterUI('colGames','All games'):''}`;
+    nav = `<div class="filters day-pager"><button class="chip" data-lgday="${prev}">← Prev</button><span class="cond" style="font-size:20px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:0 10px">${fmtDate(d0,{weekday:'long',month:'long',day:'numeric'})}</span><button class="chip" data-lgday="${next}">Next →</button><button class="chip" data-lgday="${today}">Today</button></div>${NF.college?colFilterUI('colGames','All games'):''}`;
     kicker = gs.some(g=>g.stype===3) ? 'Postseason' : lgName(); }
   gs.sort((x,y)=>x.t-y.t || String(x.id).localeCompare(String(y.id))); if(sp!=='soc' && !isFBs(sp)) gs = favFirst(LGK, gs);
   const done = NF.games.filter(g=>g.state==='post').length, pct = NF.acc.decided ? Math.round(NF.acc.correct/NF.acc.decided*100) : null;
@@ -5064,7 +5118,7 @@ async function lgPoll(){
   const SB = `https://site.api.espn.com/apis/site/v2/sports/${path}/scoreboard`, grp = isCollege(key) ? `&groups=${key==='mcbb'?50:key==='cfb'?80:26}&limit=300` : '';
   const urls = key==='nfl' ? [`${SB}?dates=${D.season}&seasontype=2&week=${(lgModel(key)||{}).curWeek||1}`] : [...new Set([-1,0,1].map(o => ymd(new Date(+today + o*864e5))).concat(D.games.filter(g => g[5]==='in' && Date.now() - new Date(g[1]) > 3*3600e3).map(g => ymd(new Date(g[1])))))].map(d => `${SB}?dates=${d}${grp}`);
   let live = false;
-  try{ const evs = []; for(const u of urls){ try{ const r = await fetch(u, {cache:'no-store'}); if(r.ok) evs.push(...((await r.json()).events||[])); }catch(e){} } const s = {events: evs}; let changed = false, fin = false; const chg = [];
+  try{ const evs = []; for(const u of urls){ try{ const r = await fetch(u, {cache:'no-store'}); if(r.ok) evs.push(...((await r.json()).events||[])); }catch(e){} } const s = {events: evs}; let changed = false, fin = false, sitAny = false; const chg = [];
     (s.events||[]).forEach(e => { const c = e.competitions[0], st = c.status.type; const row = D.games.find(x=>x[0]===String(e.id)); if(!row) return;
       const h = c.competitors.find(x=>x.homeAway==='home'), a = c.competitors.find(x=>x.homeAway==='away'); const sc = x => x==null ? null : typeof x==='object' ? +(x.value ?? x.displayValue) : +x;
       const nv = [st.state, st.state!=='pre' ? sc(h.score) : null, st.state!=='pre' ? sc(a.score) : null, st.shortDetail||''];
@@ -5073,7 +5127,8 @@ async function lgPoll(){
       if(row[5]!==nv[0] || row[6]!==nv[1] || row[7]!==nv[2] || row[10]!==nv[3]){ if(nv[0]==='post' && row[5]!=='post') fin = true; row[5]=nv[0]; row[6]=nv[1]; row[7]=nv[2]; row[10]=nv[3]; changed = true; chg.push(row); }
       const pb = x => x.probables && x.probables[0] && x.probables[0].athlete ? x.probables[0].athlete : null; const ph = pb(h), pa = pb(a);
       if(ph || pa){ D.probN = D.probN || {}; D.probN[row[0]] = [ph ? ph.displayName : null, pa ? pa.displayName : null]; const ih = ph ? String(ph.id) : row[13]||null, ia = pa ? String(pa.id) : row[14]||null; if(row[13]!==ih || row[14]!==ia){ row[13] = ih; row[14] = ia; changed = true; chg.push(row); } }
-      if(st.state==='in') live = true; });
+      if(st.state==='in') live = true; if(sitPut(String(e.id), c, h, a, st.state)) sitAny = true; });
+    if(sitAny && !changed) sitPaint();
     if(live && UI.sport!=='nba' && key===LGK && CUR==='lg-leaders' && Date.now() - SW_AT < 8000 && liveFirst(UI.sport)) go('lg-live', false);
     if(changed){ // live scores are patched into the built model; the full rebuild (ratings + season simulations) waits for a game to go final, off the critical path
       // a game that just went final is counted in the records straight away, before the rebuild lands
@@ -8862,6 +8917,69 @@ function lsDecorate(){ const need = new Map(), want = (path, t) => { const d = l
 /* ---- Live games always open with a running play-by-play (even when the schedule hasn't caught up with kickoff yet) ---- */
 const _openLgGame18 = openLgGame; openLgGame = function(id){ _openLgGame18(id); try{ const g = NF && NF.games.find(x => x.id===id), body = document.querySelector('#gamePanel .g-body'); if(!g || !body || STATIC) return;
   if(!body.querySelector('[data-pbp]') && g.state!=='post' && g.t <= Date.now() && Date.now() - g.t < 6*3600e3){ body.insertAdjacentHTML('beforeend', pbpSlot(LG_PATH(LGK), g.id, 'in')); pbpLoad(true); } }catch(e){} };
+
+/* ================= v1.9: warp entry, live situation (down & distance, field position, last play), Today means today, level scores read level, plays before the football box score, no grades until the final ================= */
+
+/* ---- Live situation from every scoreboard poll: down & distance, who has the ball and where, and the last play ---- */
+const SIT = {};
+function sitPut(id, c, h, a, state){ const s = c.situation || {}, lp = s.lastPlay || {}, ht = h.team || {}, at = a.team || {};
+  const pid = String((s.possession && s.possession.id) || s.possession || ''), side = pid && pid===String(ht.id) ? 'h' : pid && pid===String(at.id) ? 'a' : '';
+  const spot = s.possessionText || ((/ at (.+)$/.exec(s.downDistanceText || '') || [])[1]) || '';
+  // field position as yards from the away team's goal line (away defends the left end zone, drives right)
+  let x = null; const m = /^([A-Za-z&.]+)?\s*(\d{1,2})$/.exec(spot.trim());
+  if(m){ const n = +m[2], ab = (m[1] || '').toUpperCase(); x = n===50 || !ab ? 50 : ab===String(at.abbreviation || '').toUpperCase() ? n : ab===String(ht.abbreviation || '').toUpperCase() ? 100 - n : null; }
+  const dd = s.shortDownDistanceText || String(s.downDistanceText || '').replace(/ at .*$/, '');
+  const v = {st:state, last:lp.text || '', down:dd, dist:+s.distance || 0, goal:/goal/i.test(dd), side, ab:side==='h' ? ht.abbreviation || '' : side==='a' ? at.abbreviation || '' : '', spot, x, rz:!!s.isRedZone};
+  const k = JSON.stringify(v), was = SIT[id] && SIT[id].k; v.k = k; SIT[id] = v; return k!==was; }
+function sitField(v, g){ const col = ab => (NF && NF.T[ab] && NF.T[ab].p) || '#2a2e35', lab = ab => esc((NF && NF.T[ab] && NF.T[ab].ab) || ab);
+  const dir = v.side==='h' ? -1 : 1, x = v.x==null ? null : 10 + v.x, fd = x!=null && v.dist && !v.goal ? 10 + Math.max(0, Math.min(100, v.x + dir*v.dist)) : null;
+  return `<svg class="sx-field" viewBox="0 0 120 20" role="img" aria-label="${esc(v.ab)} ball${v.spot ? ' at ' + esc(v.spot) : ''}"><rect class="turf" width="120" height="20"/>
+    <rect class="ez" width="10" height="20" fill="${col(g.a)}"/><rect class="ez" x="110" width="10" height="20" fill="${col(g.h)}"/>
+    <text class="ezt" x="5" y="10" transform="rotate(-90 5 10)">${lab(g.a)}</text><text class="ezt" x="115" y="10" transform="rotate(90 115 10)">${lab(g.h)}</text>
+    ${Array.from({length:11}, (_, i) => `<line class="${i===5 ? 'mid' : ''}" x1="${10 + i*10}" y1="0" x2="${10 + i*10}" y2="20"/>`).join('')}
+    <g class="sx-fd" style="transform:translateX(${fd ?? 60}px)"${fd==null ? ' opacity="0"' : ''}><line x1="0" y1="1" x2="0" y2="19"/></g>
+    <g class="sx-ball" style="transform:translateX(${x ?? 60}px)"${x==null ? ' opacity="0"' : ''}><line class="los" x1="0" y1="1" x2="0" y2="19"/><g class="sx-dir" transform="scale(${dir} 1)"><path class="sx-arr" d="M3 10H10"/><path class="sx-head" d="M10 7.6L13 10L10 12.4Z"/></g><ellipse class="ball" cx="0" cy="10" rx="2.4" ry="1.5"/></g></svg>`; }
+function sitHTML(v, g, fb){ if(!v || v.st!=='in') return '';
+  const top = fb && (v.down || v.side) ? `<div class="sx-top">${v.down ? `<b>${esc(v.down)}</b>` : ''}${v.side ? `<span class="sx-poss">${esc(v.ab)} ball${v.spot ? ` · ${esc(v.spot)}` : ''}</span>` : ''}${v.rz ? '<em>Red zone</em>' : ''}</div>` : '';
+  const field = fb && v.side ? sitField(v, g) : '', last = v.last ? `<p class="sx-last"><span>Last play</span>${esc(v.last)}</p>` : '';
+  return top || field || last ? `<div class="sitx">${top}${field}${last}</div>` : ''; }
+// Update in place so the ball and first-down line glide to their new spots instead of jumping
+function sitPaintOne(host, id, g, fb, where){ const v = SIT[id], html = sitHTML(v, g, fb), old = host.querySelector(':scope > .sitx');
+  if(!html){ if(old) old.remove(); return; } if(old && old.__k===v.k) return;
+  const tmp = document.createElement('div'); tmp.innerHTML = html; const nw = tmp.firstElementChild; nw.__k = v.k;
+  const os = old && old.querySelector('.sx-field'), ns = nw.querySelector('.sx-field');
+  if(os && ns){ ['.sx-ball', '.sx-fd'].forEach(sel => { const o = os.querySelector(sel), n = ns.querySelector(sel); o.style.transform = n.style.transform; n.hasAttribute('opacity') ? o.setAttribute('opacity', '0') : o.removeAttribute('opacity'); });
+    os.querySelector('.sx-dir').setAttribute('transform', ns.querySelector('.sx-dir').getAttribute('transform')); os.setAttribute('aria-label', ns.getAttribute('aria-label'));
+    [...old.children].forEach(ch => { if(ch!==os) ch.remove(); }); let before = true; [...nw.children].forEach(ch => { if(ch===ns){ before = false; return; } before ? os.before(ch) : old.append(ch); }); old.__k = v.k; return; }
+  old ? old.replaceWith(nw) : where(nw); }
+function sitPoss(rows, id, g){ const v = SIT[id], ab = v && v.st==='in' && v.side ? (v.side==='h' ? g.h : g.a) : null;
+  rows.forEach(r => { const t = r.matches('[data-nteam],[data-team]') ? r : r.querySelector('[data-nteam],[data-team]'); r.classList.toggle('poss', !!ab && !!t && (t.dataset.nteam || t.dataset.team)===ab); }); }
+function sitPaint(){ try{
+  document.querySelectorAll('#main .mu[data-game], #main .mu[data-ngame]').forEach(card => { const nba = !!card.dataset.game, id = card.dataset.game || card.dataset.ngame;
+    const g = nba ? M.games.find(x => String(x.id)===id) : NF && NF.games.find(x => String(x.id)===id); if(!g) return; const fb = !nba && isFBs(sportOf(LGK));
+    sitPaintOne(card, id, g, fb, el => { const ft = card.querySelector(':scope > .ft'); ft ? ft.before(el) : card.append(el); }); if(fb) sitPoss(card.querySelectorAll('.ln, .cf-t'), id, g); });
+  const pv = document.querySelector('#ovGame.open [data-vvgame]'), panel = document.getElementById('gamePanel'), head = panel && panel.querySelector(':scope > .g-head');
+  if(pv && head && NF && pv.dataset.vvlg===LGK && isFBs(sportOf(LGK))){ const id = pv.dataset.vvgame, g = NF.games.find(x => String(x.id)===id);
+    if(g){ sitPaintOne(panel, id, g, true, el => head.after(el)); sitPoss(head.querySelectorAll('.tname'), id, g); } } }catch(e){} }
+(() => { if(STATIC) return; let q = 0; const run = () => { if(q) return; q = requestAnimationFrame(() => { q = 0; sitPaint(); }); };
+  const mo = new MutationObserver(run); ['main', 'gamePanel'].forEach(id => { const el = document.getElementById(id); if(el) mo.observe(el, {childList:true, subtree:true}); }); })();
+
+/* ---- Football game pages: the play-by-play sits right under the Match Center; the long box score and position matchups start folded ---- */
+const GB_OPEN = new Set();
+const _gbHTML19 = gbHTML; gbHTML = function(id){ const h = _gbHTML19(id), B = LBOX[id]; if(!h || !B || !/football/.test(B.path) || !/class="gb-fb"/.test(h)) return h;
+  const n = (h.match(/class="gb-r"/g) || []).length;
+  return `<details class="gb-fold" data-gbfold="${esc(id)}"${GB_OPEN.has(String(id)) ? ' open' : ''}><summary>Box score &amp; game grades<em>${n} players</em></summary>${h}</details>`; };
+document.addEventListener('toggle', e => { const d = e.target; if(d && d.dataset && d.dataset.gbfold) d.open ? GB_OPEN.add(d.dataset.gbfold) : GB_OPEN.delete(d.dataset.gbfold); }, true);
+const _matchupsHTML19 = matchupsHTML; matchupsHTML = function(g){ const h = _matchupsHTML19(g); if(!h || !isFBs(sportOf(LGK)) || !(g.state==='in' || g.state==='post')) return h;
+  return `<details class="fold-sec"><summary>Position by position<em>starters &amp; depth</em></summary>${h}</details>`; };
+const _openLgGame19 = openLgGame; openLgGame = function(id){ _openLgGame19(id); try{ if(!isFBs(sportOf(LGK))) return; const body = document.querySelector('#gamePanel .g-body'), pb = body && body.querySelector(':scope > [data-pbp]'); if(!pb) return;
+  const lb = body.querySelector(':scope > .lbox'); lb ? lb.after(pb) : body.prepend(pb); sitPaint(); }catch(e){} };
+
+/* ---- Grades wait for the final: any game a live feed still has in progress keeps its grades hidden, whatever the game log row says ---- */
+function gameState(id){ if(!id) return ''; if(LIVE[id]) return LIVE[id].state; if(SIT[id]) return SIT[id].st;
+  const e = Object.values(LH.ev).flat().find(x => x.id===id); if(e) return e.state; const g = NF && NF.games && NF.games.find(x => String(x.id)===id); return g ? g.state || '' : ''; }
+const _rowLive19 = rowLive; rowLive = function(r){ if(!r) return false; const s = gameState(String(r.id || r.ev || '')); return s==='in' || (s!=='post' && _rowLive19(r)); };
+const _boxTable19 = boxTable; boxTable = function(g, ab){ const h = _boxTable19(g, ab); return g && !g.done && h ? h.replace(/<span class="grd [^"]*"[^>]*>[^<]*<\/span>/g, grPill({live:1})) : h; };
 
 /* ================= BOOT ================= */
 const stEl = document.getElementById('stars');
