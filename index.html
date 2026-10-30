@@ -4791,7 +4791,7 @@ function lgPlaybook(){
   return `<div class="sec-head"><div><div class="kicker">Team identity · schemes · trends · ${lgName()}</div><h2>Playbook</h2></div>
     <p>How each team plays as a unit. Schemes are inferred from team stats ranked against the rest of the league. Public data doesn’t track play calls or formations, so read these as tendencies, not the coach’s actual playbook.</p></div>
     ${colFilterUI('colPB','All teams')}
-    <div class="filters"><select class="sel" data-pbteam>${opts.map(a=>`<option value="${esc(a)}" ${a===ab?'selected':''}>${esc(tFull(a))}</option>`).join('')}</select></div>
+    <div class="filters"><select class="sel" data-pbteamlg>${opts.map(a=>`<option value="${esc(a)}" ${a===ab?'selected':''}>${esc(tFull(a))}</option>`).join('')}</select></div>
     <div class="pb-top"><div class="tglow" style="background:${t.p}"></div><img class="pb-logo-bg" src="${lgLogo(ab)}" alt="" onerror="this.remove()">
       <div><div class="kicker cond muted" style="letter-spacing:.3em;font-size:12px;margin-bottom:8px">${esc(t.c)}${NF.divOf[ab]?' · '+esc(NF.divOf[ab]):''}${t.rank?' · AP #'+t.rank:''}</div>
         <div class="pb-name">${nLogo(ab,'pb-logo')}<h2 data-nteam="${ab}" style="cursor:pointer">${esc(t.n)}</h2></div><div class="tagline">${sc.slice(0,3).map(x=>x.h).join(' · ')}</div>
@@ -5155,7 +5155,7 @@ async function lgPoll(){
   const path = LG_PATH(key); const today = new Date(), ymd = d => `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
   // ESPN rejects date ranges for some sports, so ask for yesterday, today and tomorrow one day at a time
   const SB = `https://site.api.espn.com/apis/site/v2/sports/${path}/scoreboard`, grp = isCollege(key) ? `&groups=${key==='mcbb'?50:key==='cfb'?80:26}&limit=300` : '';
-  const urls = key==='nfl' ? [`${SB}?dates=${D.season}&seasontype=2&week=${(lgModel(key)||{}).curWeek||1}`] : [...new Set([-1,0,1].map(o => ymd(new Date(+today + o*864e5))).concat(D.games.filter(g => g[5]==='in' && Date.now() - new Date(g[1]) > 3*3600e3).map(g => ymd(new Date(g[1])))))].map(d => `${SB}?dates=${d}${grp}`);
+  const urls = key==='nfl' ? [`${SB}?dates=${D.season}&seasontype=2&week=${(lgModel(key)||{}).curWeek||1}`] : [...new Set([-1,0,1].map(o => ymd(new Date(+today + o*864e5))).concat(D.games.filter(g => { const age = Date.now() - new Date(g[1]); return age > 3*3600e3 && (g[5]==='in' || (g[5]==='pre' && age < 14*864e5)); }).sort((a, b) => (+b[12]===3) - (+a[12]===3) || new Date(b[1]) - new Date(a[1])).slice(0, 8).map(g => ymd(new Date(g[1])))))].map(d => `${SB}?dates=${d}${grp}`);
   let live = false;
   try{ const evs = []; for(const u of urls){ try{ const r = await fetch(u, {cache:'no-store'}); if(r.ok) evs.push(...((await r.json()).events||[])); }catch(e){} } const s = {events: evs}; let changed = false, fin = false, sitAny = false; const chg = [];
     (s.events||[]).forEach(e => { const c = e.competitions[0], st = c.status.type; let row = D.games.find(x=>x[0]===String(e.id));
@@ -5350,7 +5350,7 @@ document.addEventListener('input', e => { const t = e.target;
 document.addEventListener('change', e => { const t = e.target; if(!t.dataset) return;
   if(t.dataset.colsel && t.value){ UI[t.dataset.colsel] = t.value; saveUI(); go(CUR, false); }
   if('lgstat' in t.dataset){ UI.lgStat = UI.lgStat || {}; UI.lgStat[LGK] = t.value; saveUI(); go('lg-leaders', false); }
-  if('pbteam' in t.dataset){ UI.pbTeamLg = UI.pbTeamLg || {}; UI.pbTeamLg[LGK] = t.value; saveUI(); go('lg-playbook', false); }
+  if('pbteamlg' in t.dataset){ UI.pbTeamLg = UI.pbTeamLg || {}; UI.pbTeamLg[LGK] = t.value; saveUI(); go('lg-playbook', false); }
   if('lginjteam' in t.dataset){ UI.injTeamLg = UI.injTeamLg || {}; UI.injTeamLg[LGK] = t.value; saveUI(); go('lg-injuries', false); }
   if(t.dataset.th2h && TH2H){ if(t.dataset.th2h==='a') TH2H.a = t.value; else TH2H.b = t.value; openTeamH2H(TH2H.a, TH2H.b); }
   if(t.dataset.labteam){ if(t.dataset.labteam==='H') UI.labH = t.value; else UI.labA = t.value; go('lg-lab', false); } });
@@ -5821,6 +5821,7 @@ function renderSection(k){
 }
 const EV_TABS = ['schedule','lg-games','lg-cups']; // tournament banners and event heroes live on the schedule/fixtures views only
 function go(k, scroll){
+  if(k==='playbook' || k==='lg-playbook' || k==='nfl-playbook') k = UI.sport && UI.sport!=='nba' ? 'lg-playbook' : 'playbook';   // Playbook always opens the active sport's version
   if(k==='vegas' || k==='tstats' || k==='lg-tstats'){ if(k!=='vegas') UI.ldView = 'teams'; k = k==='vegas' ? (UI.sport && UI.sport!=='nba' ? 'lg-games' : 'schedule') : k==='tstats' ? 'leaders' : 'lg-leaders'; }
   const __same = CUR===k; CUR = k; let __ev = false; if(['schedule','lg-games'].includes(k)) try{ __ev = !!eventFor(UI.sport || 'nba'); }catch(e){} document.body.classList.toggle('no-hero', ['schedule','lg-games','favs','vegas'].includes(k) && !__ev);
   const act = k==='team'?'teams':k==='lg-team'||k==='nfl-team'?'lg-teams':k.startsWith('nfl-')?'lg-'+k.slice(4):k;
@@ -6932,7 +6933,7 @@ function poBanner(){ const sp = UI.sport || 'nba'; document.body.classList.remov
         const side = (a, w) => `<div class="po-tm ${over && w>=need ? 'champ' : ''}">${nLogo(a, 'po-logo')}<span>${esc(N.T[a].n)}</span><b>${w}</b></div>`;
         return `<div class="po-ban ${ws?'ws':''}" data-go="lg-games"><div class="po-ttl"><span class="po-tro">🏆</span><div><small>${ws ? `${N.season || ''} World Series` : 'MLB Postseason'}</small><b>${esc(over ? `${N.T[wx>wy?x:y].c} ${N.T[wx>wy?x:y].n} ${ws ? 'win the World Series' : 'advance'}` : lead)}</b></div></div>
           <div class="po-ser">${side(x, wx)}<i>–</i>${side(y, wy)}</div>
-          ${over ? '' : `<div class="po-meta">${nx ? `<span><em>Game ${done.length+1}</em> ${new Date(nx.t).toLocaleString([], {weekday:'short', hour:'numeric', minute:'2-digit'})} · at ${esc(N.T[nx.h].n)}${nx.state==='in' ? ' · <b class="live">LIVE</b>' : ''}</span><span>Clutch Matrix${nx.state==='in' ? ' live' : ''}: ${esc(N.T[php(nx)>=.5?nx.h:nx.a].n)} ${pctTxt(Math.max(php(nx), 1-php(nx)))} in Game ${done.length+1}</span>` : ''}<span>Series odds: ${esc(N.T[x].n)} ${pctTxt(ox)} · ${esc(N.T[y].n)} ${pctTxt(1-ox)}</span></div>`}</div>`; }).join(''); }
+          ${over ? (ws ? (() => { const mv = finMvpGet('mlb', gs.filter(g => g.state!=='pre').map(g => g.id), true, N.season); return mv && mv.official ? `<div class="po-meta po-mvp"><span>🏅 World Series MVP: <b>${esc(mv.official)}</b></span></div>` : ''; })() : '') : `<div class="po-meta">${nx ? `<span><em>Game ${done.length+1}</em> ${new Date(nx.t).toLocaleString([], {weekday:'short', hour:'numeric', minute:'2-digit'})} · at ${esc(N.T[nx.h].n)}${nx.state==='in' ? ' · <b class="live">LIVE</b>' : ''}</span><span>Clutch Matrix${nx.state==='in' ? ' live' : ''}: ${esc(N.T[php(nx)>=.5?nx.h:nx.a].n)} ${pctTxt(Math.max(php(nx), 1-php(nx)))} in Game ${done.length+1}</span>` : ''}<span>Series odds: ${esc(N.T[x].n)} ${pctTxt(ox)} · ${esc(N.T[y].n)} ${pctTxt(1-ox)}</span></div>`}</div>`; }).join(''); }
     const label = sp==='nfl' ? 'NFL Playoffs' : sp==='ncaaf' ? 'College Football Playoff' : sp==='ncaam' ? 'NCAA Tournament' : LGK==='usa.1' ? 'MLS Cup Playoffs' : 'Postseason';
     const up = act.filter(g => g.state!=='post').slice(0, 4), rec = act.filter(g => g.state==='post').slice(-2);
     const row = g => `<span class="po-g">${nLogo(g.a, 'po-logo sm')}${esc(tName(g.a))} ${g.state==='pre' ? '@' : `<b>${g.as}–${g.hs}</b>`} ${esc(tName(g.h))}${nLogo(g.h, 'po-logo sm')}<em>${g.state==='pre' ? new Date(g.t).toLocaleString([], {weekday:'short', hour:'numeric', minute:'2-digit'}) + ` · ${esc(tName(g.pred.ph>=.5?g.h:g.a))} ${Math.round(Math.max(g.pred.ph, 1-g.pred.ph)*100)}%` : g.state==='in' ? 'LIVE' : 'Final'}</em></span>`;
@@ -8349,14 +8350,31 @@ const NO_TITLE = {mlb:['COL','MIL','SD','SEA','TB'], nfl:['ATL','BUF','CAR','CIN
 function finalsRecap(key, teams, ids, over, season){ const H = TEAM_HIST[key] || {}; const yr = season || new Date().getFullYear();
   const champ = t => over && t===teams[0] ? `<p class="evh-first">🏆 ${(NO_TITLE[key]||[]).includes(t.ab) ? `${yr}: the first championship in franchise history.` : `${yr} champions.`}</p>` : '';
   const hist = teams.filter(t => t && H[t.ab]).map(t => `<div class="evh-rc"><b>${esc(t.n)}</b>${champ(t)}<p>${esc(H[t.ab])}</p></div>`).join('');
-  const mk = key + ':' + ids.join(','), mv = FIN_MVP[mk]; if(ids.length && mv===undefined && !STATIC){ FIN_MVP[mk] = null; finalsMvp(key, ids).then(r => { FIN_MVP[mk] = r || false; try{ evHero(CUR); }catch(e){} }); }
+  const mv = finMvpGet(key, ids, over, season);
   // official MVP first (named in the recap of the clinching game), then the model's pick
   const mvp = mv ? `${mv.official ? `<div class="evh-mvp off"><span>Official series MVP</span><b>${esc(mv.official)}</b></div>` : ''}${mv.name ? `<div class="evh-mvp"><span>${over ? 'Clutch Matrix MVP' : 'Series standout so far'}</span><b>${esc(mv.name)}</b><em>${esc(mv.line)}</em></div>` : ''}` : '';
   return hist || mvp ? `<div class="evh-recap">${mvp}${hist ? `<div class="evh-rcs">${hist}</div>` : ''}</div>` : ''; }
-async function finalsMvp(key, ids){ const path = LG_PATH(key); await Promise.all(ids.map(id => LBOX[id] ? null : lboxFetch(path, id)));
+const FIN_MVP_AT = {};
+const finMvpSaved = () => LS.get('cs_finmvp') || {};
+// one shared lookup for the series MVP: keeps asking every 10 minutes until a finished series has its official MVP (the recap naming him often lands an hour or two after the last out), and remembers it
+function finMvpGet(key, ids, over, season){ const mk = key + ':' + ids.join(','); let mv = FIN_MVP[mk]; const sk = key + ':' + (season || '');
+  const saved = over ? finMvpSaved()[sk] : null; if(saved && !(mv && mv.official)) mv = Object.assign({}, mv || {}, {official:saved});
+  const due = mv===undefined || (over && !(mv && mv.official) && Date.now() - (FIN_MVP_AT[mk]||0) > 10*60e3);
+  if(ids.length && due && !STATIC && FIN_MVP[mk]!==null){ FIN_MVP_AT[mk] = Date.now(); const prev = FIN_MVP[mk]; FIN_MVP[mk] = null;
+    finalsMvp(key, ids, over).then(r => { FIN_MVP[mk] = r || prev || false; if(r && r.official && over){ const all = finMvpSaved(); all[sk] = r.official; LS.set('cs_finmvp', all); }
+      try{ evHero(CUR); }catch(e){} try{ if(r && r.official && UI.sport==='mlb' && EV_TABS.includes(CUR) && document.querySelector('.po-ban.ws')){ const y = scrollY; go(CUR, false); window.scrollTo(0, y); } }catch(e){} }); }
+  return mv===null ? undefined : mv; }
+// the official MVP as ESPN's recap names him: a linked player name beside "MVP" first, then the plain-text phrasings
+function mvpFromSummary(j){ const a = (j && j.article) || {}; const html = [a.story, a.headline, a.description].concat(((j && j.news && j.news.articles) || []).map(x => (x.headline||'') + ' ' + (x.description||''))).filter(Boolean).join(' ');
+  const m = /MVP[^<]{0,40}<a[^>]*\/player\/_\/id\/\d+[^>]*>([^<]+)<\/a>/i.exec(html) || /<a[^>]*\/player\/_\/id\/\d+[^>]*>([^<]+)<\/a>[^<]{0,60}(?:was named|named|earned|won|took home)[^<]{0,40}MVP/i.exec(html); if(m) return m[1].trim();
+  const txt = html.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' '), NM = /([A-Z][\w.'’-]+(?:\s+[A-Z][\w.'’-]+){1,3})/.source, EVT = '(?:World Series|Series|Finals|Super Bowl)', YR = /(?:\d{4} )?/.source;
+  const t = new RegExp(`${NM},? (?:was|is|has been) (?:named|voted|chosen) (?:the )?${YR}${EVT} MVP`).exec(txt) || new RegExp(`${EVT} MVP,? ${NM}`).exec(txt) || new RegExp(`${NM} (?:won|earned|took home|claimed) (?:the )?${YR}${EVT} MVP`).exec(txt);
+  return t ? t[1].trim() : null; }
+async function finalsMvp(key, ids, over){ const path = LG_PATH(key); const fin = B => { try{ return B.j.header.competitions[0].status.type.state==='post'; }catch(e){ return false; } };
+  // a box pulled while the game was live has no recap: pull it again once it's final, and the clinching game's again until the recap names the MVP
+  const lastId = ids[ids.length-1]; await Promise.all(ids.map(id => !LBOX[id] || !fin(LBOX[id]) || (over && id===lastId && !mvpFromSummary(LBOX[id].j) && Date.now() - LBOX[id].at > 5*60e3) ? lboxFetch(path, id) : null));
   const by = {}; ids.forEach(id => { const B = LBOX[id]; if(!B) return; espnBoxPlayers(B.j, path).forEach(P => { if(!P.G || P.G.v==null) return; const k = P.id; const o = by[k] = by[k] || {name:P.name, ab:P.ab, v:0, n:0, g:new Set(), s:{}, kind:P.kind}; o.v += P.G.v; o.g.add(id); o.n = o.g.size; Object.entries(P.s).forEach(([sk, x]) => { o.s[sk] = (o.s[sk]||0) + x; }); }); });
-  let official = null; for(const id of ids.slice().reverse()){ const st = String(((LBOX[id]||{}).j||{}).article ? LBOX[id].j.article.story || '' : '');
-    const m = /MVP[^<]{0,40}<a[^>]*\/player\/_\/id\/\d+[^>]*>([^<]+)<\/a>/i.exec(st) || /<a[^>]*\/player\/_\/id\/\d+[^>]*>([^<]+)<\/a>[^<]{0,60}(?:was named|named|earned|won)[^<]{0,40}MVP/i.exec(st); if(m){ official = m[1].trim(); break; } }
+  let official = null; for(const id of ids.slice().reverse()){ const nm = LBOX[id] ? mvpFromSummary(LBOX[id].j) : null; if(nm){ official = nm; break; } }
   const best = Object.values(by).sort((a, b) => b.v - a.v)[0]; if(!best) return official ? {official} : null; const s = best.s, n = k => s[k] || 0;
   const line = /baseball/.test(path) ? (best.kind==='pit' ? `${Math.floor(n('outs')/3)}.${n('outs')%3} IP, ${n('k')} K, ${n('er')} ER in ${best.n} game${best.n>1?'s':''}` : `${n('h')}-for-${n('ab')}, ${n('hr')} HR, ${n('rbi')} RBI in ${best.n} game${best.n>1?'s':''}`)
     : /football/.test(path) ? [n('pyd') && `${n('pyd')} pass yds`, n('ryd') && `${n('ryd')} rush yds`, n('reyd') && `${n('reyd')} rec yds`, (n('ptd') + n('rtd') + n('retd')) && `${n('ptd') + n('rtd') + n('retd')} TD`, n('dsk') && `${n('dsk')} sacks`, n('dint') && `${n('dint')} INT`].filter(Boolean).join(', ')
