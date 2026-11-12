@@ -2411,6 +2411,27 @@ nav .brand .brand-logo{width:34px;height:34px;aspect-ratio:1/1;object-fit:contai
 .mc-tip small{color:var(--muted);letter-spacing:.06em}
 .mc-spw.tipon .mc-tip,.mc-spw.tipon .mc-cur{display:block}
 </style>
+<style id="cs-v18">
+/* Medal places (1st, 2nd, 3rd) are solid metal colours. They used to be gradient-clipped text with a transparent fill, which vanished whenever
+   another rule repainted the cell's background (silver and bronze table cells lost the gradient entirely), leaving the number almost invisible. */
+.bigstats > div.rk-m b,.bigstats > div.rk-m em,.proj-grid > div.rk-m b,.proj-grid > div.rk-m em,.podium .pod:is(.pm1,.pm2,.pm3) .val b,.podium .pod:is(.pm1,.pm2,.pm3) .rank,td.rk-top,td.rk2,td.rk3,em.rk-top,em.rk2,em.rk3,.list .row .rk:is(.rm1,.rm2,.rm3),.list .row .rk:is(.rm1,.rm2,.rm3) ~ .v{background-image:none!important;-webkit-background-clip:border-box!important;background-clip:border-box!important;-webkit-text-fill-color:currentColor!important;animation:none!important;text-shadow:0 1px 2px rgba(0,0,0,.8)!important;font-weight:700;opacity:1!important}
+.bigstats > div.rk1 b,.bigstats > div.rk1 em,.proj-grid > div.rk1 b,.proj-grid > div.rk1 em,.podium .pod.pm1 .val b,.podium .pod.pm1 .rank,td.rk-top,em.rk-top,.list .row .rk.rm1,.list .row .rk.rm1 ~ .v{color:#ffd95e!important}
+.bigstats > div.rk2 b,.bigstats > div.rk2 em,.proj-grid > div.rk2 b,.proj-grid > div.rk2 em,.podium .pod.pm2 .val b,.podium .pod.pm2 .rank,td.rk2,em.rk2,.list .row .rk.rm2,.list .row .rk.rm2 ~ .v{color:#f1f4f8!important}
+.bigstats > div.rk3 b,.bigstats > div.rk3 em,.proj-grid > div.rk3 b,.proj-grid > div.rk3 em,.podium .pod.pm3 .val b,.podium .pod.pm3 .rank,td.rk3,em.rk3,.list .row .rk.rm3,.list .row .rk.rm3 ~ .v{color:#f5ae72!important}
+.list .row .rk:is(.rm1,.rm2,.rm3) ~ .v em.dl{-webkit-text-fill-color:currentColor!important}
+td.rk-bot,em.rk-bot{color:#ff5c8d!important}
+/* team panel: rank and league percentile side by side */
+.tp-row.tp5{grid-template-columns:minmax(0,1fr) 62px 44px 62px 90px}
+.tp-pct{font-style:normal;font-family:"Barlow Condensed",sans-serif;font-size:12.5px;letter-spacing:.04em;color:#b4bbc4;text-align:right;white-space:nowrap}
+@media (max-width:700px){ .tp-row.tp5{grid-template-columns:minmax(0,1fr) 54px 38px 56px} .tp-row.tp5 .tp-bar{display:none} }
+/* poll rankings: week-over-week move */
+.rk-d{display:inline-block;font-style:normal;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:12px;letter-spacing:.04em;line-height:1.25;margin-left:7px;padding:0 5px;border-radius:3px;white-space:nowrap;vertical-align:middle}
+.rk-d.up{color:#46e08f;background:rgba(70,224,143,.13)}.rk-d.dn{color:#ff6f8e;background:rgba(255,111,142,.13)}.rk-d.eq{color:#99a1ab;padding:0 3px}.rk-d.new{color:#ffd95e;background:rgba(255,217,94,.13)}
+/* head-to-head: the career box is closed until its tab is tapped */
+.eo-sec.shut{margin:10px 0 2px;padding:0;border:0;background:none}
+.eo-sec .eo-tgl i{font-style:normal;margin-left:5px;font-size:11px}
+.nr-ret{color:#eef1f4;font-weight:600}
+</style>
 <script type="application/json" id="favs">{}</script>
 <script type="application/json" id="edits">{}</script>
 <script>
@@ -2464,7 +2485,14 @@ const K = {
   HOMECOMING: -0.3,   // first home game after a 4+ game road trip
   STREAK: 0.12,       // per game of an active win/loss streak
   STREAK_CAP: 0.7,
-  FORM_DECAY: 0.99, FORM_RATE: 0.03, FORM_CAP: 6,
+  FORM_DECAY: 0.99, FORM_RATE: 0.03, FORM_CAP: 10,
+  FORM_K: 8,          // games of evidence a team's results need before they count as much as the preseason read
+  RESID_CAP: 22,      // biggest single-game miss that feeds form (blowouts count, a 40-point freak doesn't dominate)
+  CONT_HI: 0.70, CONT_LO: 0.35,   // roster continuity (share of minutes held by last season's players): full trust in the preseason number at 70%+, none at 35% or less
+  MIS_START: 8, MIS_W: 0.22,      // lopsided matchups run away: each point of gap past 8 adds another 0.22
+  REMATCH: 1.5,       // second game of a two-game set: the side that lost the opener gets back up to this much
+  REMATCH_TOT: -1.5,  // ...and scoring dips as both defenses adjust
+  B2B_TOT: -1.0,      // tired legs: a team on a back-to-back scores about a point less
   ROSTER_W: 0.62, PRIOR_W: 0.38, NET_SCALE: 5.2
 };
 const DAY = 864e5;
@@ -2483,18 +2511,46 @@ const LS = {
 };
 function readJSON(id){try{return JSON.parse(document.getElementById(id).textContent)}catch(e){return null}}
 let RAW = readJSON('snapshot');
-const localRaw = LS.get('cs27_raw');
-if(localRaw && localRaw.asOf && localRaw.asOf > RAW.asOf && localRaw.box){ const fileRaw = RAW; RAW = localRaw;
-  ['car','stm','lines'].forEach(k => RAW[k] = Object.assign({}, fileRaw[k]||{}, RAW[k]||{}));
-  const flg = fileRaw.lg || (fileRaw.nfl ? {nfl: fileRaw.nfl} : {}); RAW.lg = RAW.lg || (RAW.nfl ? {nfl: RAW.nfl} : {}); delete RAW.nfl;
-  Object.keys(flg).forEach(k => { if(!RAW.lg[k] || flg[k].asOf > RAW.lg[k].asOf) RAW.lg[k] = flg[k]; }); }
-else if(localRaw && localRaw.lg && RAW){ RAW.lg = RAW.lg || {};   // the file is newer overall, but a league synced on this device since can still be fresher
-  Object.keys(localRaw.lg).forEach(k => { const L = localRaw.lg[k]; if(L && L.asOf && (!RAW.lg[k] || L.asOf > RAW.lg[k].asOf)) RAW.lg[k] = L; }); }
-// Whichever copy won, a final score either copy has is kept (a Game 5 that ended after one copy was made never reverts to "scheduled")
-if(localRaw && localRaw.lg && RAW && RAW.lg) Object.keys(RAW.lg).forEach(k => { const A = RAW.lg[k], B = localRaw.lg[k]; if(!A || !B || A===B || !A.games || !B.games) return;
-  const byId = {}; B.games.forEach(r => byId[r[0]] = r); const have = new Set(A.games.map(r => r[0]));
-  A.games.forEach(r => { const o = byId[r[0]]; if(o && o[5]==='post' && r[5]!=='post' && o[6]!=null){ r[5] = 'post'; r[6] = o[6]; r[7] = o[7]; r[10] = o[10]; } });
-  B.games.forEach(r => { if(+r[12]===3 && !have.has(r[0]) && r[5]==='post') A.games.push(r); }); });
+// A copy synced on this device (newer than the file) takes over; returns true when anything on screen could change
+function adoptLocal(localRaw){ if(!localRaw || !RAW) return false; let changed = false;
+  if(localRaw.asOf && localRaw.asOf > RAW.asOf && localRaw.box){ const fileRaw = RAW; RAW = localRaw; changed = true;
+    ['car','stm','lines'].forEach(k => RAW[k] = Object.assign({}, fileRaw[k]||{}, RAW[k]||{}));
+    const flg = fileRaw.lg || (fileRaw.nfl ? {nfl: fileRaw.nfl} : {}); RAW.lg = RAW.lg || (RAW.nfl ? {nfl: RAW.nfl} : {}); delete RAW.nfl;
+    Object.keys(flg).forEach(k => { if(!RAW.lg[k] || flg[k].asOf > RAW.lg[k].asOf) RAW.lg[k] = flg[k]; }); }
+  else if(localRaw.lg){ RAW.lg = RAW.lg || {};   // the file is newer overall, but a league synced on this device since can still be fresher
+    Object.keys(localRaw.lg).forEach(k => { const L = localRaw.lg[k]; if(L && L.asOf && (!RAW.lg[k] || L.asOf > RAW.lg[k].asOf)){ RAW.lg[k] = L; changed = true; } }); }
+  // Whichever copy won, a final score either copy has is kept (a Game 5 that ended after one copy was made never reverts to "scheduled")
+  if(localRaw.lg && RAW.lg) Object.keys(RAW.lg).forEach(k => { const A = RAW.lg[k], B = localRaw.lg[k]; if(!A || !B || A===B || !A.games || !B.games) return;
+    const byId = {}; B.games.forEach(r => byId[r[0]] = r); const have = new Set(A.games.map(r => r[0]));
+    A.games.forEach(r => { const o = byId[r[0]]; if(o && o[5]==='post' && r[5]!=='post' && o[6]!=null){ r[5] = 'post'; r[6] = o[6]; r[7] = o[7]; r[10] = o[10]; changed = true; } });
+    B.games.forEach(r => { if(+r[12]===3 && !have.has(r[0]) && r[5]==='post'){ A.games.push(r); changed = true; } }); });
+  return changed; }
+adoptLocal(LS.get('cs27_raw'));   // older installs kept the synced copy here; it moves to IndexedDB on the next save
+/* The synced copy lives in IndexedDB: localStorage tops out near 5 MB and the data is bigger than that, so the old cache write failed
+   silently and every launch started over from the file's snapshot (then spent a long sync catching up). Core data and each league are
+   stored under their own key, so a live-score change rewrites one league instead of everything. */
+const RAWDB = { _db:null,
+  open(){ if(!this._db) this._db = new Promise((res, rej) => { try{ const r = indexedDB.open('courtside', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }catch(e){ rej(e); } }); return this._db; },
+  async get(k){ try{ const db = await this.open(); return await new Promise(res => { const q = db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result ?? null); q.onerror = () => res(null); }); }catch(e){ return null; } },
+  async keys(){ try{ const db = await this.open(); return await new Promise(res => { const q = db.transaction('kv').objectStore('kv').getAllKeys(); q.onsuccess = () => res(q.result || []); q.onerror = () => res([]); }); }catch(e){ return []; } },
+  async put(pairs){ try{ const db = await this.open(); await new Promise(res => { const t = db.transaction('kv', 'readwrite'), st = t.objectStore('kv'); pairs.forEach(([k, v]) => v===undefined ? st.delete(k) : st.put(v, k)); t.oncomplete = res; t.onerror = res; t.onabort = res; }); }catch(e){} } };
+const RAW_DIRTY = {core:false, lg:new Set(), t:null};
+// saveRaw() stores everything; saveRaw(['mlb']) only that league. Writes are batched and wait for an idle moment, so a burst of live-score changes costs one write.
+function saveRaw(keys){ if(window.CS_STATIC) return; if(keys) keys.forEach(k => RAW_DIRTY.lg.add(k)); else { RAW_DIRTY.core = true; Object.keys(RAW.lg || {}).forEach(k => RAW_DIRTY.lg.add(k)); }
+  clearTimeout(RAW_DIRTY.t); RAW_DIRTY.t = setTimeout(() => (window.requestIdleCallback || (f => setTimeout(f, 50)))(saveRawNow, {timeout:3000}), 1200); }
+function saveRawNow(){ clearTimeout(RAW_DIRTY.t); const pairs = [];
+  if(RAW_DIRTY.core){ const core = Object.assign({}, RAW); delete core.lg; delete core.nfl; pairs.push(['raw:core', core]); }
+  RAW_DIRTY.lg.forEach(k => { if(RAW.lg && RAW.lg[k]) pairs.push(['raw:lg:' + k, RAW.lg[k]]); });
+  RAW_DIRTY.core = false; RAW_DIRTY.lg.clear(); if(!pairs.length) return Promise.resolve();
+  try{ localStorage.removeItem('cs27_raw'); }catch(e){}   // frees the quota for favourites and settings
+  return RAWDB.put(pairs); }
+addEventListener('pagehide', () => { if(RAW_DIRTY.core || RAW_DIRTY.lg.size) saveRawNow(); });
+document.addEventListener('visibilitychange', () => { if(document.visibilityState==='hidden' && (RAW_DIRTY.core || RAW_DIRTY.lg.size)) saveRawNow(); });
+// Read the saved copy back at launch. Resolves true when it changed what the app should show.
+async function hydrateRaw(){ if(window.CS_STATIC || typeof indexedDB==='undefined') return false; const ks = (await RAWDB.keys()).filter(k => typeof k==='string' && k.startsWith('raw:')); if(!ks.length) return false;
+  const vals = await Promise.all(ks.map(k => RAWDB.get(k))); const core = vals[ks.indexOf('raw:core')] || null, lg = {};
+  ks.forEach((k, i) => { if(k.startsWith('raw:lg:') && vals[i]) lg[k.slice(7)] = vals[i]; });
+  return adoptLocal(core ? Object.assign(core, {lg}) : {lg}); }
 let EDITS = LS.get('cs27_edits') || readJSON('edits') || {};
 
 /* ================= HELPERS ================= */
@@ -2746,7 +2802,14 @@ function buildModel(opts={}){
   const sd = Math.sqrt(gsArr.reduce((s,v)=>s+(v-mean)**2,0)/30) || 1;
   const meanP = ABS.reduce((s,a)=>s+full[a].pts,0)/30;
   const base = {}, rosterNet = {}, priorNet = {};
-  ABS.forEach(a => { rosterNet[a] = (full[a].gs-mean)/sd*K.NET_SCALE; priorNet[a] = (T[a].w-41)/2.7; base[a] = K.ROSTER_W*rosterNet[a] + K.PRIOR_W*priorNet[a]; });
+  // Roster continuity: the share of this season's minutes going to players who were on this team last season. The preseason number leans on
+  // what a franchise was; after heavy turnover it says little about the group on the floor now, so its weight shrinks and the current roster's rating takes over.
+  const lastTm = (RAW.stm||{})['2026'] || null, cont = {}, contF = {}, priorW = {};
+  ABS.forEach(a => { let tot = 0, kept = 0; if(lastTm) byTeam[a].forEach(p => { const mm = full[a].m[p.id]||0; tot += mm; if(lastTm[p.id]===a) kept += mm; });
+    cont[a] = lastTm && tot ? kept/tot : 1; contF[a] = opts.noCont ? 1 : clamp((cont[a] - K.CONT_LO)/(K.CONT_HI - K.CONT_LO), 0, 1); priorW[a] = K.PRIOR_W*contF[a]; });
+  ABS.forEach(a => { rosterNet[a] = (full[a].gs-mean)/sd*K.NET_SCALE; priorNet[a] = (T[a].w-41)/2.7; base[a] = (1-priorW[a])*rosterNet[a] + priorW[a]*priorNet[a]; });
+  // How fast results move a team: a shrunk running average of its misses (1 ÷ (games + FORM_K)), quicker for turned-over rosters, never slower than FORM_RATE
+  const formGain = (a, s) => Math.max(K.FORM_RATE, 1/((s.w + s.l) + K.FORM_K*(0.5 + 0.5*contF[a])));
   players.forEach(p => { const mm = full[p.tm].m[p.id] || 0; p.pmin = mm>0.5 ? mm : Math.min(p.bmin, 12)*0.5; p.rot = mm>0.5; });
   const ctx = teamContext();
   const cache = {};
@@ -2763,7 +2826,7 @@ function buildModel(opts={}){
   }
   const games = RAW.sched.map(g => ({id:g[0], t:Date.parse(g[1]), h:g[2], a:g[3], done:!!g[4] && Date.parse(g[1]) < cutoff, hs:g[5], as:g[6]}))
     .filter(g => T[g.h] && T[g.a]).sort((x,y)=>x.t-y.t);
-  const S = {}; ABS.forEach(a => S[a] = {form:0, streak:0, lastDay:null, road:0, w:0,l:0,hw:0,hl:0,aw:0,al:0,b2bw:0,b2bl:0,pw:0,sched:0,remaining:[],results:[]});
+  const S = {}; ABS.forEach(a => S[a] = {form:0, streak:0, lastDay:null, last:null, road:0, w:0,l:0,hw:0,hl:0,aw:0,al:0,b2bw:0,b2bl:0,pw:0,sched:0,remaining:[],results:[]});
   let correct = 0, decided = 0, absErr = 0, brier = 0;
   const lastDone = games.filter(g=>g.done).reduce((m,g)=>Math.max(m,g.t), 0);
   for(const g of games){
@@ -2774,6 +2837,13 @@ function buildModel(opts={}){
     const th = teamAt(g.h, g.t), ta = teamAt(g.a, g.t);
     const streakLive = g.done || g.t - Math.max(lastDone, 0) < 10*DAY;
     const stk = s => streakLive ? clamp(K.STREAK*s.streak, -K.STREAK_CAP, K.STREAK_CAP) : 0;
+    const netH = base[g.h] + th.inj + H.form, netA = base[g.a] + ta.inj + A.form;
+    // Mismatch: once the real gap (rating, injuries and form together) passes MIS_START, the better team pulls further away
+    const gap = netH - netA, mis = Math.sign(gap)*K.MIS_W*Math.max(0, Math.abs(gap) - K.MIS_START);
+    // Rematch: the same two teams also played each other last time out, within three days. The opener's loser gets a little back and the total dips,
+    // so the two games of a set never come out as the same score twice.
+    const op = H.last && H.last===A.last && d - etDay(H.last.t) <= 3 ? H.last : null; let rematch = 0;
+    if(op){ const m1 = (op.done && op.hs!=null ? op.hs - op.as : op.pred.margin)*(op.h===g.h ? 1 : -1); rematch = -clamp(m1*0.1, -K.REMATCH, K.REMATCH); }
     const f = {
       strength: (base[g.h] - base[g.a])*K.STR_W,
       injuries: th.inj - ta.inj,
@@ -2781,16 +2851,19 @@ function buildModel(opts={}){
       home: ctx.hca[g.h],
       rest: restAdj(rh) - restAdj(ra),
       travel: (A.road >= 3 ? -K.ROAD4 : 0) + (H.road >= 4 ? K.HOMECOMING : 0),
-      streak: stk(H) - stk(A)
+      streak: stk(H) - stk(A),
+      mismatch: mis,
+      rematch
     };
     const margin = Object.values(f).reduce((s,v)=>s+v,0);
-    const netH = base[g.h] + th.inj + H.form, netA = base[g.a] + ta.inj + A.form;
     const paceF = ((ctx.pace[g.h]+ctx.pace[g.a])/2) / ctx.lgPace;
-    const total = (2*K.LG + K.TOT_REG*(2*th.O + 2*ta.O - netH - netA)) * paceF;
+    const total = (2*K.LG + K.TOT_REG*(2*th.O + 2*ta.O - netH - netA)) * paceF + (rh===1 ? K.B2B_TOT : 0) + (ra===1 ? K.B2B_TOT : 0) + (op ? K.REMATCH_TOT : 0);
     let hs = total/2 + margin/2, as = total/2 - margin/2;
     const ph = phi(margin/K.SIG);
     let rH = Math.round(hs), rA = Math.round(as); if(rH === rA){ if(margin>=0) rH++; else rA++; }
-    g.pred = {hs:rH, as:rA, ph, margin, total, f, restH:rh, restA:ra, hOut:th.out, aOut:ta.out, paceF};
+    // a rematch that still rounds to the opener's exact scoreline takes the lower-scoring read (the total is already dipping)
+    if(op && !op.done && op.pred && (op.h===g.h ? op.pred.hs===rH && op.pred.as===rA : op.pred.hs===rA && op.pred.as===rH)){ rH--; rA--; }
+    g.pred = {hs:rH, as:rA, ph, margin, total, f, restH:rh, restA:ra, hOut:th.out, aOut:ta.out, paceF, rematch:!!op};
     H.sched++; A.sched++;
     if(g.done && g.hs!=null){
       const hw = g.hs > g.as;
@@ -2798,15 +2871,15 @@ function buildModel(opts={}){
       if(rh===1){ hw ? H.b2bw++ : H.b2bl++; } if(ra===1){ hw ? A.b2bl++ : A.b2bw++; }
       H.results.push({g, w:hw, m:g.hs-g.as}); A.results.push({g, w:!hw, m:g.as-g.hs});
       decided++; if((ph>=.5)===hw) correct++; absErr += Math.abs((g.hs-g.as)-margin); brier += (ph-(hw?1:0))**2;
-      const resid = clamp((g.hs-g.as) - margin, -15, 15);
-      H.form = clamp(K.FORM_DECAY*H.form + K.FORM_RATE*resid, -K.FORM_CAP, K.FORM_CAP);
-      A.form = clamp(K.FORM_DECAY*A.form - K.FORM_RATE*resid, -K.FORM_CAP, K.FORM_CAP);
+      const resid = clamp((g.hs-g.as) - margin, -K.RESID_CAP, K.RESID_CAP);
+      H.form = clamp(H.form + formGain(g.h, H)*resid, -K.FORM_CAP, K.FORM_CAP);
+      A.form = clamp(A.form - formGain(g.a, A)*resid, -K.FORM_CAP, K.FORM_CAP);
       H.streak = hw ? Math.max(1, H.streak+1) : Math.min(-1, H.streak-1);
       A.streak = !hw ? Math.max(1, A.streak+1) : Math.min(-1, A.streak-1);
     } else {
       H.pw += ph; A.pw += 1-ph; H.remaining.push(g); A.remaining.push(g);
     }
-    H.lastDay = d; A.lastDay = d;
+    H.lastDay = d; A.lastDay = d; H.last = g; A.last = g;
     H.road = 0; A.road++;
   }
   const teams = ABS.map(a => {
@@ -2815,7 +2888,7 @@ function buildModel(opts={}){
     const fullNet = base[a] + s.form, netNow = fullNet + cur.inj;
     const projW = s.w + s.pw + tbd*phi(fullNet/K.SIG); const W = Math.round(projW);
     const last10 = s.results.slice(-10);
-    return {ab:a, ...T[a], netNow, fullNet, base:base[a], rosterNet:rosterNet[a], priorNet:priorNet[a], form:s.form, streak:s.streak, projW, W, L:82-W, aw:s.w, al:s.l, diff: s.results.length ? s.results.reduce((q,r)=>q+r.m,0)/s.results.length : 0, rec:s, tbd,
+    return {ab:a, ...T[a], netNow, fullNet, base:base[a], rosterNet:rosterNet[a], priorNet:priorNet[a], cont:cont[a], priorW:priorW[a], form:s.form, streak:s.streak, projW, W, L:82-W, aw:s.w, al:s.l, diff: s.results.length ? s.results.reduce((q,r)=>q+r.m,0)/s.results.length : 0, rec:s, tbd,
       l10:[last10.filter(r=>r.w).length, last10.filter(r=>!r.w).length], hca:ctx.hca[a], pace:ctx.pace[a],
       roster: byTeam[a].slice().sort((x,y)=>y.pmin*y.gsr - x.pmin*x.gsr || y.bmin-x.bmin), curOut: cur.out, O: cur.O};
   });
@@ -2987,16 +3060,29 @@ function schemes(ab){
   if(q('bench')>=75) out.push({side:'Roster', h:'Deep bench', p:`${pct(m.bench)}% of projected points come from outside the top five, so the team can absorb injuries and play a 10-man rotation.`, ev:`Bench share ${rk(ab,'bench')}`});
   if(q('age')>=80) out.push({side:'Roster', h:'Veteran core', p:`One of the oldest rotations (${f1(m.age)} minutes-weighted). Experience is an asset; expect rest days and fewer back-to-back minutes.`, ev:`Avg age ${f1(m.age)}`});
   else if(q('age')<=20) out.push({side:'Roster', h:'Youth movement', p:`One of the youngest rotations (${f1(m.age)}). Expect improvement through the season, along with bigger night-to-night swings.`, ev:`Avg age ${f1(m.age)}`});
-  if(!out.some(s=>s.side==='Defense')) out.push({side:'Defense', h:'Conventional man-to-man', p:`No extreme defensive tendency in the numbers: standard man-to-man with mixed pick-and-roll coverages.`, ev:`Def. rating ${f1(m.drtg)} · ${rk(ab,'drtg')}`});
+  { const dT = rtgTier(ab,'drtg',true), rn = P.n >= 3 ? rankInfo(ab,'drtg','now') : null, dEv = rn ? `Def. rating ${f1(P.mn.drtg)} · #${rn.rank} of ${rn.n} this season` : `Def. rating ${f1(m.drtg)} (projected) · ${rk(ab,'drtg')}`;
+    if(dT < 0) out.push({side:'Defense', h:'Defense is the weak spot', p:`Opponents score too easily against this group${rn ? `: ${f1(P.mn.drtg)} points allowed per 100 possessions ranks ${ord(rn.rank)} of ${rn.n}` : ''}. Whatever the scheme, it isn't getting stops.`, ev:dEv});
+    else if(!out.some(s=>s.side==='Defense')) out.push({side:'Defense', h:'Conventional man-to-man', p:`No extreme defensive tendency in the numbers: standard man-to-man with mixed pick-and-roll coverages.`, ev:dEv}); }
   return out;
 }
+// Offense / defense tier for the labels: 2 = elite, 1 = good, 0 = middling, -1 = poor. The rating is this season's actual number blended with the
+// projection (actual takes over as games pile up), and the actual league rank has the last word: a team in the bottom third of the real
+// defensive ratings is never called good, and the bottom three are always called what they are.
+function rtgTier(ab, k, lowBest){ const P = allProfiles();
+  const val = a => { const p = P[a], act = p.mn[k], proj = p.m[k], g = p.n||0; if(act==null) return proj ?? null; if(proj==null) return act; const w = g/(g+5); return w*act + (1-w)*proj; };
+  const rankOf = f => { const v = f(ab); if(v==null) return null; const vs = ABS.map(f).filter(x => x!=null); return {rank: vs.filter(x => lowBest ? x < v : x > v).length + 1, n: vs.length}; };
+  const b = rankOf(val); if(!b) return 0; const act = (P[ab].n||0) >= 3 ? rankOf(a => P[a].mn[k] ?? null) : null;
+  let tier = b.rank <= 5 ? 2 : b.rank <= 10 ? 1 : b.rank > b.n - 8 ? -1 : 0;
+  if(act){ const t3 = Math.ceil(act.n/3); if(tier > 0 && act.rank > t3) tier = act.rank > act.n - t3 ? -1 : 0; if(tier < 0 && act.rank <= t3) tier = 0; if(act.rank > act.n - 3) tier = -1; if(tier===2 && act.rank > 8) tier = 1; }
+  return tier; }
 function tagline(ab){
   const q = k => pctile(ab,k) ?? 50, w = [];
   w.push(q('pace')>=65?'Fast':q('pace')<=35?'Deliberate':'Balanced-tempo');
   w.push(q('tpr')>=65?'three-happy':q('tpr')<=35?'paint-first':'');
-  const d = q('drtg')<=30?'elite defense':q('drtg')>=75?'leaky defense':'', o = q('ortg')>=70?'high-powered offense':q('ortg')<=30?'offense-starved':'';
+  const dt = rtgTier(ab,'drtg',true), ot = rtgTier(ab,'ortg',false);
+  const d = dt===2?'elite defense':dt===1?'sturdy defense':dt<0?'leaky defense':'', o = ot===2?'high-powered offense':ot===1?'efficient offense':ot<0?'offense-starved':'';
   w.push(o); w.push(d); if(!o && !d) w.push('middle of the pack on both ends');
-  else if(o && d && q('ortg')>=70 && q('drtg')<=30) w.push('a true two-way contender');
+  else if(ot===2 && dt===2) w.push('a true two-way contender');
   return w.filter(Boolean).join(', ').replace(/^./,c=>c.toUpperCase()) + '.';
 }
 
@@ -3026,7 +3112,7 @@ const STATS = [
 const VIEWS = [{k:'leaders',label:'Leaders'},{k:'teams',label:'Teams'},{k:'playbook',label:'Playbook'},{k:'schedule',label:'Schedule'},{k:'favs',label:'★ Favorites'},{k:'standings',label:'Standings'},{k:'injuries',label:'Injuries'},{k:'breakouts',label:'Breakouts'},{k:'tstats',label:'Team stats'},{k:'lab',label:'Lab'},{k:'method',label:'Method'},{k:'updates',label:'Updates'}];
 let UI = {pbMode:'now', stGroup:'conf', stSort:{cur:null, proj:null}, lmode:'cur', injMode:'list', injTeam:null, chartTeam:null, stat:'pts', conf:'all', team:null, schedTeam:null, schedMode:'date', slateDay:null, sort:{k:'gs', d:-1}, pbTeam:null, week:null};
 try{ const u = LS.get('cs27_ui'); if(u) UI = {...UI, ...u, team:null, week:null}; }catch(e){}
-const saveUI = () => LS.set('cs27_ui', {stSortLg:UI.stSortLg, injSortLg:UI.injSortLg, injTeamLg:UI.injTeamLg, lgBasis:UI.lgBasis, nflWeekLg:UI.nflWeekLg, pbMode:UI.pbMode, stGroup:UI.stGroup, lmode:UI.lmode, stat:UI.stat, schedTeam:UI.schedTeam, schedMode:UI.schedMode, pbTeam:UI.pbTeam, sport:UI.sport, socLeague:UI.socLeague, ncaaLeague:UI.ncaaLeague, nflGroup:UI.nflGroup, lgRate:UI.lgRate, lgStat:UI.lgStat, tsGroup:UI.tsGroup, tsGroupNba:UI.tsGroupNba, tsSort:UI.tsSort, lab:UI.lab, pbTeamLg:UI.pbTeamLg, colTeams:UI.colTeams, colStand:UI.colStand, colGames:UI.colGames, colTS:UI.colTS, colPB:UI.colPB, colLab:UI.colLab, fullCareer:UI.fullCareer, glStat:UI.glStat, cmpGroup:UI.cmpGroup, cmpBasis:UI.cmpBasis, cmpRate:UI.cmpRate, cmpStats:UI.cmpStats, h2hBasis:UI.h2hBasis, h2hRate:UI.h2hRate, tsRate:UI.tsRate, peerScope:UI.peerScope, peerSc:UI.peerSc, ldRate:UI.ldRate, peerRate:UI.peerRate, h2hRateLg:UI.h2hRateLg, vsTeam:UI.vsTeam, vsMode:UI.vsMode, poMode:UI.poMode, liveF:UI.liveF, cup:UI.cup, cupTab:UI.cupTab, mlbGrp:UI.mlbGrp, fbPos:UI.fbPos});
+const saveUI = () => LS.set('cs27_ui', {stSortLg:UI.stSortLg, injSortLg:UI.injSortLg, injTeamLg:UI.injTeamLg, lgBasis:UI.lgBasis, nflWeekLg:UI.nflWeekLg, pbMode:UI.pbMode, stGroup:UI.stGroup, lmode:UI.lmode, stat:UI.stat, schedTeam:UI.schedTeam, schedMode:UI.schedMode, pbTeam:UI.pbTeam, sport:UI.sport, socLeague:UI.socLeague, ncaaLeague:UI.ncaaLeague, nflGroup:UI.nflGroup, lgRate:UI.lgRate, lgStat:UI.lgStat, tsGroup:UI.tsGroup, tsGroupNba:UI.tsGroupNba, tsSort:UI.tsSort, lab:UI.lab, pbTeamLg:UI.pbTeamLg, colTeams:UI.colTeams, colStand:UI.colStand, colGames:UI.colGames, colTS:UI.colTS, colPB:UI.colPB, colLab:UI.colLab, fullCareer:UI.fullCareer, glStat:UI.glStat, cmpGroup:UI.cmpGroup, cmpBasis:UI.cmpBasis, cmpRate:UI.cmpRate, cmpStats:UI.cmpStats, h2hBasis:UI.h2hBasis, h2hRate:UI.h2hRate, tsRate:UI.tsRate, peerScope:UI.peerScope, peerSc:UI.peerSc, ldRate:UI.ldRate, peerRate:UI.peerRate, h2hRateLg:UI.h2hRateLg, rkPoll:UI.rkPoll, vsTeam:UI.vsTeam, vsMode:UI.vsMode, poMode:UI.poMode, liveF:UI.liveF, cup:UI.cup, cupTab:UI.cupTab, mlbGrp:UI.mlbGrp, fbPos:UI.fbPos});
 
 function injTag(p){ if(!p.inj || p.outUntil <= M.now) return ''; const dtd = /day/i.test(p.inj.status); return `<span class="inj-tag ${dtd?'dtd':''}">${dtd?'DTD':'OUT'}</span>`; }
 const valOf = (p,k) => p.L[k];
@@ -3195,7 +3281,7 @@ function teamPage(ab){
     </tbody></table></div>`;
   const next = r.rec.remaining.slice(0,6);
   const recent = M.games.filter(g=>g.done && (g.h===ab||g.a===ab)).slice(-5).reverse();
-  const outs = roster.filter(p=>p.inj && p.outUntil>M.now);
+  const outs = roster.filter(p=>p.inj && p.outUntil>M.now).sort((a,b)=>a.outUntil-b.outUntil);
   return `<div class="filters" style="justify-content:space-between">${backLbl(UI.backTo)?`<button class="back" data-goback="1" style="margin:0">← Back to ${backLbl(UI.backTo)}</button>`:`<button class="back" data-go="teams" style="margin:0">← All teams</button>`}<button class="btn sm" data-th2hopen="${ab}">Compare with another team ⇄</button></div>
    <div class="team-hero"><div class="tglow" style="background:${r.p}"></div><img class="pb-logo-bg" src="${logoUrl(ab)}" alt="" onerror="this.remove()">
      <div>
@@ -3285,7 +3371,7 @@ function liveOf(g){ const l = LIVE[g.id]; return l && (l.state==='in' || (l.stat
 async function pollLive(){
   try{
     const etd = new Intl.DateTimeFormat('en-CA', {timeZone:'America/New_York'}).format(new Date()).replace(/-/g,''); const SBU = 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard'; const evm = {};
-    for(const u of [SBU, `${SBU}?dates=${etd}`]){ try{ const r = await fetch(u, {cache:'no-store'}); if(r.ok) ((await r.json()).events||[]).forEach(e => evm[e.id] = e); }catch(e){} }
+    (await Promise.all([SBU, `${SBU}?dates=${etd}`].map(async u => { try{ const r = await fetch(u, {cache:'no-store'}); return r.ok ? ((await r.json()).events||[]) : []; }catch(e){ return []; } }))).forEach(evs => evs.forEach(e => evm[e.id] = e));
     const s = {events: Object.values(evm)}; let any = false, changed = false, newFinal = false, newSit = false;
     (s.events||[]).forEach(e => { const c = e.competitions[0], h = c.competitors.find(x=>x.homeAway==='home'), a = c.competitors.find(x=>x.homeAway==='away');
       const st = c.status.type.state; if(st==='in') any = true;
@@ -3481,7 +3567,9 @@ function h2hRowsHTML(keys, htmls, core){
 // A fresh comparison always opens on this season, per game; the tabs only stick while the comparison stays open (swapping a player).
 // H2H_KEEP lets a caller that asks for a specific view (a playoff series card) keep it.
 let H2H_KEEP = false;
-function h2hFresh(){ if(H2H_KEEP || document.querySelector('#ovH2H.open')){ H2H_KEEP = false; return; } UI.h2hBasis = 'now'; UI.h2hRate = 'pg'; UI.lgBasis = 'season'; UI.h2hRateLg = 'pg'; }
+function h2hFresh(){ if(H2H_KEEP || document.querySelector('#ovH2H.open')){ H2H_KEEP = false; return; } UI.h2hBasis = 'now'; UI.h2hRate = 'pg'; UI.lgBasis = 'season';
+  // per game where that's how the sport is read (NBA, NFL, college); season totals for soccer and baseball
+  const sp = UI.sport && UI.sport!=='nba' ? sportOf(LGK) : 'nba'; UI.h2hRateLg = sp==='soc' || sp==='mlb' || sp==='cba' ? 'tot' : 'pg'; try{ EO.open = false; }catch(e){} }
 const H2H_STATS = [['gp','Games',0,0,1],['min','Minutes',0,0,1],['pts','Points'],['reb','Rebounds'],['ast','Assists'],['stl','Steals'],['blk','Blocks'],['tov','Turnovers',1],['tpm','Threes made'],['fgp','FG%',0,1],['tpp','3P%',0,1],['ftp','FT%',0,1],['ts','True shooting',0,1],['gs','Game score']];
 function openH2H(aId, bId){
   const A = M.players.find(x=>x.id===aId), B = bId ? M.players.find(x=>x.id===bId) : null; if(!A) return;
@@ -3557,20 +3645,22 @@ function h2hSearch2(q, aId){ const out = $('#h2hResP'); if(!out) return; q = q.t
 
 /* ---- Game breakdown ---- */
 const FX = [
- {k:'strength', l:'Team strength', why:g=>`Full-strength net rating: ${T[g.h].n} ${sgn(M.base[g.h])} vs ${T[g.a].n} ${sgn(M.base[g.a])} (62% roster projection, 38% preseason consensus).`},
+ {k:'strength', l:'Team strength', why:g=>`Full-strength net rating: ${T[g.h].n} ${sgn(M.base[g.h])} vs ${T[g.a].n} ${sgn(M.base[g.a])} (${Math.round((1-M.teamMap[g.h].priorW)*100)}% / ${Math.round((1-M.teamMap[g.a].priorW)*100)}% roster projection, the rest preseason consensus; the preseason share shrinks when a roster turned over: ${T[g.h].n} kept ${Math.round(M.teamMap[g.h].cont*100)}% of last season’s minutes, ${T[g.a].n} ${Math.round(M.teamMap[g.a].cont*100)}%).`},
  {k:'injuries', l:'Injuries', why:g=>{ const n=id=>{const p=M.players.find(x=>x.id===id);return p?lastName(p.name):''}; const h=g.pred.hOut.map(n).filter(Boolean), a=g.pred.aOut.map(n).filter(Boolean); return (h.length||a.length)?`Out: ${h.length?T[g.h].n+' ('+h.slice(0,4).join(', ')+(h.length>4?'…':'')+')':''}${h.length&&a.length?'; ':''}${a.length?T[g.a].n+' ('+a.slice(0,4).join(', ')+(a.length>4?'…':'')+')':''}. Their minutes are redistributed.`:'No one listed out.'; }},
- {k:'form', l:'Recent form', why:g=>`How each team has played versus expectation lately, with recent games weighted most.`},
+ {k:'form', l:'Season form', why:g=>`How far each team’s results have run from expectation this season (${T[g.h].n} ${sgn(M.teamMap[g.h].form)}, ${T[g.a].n} ${sgn(M.teamMap[g.a].form)} right now). It moves fast early and for rebuilt rosters, so a 1–11 start counts.`},
  {k:'home', l:'Home court', why:g=>`${T[g.h].n}' own home edge (league average ${K.HCA}), from last season's home vs road split, regressed halfway to average.`},
  {k:'rest', l:'Rest', why:g=>{ const r=x=>x==null?'opener':x<=1?'back-to-back':x>=3?`${x-1} days off`:'1 day off'; return `${T[g.h].n}: ${r(g.pred.restH)} · ${T[g.a].n}: ${r(g.pred.restA)}. B2B ${K.B2B}, 2+ days off +${K.RESTED}.`; }},
  {k:'travel', l:'Travel', why:g=>`Road-trip fatigue (${K.ROAD4} for the away team's 4th+ straight road game) and the first-game-back-home dip (${K.HOMECOMING}).`},
- {k:'streak', l:'Streaks', why:g=>`Active win/loss streaks, worth ${K.STREAK} per game and capped at ±${K.STREAK_CAP}. Deliberately small: streaks mostly reflect quality already counted above.`}
+ {k:'streak', l:'Streaks', why:g=>`Active win/loss streaks, worth ${K.STREAK} per game and capped at ±${K.STREAK_CAP}. Deliberately small: streaks mostly reflect quality already counted above.`},
+ {k:'mismatch', l:'Mismatch', why:g=>`When the gap between two teams (rating, injuries and form together) passes ${K.MIS_START} points, the better side tends to pull away: ${K.MIS_W} extra for every point past that.`},
+ {k:'rematch', l:'Rematch', why:g=>g.pred.rematch ? `Second straight meeting of these two. The side that lost the opener usually gets some of it back (up to ${K.REMATCH}), and scoring dips ${Math.abs(K.REMATCH_TOT)} as the defenses adjust.` : `Only applies to the second game of a two-game set.`}
 ];
 function factorTable(g){
   const f = g.pred.f; const mx = Math.max(6, Math.abs(g.pred.margin), ...Object.values(f).map(Math.abs));
   const bar = v => { const w = Math.abs(v)/mx*50; return `<div class="dv"><i class="${v<0?'neg':''}" style="${v>=0?`left:50%;width:${w}%;background:${teamInk(g.h)}`:`right:50%;width:${w}%;background:${teamInk(g.a)}`}"></i></div>`; };
   return `<table class="fx-table"><tbody>
     <tr><td></td><td><div class="dv" style="height:auto;display:flex;justify-content:space-between;font-family:'Barlow Condensed';font-size:11px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase"><span>← ${T[g.a].n}</span><span>${T[g.h].n} →</span></div></td><td></td><td></td></tr>
-    ${FX.map(x=>`<tr><td class="lab">${x.l}</td><td>${bar(f[x.k])}</td><td class="num">${fxNum(g, f[x.k])}</td><td class="why">${x.why(g)}</td></tr>`).join('')}
+    ${FX.filter(x => f[x.k]!=null && (!['mismatch','rematch'].includes(x.k) || Math.abs(f[x.k]) >= 0.05)).map(x=>`<tr><td class="lab">${x.l}</td><td>${bar(f[x.k])}</td><td class="num">${fxNum(g, f[x.k])}</td><td class="why">${x.why(g)}</td></tr>`).join('')}
     <tr class="sum"><td class="lab">Predicted margin</td><td>${bar(g.pred.margin)}</td><td class="num">${fxNum(g, g.pred.margin)}</td><td class="why">Colour shows which side each factor helps. Win probability = normal curve of margin ÷ ${K.SIG}: <b style="color:#fff">${T[g.h].n} ${(g.pred.ph*100).toFixed(0)}%</b>.</td></tr>
     <tr><td class="lab">Total points</td><td></td><td class="num">${f0(g.pred.total)}</td><td class="why">Both offenses vs both defenses, scaled by the two teams' pace (${sgn((g.pred.paceF-1)*100)}% vs league). Score = total ± margin ÷ 2.</td></tr>
   </tbody></table>`;
@@ -3737,9 +3827,9 @@ function chartsSection(){
 
 /* ---- Injuries: list + by team depth chart ---- */
 function injuriesSection(){
-  const list = M.players.filter(p=>p.inj && p.outUntil>M.now).map(p=>({p, imp: impactOf(p)})).sort((a,b)=>a.imp-b.imp);
+  const list = M.players.filter(p=>p.inj && p.outUntil>M.now).map(p=>({p, imp: impactOf(p)})).sort((a,b)=>(Math.min(a.p.outUntil, SEASON_END)-Math.min(b.p.outUntil, SEASON_END)) || (a.imp-b.imp));   // soonest back first; out-for-the-season at the bottom
   const head = `<div class="sec-head"><div><div class="kicker">${list.length} players listed</div><h2>Injuries</h2></div>
-   <p>Current report. "Team hit" is how much the team's projected margin drops while the player is out. Switch to "By team" for a depth chart showing who picks up the missing minutes.</p></div>
+   <p>Current report, ordered by expected return: day-to-day first, season-ending injuries last. "Team hit" is how much the team's projected margin drops while the player is out. Switch to "By team" for a depth chart showing who picks up the missing minutes.</p></div>
    <div class="filters"><button class="chip ${UI.injMode!=='team'?'on':''}" data-injmode="list">All players</button><button class="chip ${UI.injMode==='team'?'on':''}" data-injmode="team">By team · depth chart</button>
    ${UI.injMode==='team'?(()=>{ const ts = M.teams.slice().sort((a,b)=>a.c.localeCompare(b.c)); if(!UI.injTeam||!T[UI.injTeam]) UI.injTeam = M.teams.slice().sort((a,b)=>(a.netNow-a.fullNet)-(b.netNow-b.fullNet))[0].ab;
      return `<select class="sel" id="injSel">${ts.map(t=>{ const n = t.roster.filter(p=>p.inj&&p.outUntil>M.now).length; return `<option value="${t.ab}" ${t.ab===UI.injTeam?'selected':''}>${t.c} ${t.n}${n?` (${n} out)`:''}</option>`; }).join('')}</select>`; })():''}</div>`;
@@ -3754,7 +3844,7 @@ function injuriesSection(){
 function depthChart(ab){
   const t = M.teamMap[ab], roster = M.byTeam[ab];
   const healthy = evalTeam(roster, ()=>false).m, tonight = M.teamAt(ab, M.now).m;
-  const outs = roster.filter(p=>p.inj && p.outUntil>M.now);
+  const outs = roster.filter(p=>p.inj && p.outUntil>M.now).sort((a,b)=>a.outUntil-b.outUntil);
   const lost = outs.reduce((s,p)=>s+(healthy[p.id]||0),0);
   const gainers = roster.map(p=>({p, d:(tonight[p.id]||0)-(healthy[p.id]||0)})).filter(x=>x.d>0.5).sort((a,b)=>b.d-a.d);
   const groups = {G:'Guards', F:'Forwards', C:'Centers'};
@@ -4012,10 +4102,11 @@ function methodSection(){
    </ol>
    <h3 id="m-teams">3 · Team strength</h3>
    <p>Each player's projected Game Score (a box-score value: points, efficiency, rebounds, assists, stocks, minus turnovers and fouls) is multiplied by his minutes and summed across the roster. That total is converted into a net rating (points per game better or worse than average), with the league spread scaled to ±${K.NET_SCALE} per standard deviation.</p>
-   <div class="formula">Team net = ${K.ROSTER_W} × roster rating + ${K.PRIOR_W} × preseason consensus + form
+   <div class="formula">Team net = (1 − p) × roster rating + p × preseason consensus + form
+p = ${K.PRIOR_W} × continuity factor (1 when ${Math.round(K.CONT_HI*100)}%+ of minutes belong to last season’s players, 0 at ${Math.round(K.CONT_LO*100)}% or less)
 Preseason consensus = (preseason projected wins − 41) ÷ 2.7
-Form ← ${K.FORM_DECAY} × form + ${K.FORM_RATE} × (actual margin − predicted margin), miss capped ±15, form capped ±${K.FORM_CAP}</div>
-   <p>Form is the "ups and downs" term. Every result nudges a team up or down by how much it beat or missed expectations. Each result moves form 3% of the way toward what it showed, and older results fade 1% per game, so form mostly reflects the last 25 or so games. Three games can't swing a team by more than a couple of wins, but a sustained run will.</p>
+Form ← form + (actual margin − predicted margin) ÷ (games played + ${K.FORM_K} × (0.5 + 0.5 × continuity factor)), miss capped ±${K.RESID_CAP}, form capped ±${K.FORM_CAP}</div>
+   <p>Form is the "ups and downs" term: a running average of how far a team’s results have landed from its predictions, shrunk toward zero until there are enough games to trust. A dozen games in, results carry about as much weight as the preseason read; for a roster that was rebuilt over the summer they take over sooner, and the preseason number counts for less to begin with. So a team that starts 1–11 is rated on that start, not on what the franchise was a year ago. Lopsided matchups get a further stretch (the mismatch term), and the second game of a two-game set against the same opponent is nudged toward the opener’s loser with a slightly lower total.</p>
    <h3 id="m-games">4 · Game predictions: what drives a score</h3>
    <p>Every game's predicted margin (home minus away) is a sum of seven factors. Click any game on the Schedule to see its own breakdown.</p>
    <table class="fx-table"><tbody>
@@ -4343,8 +4434,10 @@ const CF = () => SPORTS[sportOf(LGK)];
 const lgName = () => sportOf(LGK)==='soc' ? SOC_LEAGUES[LGK].name : isCollege(LGK) ? NCAA_LEAGUES[LGK].name : CF().label;
 function lgData(key){ RAW.lg = RAW.lg || {}; if(key==='nfl' && !RAW.lg.nfl && RAW.nfl) RAW.lg.nfl = RAW.nfl; return RAW.lg[key] || null; }
 const SIM_N = {mcbb:500, cfb:1000};
-function lgModel(key){ if(!LMC[key]){ const D = lgData(key); LMC[key] = D ? buildLeague(key, D, SIM_N[key] ? {N:SIM_N[key]} : {}) : null; } return LMC[key]; }
-function lgReset(){ for(const k in LMC) delete LMC[k]; NF = lgModel(LGK); }
+function lgModel(key){ if(!LMC[key]){ const D = lgData(key); LMC[key] = D ? buildLeague(key, D, SIM_N[key] ? {N:SIM_N[key]} : {}) : null; if(LMC[key]) LMC[key].__src = D; } return LMC[key]; }
+// Only models whose league data was replaced are thrown away: an NBA-only sync or an injury update no longer rebuilds every other sport.
+// (Live score changes inside a league go through lgRebuildSoon, which drops that one league.)
+function lgReset(){ for(const k in LMC) if(!LMC[k] || LMC[k].__src!==lgData(k)) delete LMC[k]; NF = lgModel(LGK); }
 
 /* ---- images ---- */
 const lgLogo = ab => { const T = NF && NF.T[ab]; if(STATIC) return (IMG && IMG.lg && IMG.lg[LGK] && IMG.lg[LGK][ab]) || 'data:,';
@@ -4373,7 +4466,8 @@ const tFull = ab => { const t = NF.T[ab]; if(!t) return ab; return sportOf(LGK)=
 // AP / Coaches poll places: 1, 2, 3 wear gold, silver, bronze wherever a ranking shows (standings, schedules, team cards, game headers)
 const apCls = r => r===1 ? ' r1' : r===2 ? ' r2' : r===3 ? ' r3' : '';
 const rankTag = ab => { const r = NF.T[ab] && NF.T[ab].rank; return r ? `<i class="rk25${apCls(+r)}">${r}</i>` : ''; };
-const apTxt = r => `<span class="ap-rk${apCls(+r)}">AP #${r}</span>`;
+const rkLbl = () => NF && NF.rkPoll==='cfp' ? 'CFP' : 'AP';
+const apTxt = r => `<span class="ap-rk${apCls(+r)}">${rkLbl()} #${r}</span>`;
 /* Wikimedia photos are shown in a circle; official Premier League cutouts are shown like ESPN headshots */
 const socRound = id => { return false; const v = NF && NF.photos && NF.photos[id]; return !!v && !v.startsWith('pl:') && !(STATIC && IMG && IMG.lgh && IMG.lgh[id] && /premierleague/.test(IMG.lgh[id])); };
 function nFace(p, cls=''){ const t = NF.T[p.tm] || {p:'#333'}; const ini = p.name.split(' ').filter(w=>!/^(Jr\.?|Sr\.?|II|III|IV)$/i.test(w)).map(s=>s[0]).slice(0,2).join('');
@@ -4598,22 +4692,34 @@ function buildLeague(key, D, opts={}){
     H.res.push({g, r:hw?'W':'L', m:g.hs-g.as}); A.res.push({g, r:hw?'L':'W', m:g.as-g.hs}); });
   teamsAll.forEach(a => { const r = rec[a]; let s = 0; for(let i=r.res.length-1;i>=0;i--){ const x = r.res[i].r; if(!s) s = x==='W'?1:x==='L'?-1:0; else if(s>0&&x==='W') s++; else if(s<0&&x==='L') s--; else break; if(!s) break; } r.streak = s; r.gp = r.w+r.l+r.t; r.form = r.res.slice(-5).map(x=>x.r); });
   // Season simulation (regular season only)
-  const N = opts.N || 2500, rem = games.filter(g=>g.stype!==3 && (g.state!=='post' || g.hs==null)); const sim = {}; teamsAll.forEach(a => sim[a] = {w:0, pts:0, po:0, div:0, s1:0, top:0, rel:0, ct:0, bid:0, cw:0, wd:[]});
+  const N = opts.N || 2500, rem = games.filter(g=>g.stype!==3 && (g.state!=='post' || g.hs==null));
+  const confs = [...new Set(teams.map(a=>T[a].conf))];
+  /* The simulated seasons are the slow part of a league build (thousands of seasons; over two seconds for college basketball on a laptop, far more
+     on a phone), and the schedule, live and leaders pages never read them. So they run the first time something asks for .sim (standings, a team
+     page, the playbook), not every time a sport is opened or a final score comes in. */
+  const runSim = () => { const sim = {}; teamsAll.forEach(a => sim[a] = {w:0, pts:0, po:0, div:0, s1:0, top:0, rel:0, ct:0, bid:0, cw:0, wd:[]});
   const gauss = () => { let u = 0; while(!u) u = Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*Math.random()); };
   const LGi = SOC_LEAGUES[key] || {}; const SH = (K.SHOCK==null ? 1 : K.SHOCK) * (K.model==='goals' ? 0.08 : sp==='mlb' ? 0.25 : sp==='cba' ? 0.5 : sp==='cbb' ? 2.6 : 2.2);
   const expW = {}; teamsAll.forEach(a => expW[a] = rec[a].w + rem.filter(g => g.h===a || g.a===a).reduce((s,g)=>s+(g.h===a?g.pred.ph:1-g.pred.ph),0));
-  const confs = [...new Set(teams.map(a=>T[a].conf))];
   const remIdx = rem.map(g => [g.h, g.a, g.pred.margin, confGame(g)]);
+  // the game loop runs on plain number arrays (team index instead of team name): millions of coin flips per build
+  const nT = teamsAll.length, nR = remIdx.length, tIx = {}; teamsAll.forEach((a, i) => tIx[a] = i);
+  const rH = new Int32Array(nR), rA = new Int32Array(nR), rM = new Float64Array(nR), rC = new Uint8Array(nR), wA = new Float64Array(nT), cwA = new Float64Array(nT), clA = new Float64Array(nT), shA = new Float64Array(nT), invSig = 1/K.SIG;
+  remIdx.forEach((g, i) => { rH[i] = tIx[g[0]]; rA[i] = tIx[g[1]]; rM[i] = g[2]; rC[i] = g[3] ? 1 : 0; });
+  const confTeams = confs.filter(Boolean).map(cf => teams.filter(a=>T[a].conf===cf)), atLarge = {}; if(sp==='cbb') teams.forEach(a => atLarge[a] = R.o[a] + R.d[a] - 0.35*expW[a]);
   for(let s=0; s<N; s++){
     const w = {}, pts = {}, shock = {}, tb = {}, cw = {}, cl = {}; teamsAll.forEach(a => { w[a] = rec[a].w + rec[a].t*0.5; pts[a] = rec[a].pts; cw[a] = rec[a].cw; cl[a] = rec[a].cl; shock[a] = gauss()*SH; tb[a] = Math.random(); });
     if(K.model==='goals'){ for(const g of rem){ const gh = poisSample(R.lgH*R.at[g.h]*R.df[g.a]*Math.exp(shock[g.h]-shock[g.a])), ga = poisSample(R.lgA*R.at[g.a]*R.df[g.h]*Math.exp(shock[g.a]-shock[g.h])); if(gh>ga) pts[g.h]+=3; else if(ga>gh) pts[g.a]+=3; else { pts[g.h]++; pts[g.a]++; } }
       const order = teams.slice().sort((x,y)=>(pts[y]-pts[x])||(tb[y]-tb[x])); order.forEach((a,i) => { sim[a].pts += pts[a]; if(i===0) sim[a].s1++; if(i < (LGi.top||4)) sim[a].top++; if(LGi.rel && i >= order.length - LGi.rel) sim[a].rel++; }); continue; }
-    for(const [h,a,mg,cg] of remIdx){ const hw = Math.random() < phi((mg + shock[h] - shock[a])/K.SIG); const W = hw ? h : a, L = hw ? a : h; w[W]++; if(cg){ cw[W]++; cl[L]++; } }
+    for(let i = 0; i < nT; i++){ const a = teamsAll[i]; wA[i] = w[a]; cwA[i] = cw[a]; clA[i] = cl[a]; shA[i] = shock[a]; }
+    for(let i = 0; i < nR; i++){ const h = rH[i], a = rA[i], hw = Math.random() < phi((rM[i] + shA[h] - shA[a])*invSig), W = hw ? h : a; wA[W]++; if(rC[i]){ cwA[W]++; clA[hw ? a : h]++; } }
+    for(let i = 0; i < nT; i++){ const a = teamsAll[i]; w[a] = wA[i]; cw[a] = cwA[i]; cl[a] = clA[i]; }
     teamsAll.forEach(a => { sim[a].w += w[a]; sim[a].cw += cw[a]; });
     if(college){ // conference regular-season titles; for basketball, a rough NCAA tournament field (conference champions + 37 at-large)
       const champ = new Set();
-      confs.forEach(cf => { if(!cf) return; const ts = teams.filter(a=>T[a].conf===cf); const pc = a => (cw[a]+cl[a]) ? cw[a]/(cw[a]+cl[a]) : 0; const best = ts.sort((x,y)=>(pc(y)-pc(x))||(cw[y]-cw[x])||(tb[y]-tb[x]))[0]; if(best){ sim[best].ct++; champ.add(best); } });
-      if(sp==='cbb'){ champ.forEach(a => sim[a].bid++); teams.filter(a => !champ.has(a)).sort((x,y)=>(R.o[y]+R.d[y]+0.35*(w[y]-expW[y])) - (R.o[x]+R.d[x]+0.35*(w[x]-expW[x]))).slice(0, 37).forEach(a => sim[a].bid++); }
+      const pc = a => (cw[a]+cl[a]) ? cw[a]/(cw[a]+cl[a]) : 0, ahead = (x, y) => (pc(y)-pc(x))||(cw[y]-cw[x])||(tb[y]-tb[x]);
+      confTeams.forEach(ts => { let best = ts[0]; for(let i = 1; i < ts.length; i++) if(ahead(best, ts[i]) > 0) best = ts[i]; if(best){ sim[best].ct++; champ.add(best); } });
+      if(sp==='cbb'){ champ.forEach(a => sim[a].bid++); const sc = {}; teams.forEach(a => sc[a] = atLarge[a] + 0.35*w[a]); teams.filter(a => !champ.has(a)).sort((x,y)=>sc[y]-sc[x]).slice(0, 37).forEach(a => sim[a].bid++); }
       if(sp==='cfb'){ // 12-team playoff: five best-ranked conference champions plus the next seven
         const score = a => R.o[a]+R.d[a] + 2.2*(w[a]-expW[a]) + 1.5*w[a]; const champs = [...champ].filter(a => T[a].conf && !/indep/i.test(T[a].conf)).sort((x,y)=>score(y)-score(x)).slice(0,5);
         const field = new Set(champs); teams.filter(a => !field.has(a)).sort((x,y)=>score(y)-score(x)).slice(0, 12-field.size).forEach(a => field.add(a)); field.forEach(a => sim[a].bid++); }
@@ -4630,19 +4736,21 @@ function buildLeague(key, D, opts={}){
     }
   }
   teamsAll.forEach(a => { const x = sim[a]; ['w','pts','po','div','s1','top','rel','ct','bid','cw'].forEach(k => x[k] /= N); });
+  return sim; };
   const net = {}; teamsAll.forEach(a => net[a] = K.model==='goals' ? (Math.log(R.at[a]) - Math.log(R.df[a]))*1.4 : R.o[a] + R.d[a]);
   const upcoming = games.find(g => g.state!=='post'); const last = games[games.length-1];
   const curWeek = isFBs(sp) ? (upcoming || last || {wk:1}).wk : null;
   const curDay = (upcoming || last) ? dayKey((upcoming || last).t) : null;
-  const regLeft = rem.length, seasonGames = sp==='soc' ? (LGi.n||38) : K.regGames;
+  const regLeft = rem.length, seasonGames = sp==='soc' ? ((SOC_LEAGUES[key]||{}).n||38) : K.regGames;
   LGK = prevKey;
-  return {key, sp, K, T, teams, teamsAll, photos:D.photos||{}, games, players, byTeam, R, rec, sim, net, qb, qbAdj, isOut, divOf, curWeek, curDay, confs, college, regLeft, seasonGames, ts:D.ts||{}, tso:D.tso||{}, tsP:D.tsP||{}, tsoP:D.tsoP||{}, tsSeason:D.tsSeason, statsLast:!Object.keys(D.stats||{}).length && Object.keys(S0).length > 0,
+  let simMemo = null;
+  return {get sim(){ return simMemo || (simMemo = runSim()); }, set sim(v){ simMemo = v; }, key, sp, K, T, teams, teamsAll, photos:D.photos||{}, games, players, byTeam, R, rec, net, qb, qbAdj, isOut, divOf, curWeek, curDay, confs, college, regLeft, seasonGames, ts:D.ts||{}, tso:D.tso||{}, tsP:D.tsP||{}, tsoP:D.tsoP||{}, tsSeason:D.tsSeason, statsLast:!Object.keys(D.stats||{}).length && Object.keys(S0).length > 0,
     acc:{correct, decided, mae: decided ? absErr/decided : null}, asOf:D.asOf, season:D.season};
 }
 
 /* ---- tabs and section router ---- */
 function lgViews(){ const sp = sportOf(LGK);
-  const v = [{k:'lg-leaders',label:'Leaders'},{k:'lg-teams',label:'Teams'},{k:'lg-playbook',label:'Playbook'},{k:'lg-games',label:'Schedule'},{k:'favs',label:'★ Favorites'},...(sp==='soc'?[{k:'lg-cups',label:'Cups & Europe'}]:[]),{k:'lg-standings',label:sp==='soc'?'Table':'Standings'},{k:'lg-tstats',label:'Team stats'},{k:'lg-injuries',label:'Injuries'},{k:'lg-hot',label:'Breakouts'},{k:'lg-alltime',label:'All-Time'},...(sp==='soc'?[{k:'lg-global',label:'Across leagues'}]:[]),{k:'lg-lab',label:'Lab'},{k:'lg-method',label:'Method'}];
+  const v = [{k:'lg-leaders',label:'Leaders'},{k:'lg-teams',label:'Teams'},{k:'lg-playbook',label:'Playbook'},{k:'lg-games',label:'Schedule'},{k:'favs',label:'★ Favorites'},...(sp==='soc'?[{k:'lg-cups',label:'Cups & Europe'}]:[]),{k:'lg-standings',label:sp==='soc'?'Table':sp==='cfb'||sp==='cbb'?'Rankings':'Standings'},{k:'lg-tstats',label:'Team stats'},{k:'lg-injuries',label:'Injuries'},{k:'lg-hot',label:'Breakouts'},{k:'lg-alltime',label:'All-Time'},...(sp==='soc'?[{k:'lg-global',label:'Across leagues'}]:[]),{k:'lg-lab',label:'Lab'},{k:'lg-method',label:'Method'}];
   return sp==='cba' || sp==='cfb' ? v.filter(x => x.k!=='lg-injuries') : v; }
 let LG_VIEWS = lgViews();
 const NFL_VIEWS = LG_VIEWS;   // kept for older links
@@ -4662,7 +4770,8 @@ function lgSection(k){
 function colFilterUI(stateKey, allLabel){
   if(!NF.college) return ''; const cur = UI[stateKey] || (NF.teams.some(a=>NF.T[a].rank) ? 'top25' : 'SEC');
   const confs = NF.confs.filter(Boolean).sort();
-  return `<div class="filters"><div class="seg">${NF.teams.some(a=>NF.T[a].rank)?`<button class="${cur==='top25'?'on':''}" data-colf="${stateKey}:top25">AP Top 25</button>`:''}<button class="${cur==='top50'?'on':''}" data-colf="${stateKey}:top50">Top 50 rated</button>${allLabel?`<button class="${cur==='all'?'on':''}" data-colf="${stateKey}:all">${allLabel}</button>`:''}</div>
+  const cfp = rkHas('cfp'), apB = on => `<button class="${cur==='top25'&&on?'on':''}" data-colf="${stateKey}:top25" data-rkpoll="ap">AP Top 25</button>`;
+  return `<div class="filters"><div class="seg">${NF.teams.some(a=>NF.T[a].rank) || cfp ? (cfp ? `<button class="${cur==='top25'&&NF.rkPoll==='cfp'?'on':''}" data-colf="${stateKey}:top25" data-rkpoll="cfp">CFP Rankings</button>${rkHas('ap') ? apB(NF.rkPoll!=='cfp') : ''}` : apB(true)) : ''}<button class="${cur==='top50'?'on':''}" data-colf="${stateKey}:top50">Top 50 rated</button>${allLabel?`<button class="${cur==='all'?'on':''}" data-colf="${stateKey}:all">${allLabel}</button>`:''}</div>
     <select class="sel" data-colsel="${stateKey}"><option value="">Conference…</option>${confs.map(c=>`<option value="${esc(c)}" ${c===cur?'selected':''}>${esc(c)}</option>`).join('')}</select></div>`; }
 function colFilter(stateKey){ if(!NF.college) return () => true; const cur = UI[stateKey] || (NF.teams.some(a=>NF.T[a].rank) ? 'top25' : 'SEC');
   if(cur==='all') return () => true; if(cur==='top25') return a => NF.T[a].rank > 0;
@@ -4757,11 +4866,13 @@ function lgStandings(){
     const rows = NF.teams.filter(f).sort((a,b)=> confMode ? ((R(b).cw-R(b).cl)-(R(a).cw-R(a).cl)) || ((S(b).cw||0)-(S(a).cw||0)) || (NF.net[b]-NF.net[a]) : (NF.T[a].rank||99)-(NF.T[b].rank||99) || (NF.net[b]-NF.net[a]));
     const cg = a => NF.games.filter(g=>g.stype!==3 && NF.T[g.h].conf && NF.T[g.h].conf===NF.T[g.a].conf && (g.h===a||g.a===a)).length;
     const gl = a => NF.games.filter(g=>g.stype!==3 && (g.h===a||g.a===a)).length; const bidLbl = sp==='cfb' ? 'Playoff' : 'NCAA';
-    const cols = [['Team', nm, teamCell, 'l'], ['Conf', a=>NF.T[a].conf||'', a=>`<td class="l muted">${esc(NF.T[a].conf||'–')}</td>`, 'l'], ['AP', a=>NF.T[a].rank||99, a=>td(NF.T[a].rank||'–')], ['W', a=>R(a).w, a=>td(R(a).w)], ['L', a=>R(a).l, a=>td(R(a).l)], ['Conf W-L', a=>R(a).cw-R(a).cl, a=>td(`${R(a).cw}–${R(a).cl}`)],
+    const cols = [['Team', nm, teamCell, 'l'], ['Conf', a=>NF.T[a].conf||'', a=>`<td class="l muted">${esc(NF.T[a].conf||'–')}</td>`, 'l'], [rkLbl(), a=>NF.T[a].rank||99, a=>td(NF.T[a].rank ? `<b>${NF.T[a].rank}</b>` : '–')], ...(rkHas(NF.rkPoll||'ap') ? [['Chg', a=>rkChg(a), a=>td(rkDelta(a) || '<span class="muted">–</span>')]] : []), ...(NF.rkPoll==='cfp' && rkHas('ap') ? [['AP', a=>NF.T[a].ap||99, a=>td(NF.T[a].ap||'–')]] : []), ['W', a=>R(a).w, a=>td(R(a).w)], ['L', a=>R(a).l, a=>td(R(a).l)], ['Conf W-L', a=>R(a).cw-R(a).cl, a=>td(`${R(a).cw}–${R(a).cl}`)],
       [sp==='cba'?'RS':'PF', a=>R(a).pf, a=>td(R(a).pf)], [sp==='cba'?'RA':'PA', a=>R(a).pa, a=>td(R(a).pa)], ['Diff', a=>R(a).pf-R(a).pa, a=>td(sgn0(R(a).pf-R(a).pa))], ['Home', a=>R(a).hw-R(a).hl, a=>td(`${R(a).hw}–${R(a).hl}`)], ['Away', a=>R(a).aw-R(a).al, a=>td(`${R(a).aw}–${R(a).al}`)], ['Strk', a=>R(a).streak, a=>td(stk(R(a)))]]
       .concat(allDone ? [['Post', a=>R(a).post.w, a=>td(R(a).post.w||R(a).post.l?`${R(a).post.w}–${R(a).post.l}`:'–')]] : [['Proj', a=>S(a).w, a=>td(`<b>${Math.round(S(a).w)}–${Math.max(0, gl(a) - Math.round(S(a).w))}</b>`)], ['Proj conf', a=>S(a).cw, a=>{ const left = cg(a) - R(a).cw - R(a).cl; return td(`${Math.round(S(a).cw)}–${Math.max(0, R(a).cw + R(a).cl + left - Math.round(S(a).cw))}`); }], ['Conf title', a=>S(a).ct, a=>td(oddsStr(S(a).ct))]].concat(sp==='cbb'||sp==='cfb' ? [[bidLbl, a=>S(a).bid, a=>td(oddsStr(S(a).bid))]] : []))
       .concat([['Rating', a=>NF.net[a], a=>td((NF.net[a]>=0?'+':'')+NF.net[a].toFixed(1))]]);
-    return `<div class="sec-head"><div><div class="kicker">${lgName()} · ${allDone?'final records':'records + 2,500 simulated seasons'}</div><h2>Standings</h2></div><p>${allDone?'The season is complete. POST is each team’s postseason record.':`Overall and conference records with the projected finish. Conference title odds are for the best regular-season conference record; ${sp==='cfb'?'Playoff odds follow the 12-team format (five highest-rated conference champions plus seven at-large teams, judged on rating and record), so treat them as a rough guide to the committee.':'NCAA odds are a rough field of conference champions plus 37 at-large teams by rating and record.'}`}</p></div>
+    const rkOn = sp==='cfb' || sp==='cbb', pollNm = NF.rkPoll==='cfp' ? 'CFP Rankings' : 'AP Top 25', wkTxt = rkWeek();
+    const rkNote = rkOn && cur==='top25' && rkHas(NF.rkPoll||'ap') ? `${pollNm}${wkTxt ? ' (' + esc(wkTxt) + ')' : ''}: the number after each team is its move since last week’s poll (<i class="rk-d up">+3</i> up three spots, <i class="rk-d dn">−2</i> down two, <i class="rk-d new">NEW</i> wasn’t ranked). ${NF.rkPoll==='cfp' ? 'The committee’s ranking sets the playoff field; the AP poll is one tab over. ' : ''}` : '';
+    return `<div class="sec-head"><div><div class="kicker">${lgName()} · ${rkOn && cur==='top25' ? pollNm + ' · ' : ''}${allDone?'final records':'records + 2,500 simulated seasons'}</div><h2>${rkOn ? 'Rankings' : 'Standings'}</h2></div><p>${rkNote}${allDone?'The season is complete. POST is each team’s postseason record.':`Overall and conference records with the projected finish. Conference title odds are for the best regular-season conference record; ${sp==='cfb'?'Playoff odds follow the 12-team format (five highest-rated conference champions plus seven at-large teams, judged on rating and record), so treat them as a rough guide to the committee.':'NCAA odds are a rough field of conference champions plus 37 at-large teams by rating and record.'}`}</p></div>
       ${colFilterUI('colStand','All teams')}${hint}
       <div class="stand-wrap one"><div class="stand"><div class="tbl-wrap">${rows.length ? sortTbl('col'+LGK, cols, rows, a=>`class="hov" data-nteam="${a}"`) : '<p class="muted">No teams match this filter.</p>'}</div></div></div>`; }
   const groups = UI.nflGroup==='conf' ? [...new Set(NF.teams.map(a=>NF.T[a].conf))].sort().map(cf => ({name:cf, teams:NF.teams.filter(a=>NF.T[a].conf===cf)}))
@@ -5062,21 +5173,23 @@ function lgPlaybook(){
 /* ---- Injuries ---- */
 function lgInjuries(){
   const sp = sportOf(LGK); const all = NF.players.filter(p => p.inj);
-  let tsel = (UI.injTeamLg||{})[LGK] || ''; if(tsel && !NF.T[tsel]) tsel = ''; const sort = UI.injSortLg || 'team';
+  let tsel = (UI.injTeamLg||{})[LGK] || ''; if(tsel && !NF.T[tsel]) tsel = ''; const sort = UI.injSortLg==='status' ? 'soon' : UI.injSortLg || 'team';
+  const soonest = (a, b) => { const x = retKey(a), y = retKey(b); return x===y ? impact(b)-impact(a) : x < y ? -1 : 1; };   // soonest back first, season-ending last
+  const when = p => { const k = retKey(p); return k===Infinity ? 'Out for the season' : isFinite(Date.parse((p.inj||[])[3])) ? 'Est. return ' + fmtDate(k) : ''; };
   const teamsWith = [...new Set(all.map(p=>p.tm))]; const count = a => all.filter(p=>p.tm===a).length;
   let list = tsel ? all.filter(p => p.tm===tsel) : all.slice();
   const sev = p => NF.isOut(p) ? 2 : /doubt|quest|day|%/i.test(p.inj[0]) ? 1 : 0;
   const ctrl = `<div class="filters"><select class="sel" data-lginjteam><option value="">All ${NF.teams.length} teams · ${all.length} players listed</option>${NF.teams.slice().sort((a,b)=>tFull(a).localeCompare(tFull(b))).map(a=>`<option value="${esc(a)}" ${a===tsel?'selected':''}>${esc(tFull(a))} (${count(a)})</option>`).join('')}</select>
-    <div class="seg"><button class="${sort==='team'?'on':''}" data-injsort="team">By team</button><button class="${sort==='impact'?'on':''}" data-injsort="impact">Biggest names</button><button class="${sort==='status'?'on':''}" data-injsort="status">Out first</button></div></div>`;
+    <div class="seg"><button class="${sort==='team'?'on':''}" data-injsort="team">By team</button><button class="${sort==='impact'?'on':''}" data-injsort="impact">Biggest names</button><button class="${sort==='soon'?'on':''}" data-injsort="soon">Soonest back</button></div></div>`;
   const src = LGK==='eng.1' ? 'Premier League injury news comes from the official Fantasy Premier League feed (ESPN doesn’t publish one).' : sp==='soc' ? '' : 'Source: ESPN’s injury report.';
   if(!all.length){ const why = sp==='soc' ? `ESPN doesn’t publish injury reports for ${esc(lgName())}, and there’s no free official feed for this league yet. The Premier League’s comes from Fantasy Premier League’s injury news; other leagues will show here once a source is added.` : `No injuries are listed for ${esc(lgName())} right now.`;
     return `<div class="sec-head"><div><div class="kicker">${esc(lgName())}</div><h2>Injuries</h2></div><p>${why}</p></div>`; }
-  const card = p => `<div class="nr" data-npid="${p.id}">${nFace(p,'nr-face')}<div><b>${esc(p.name)} <small>${esc(p.pos)}${sort!=='team'&&!tsel?' · '+nLogo(p.tm,'tm-lg inj-tm')+esc(tName(p.tm)):''}</small></b><span>${esc(p.inj[1]||'')}${p.inj[2]?' · '+esc(p.inj[2].slice(0,140)):''}</span></div><em class="nr-inj ${NF.isOut(p)?'out':''}">${esc(p.inj[0])}</em><span class="nr-fav">${favStar('p',LGK,p.id,p.name,p.tm)}</span></div>`;
+  const card = p => `<div class="nr" data-npid="${p.id}">${nFace(p,'nr-face')}<div><b>${esc(p.name)} <small>${esc(p.pos)}${sort!=='team'&&!tsel?' · '+nLogo(p.tm,'tm-lg inj-tm')+esc(tName(p.tm)):''}</small></b><span>${when(p)?`<b class="nr-ret">${esc(when(p))}</b> · `:''}${esc(p.inj[1]||'')}${p.inj[2]?' · '+esc(p.inj[2].slice(0,140)):''}</span></div><em class="nr-inj ${NF.isOut(p)?'out':''}">${esc(p.inj[0])}</em><span class="nr-fav">${favStar('p',LGK,p.id,p.name,p.tm)}</span></div>`;
   let html;
-  if(sort==='team' || tsel){ const by = {}; list.sort((a,b)=> (sev(b)-sev(a)) || impact(b)-impact(a)).forEach(p => (by[p.tm] = by[p.tm] || []).push(p));
+  if(sort==='team' || tsel){ const by = {}; list.sort(soonest).forEach(p => (by[p.tm] = by[p.tm] || []).push(p));
     html = `<div class="inj-grid">${Object.keys(by).sort((a,b)=>tFull(a).localeCompare(tFull(b))).map(ab => `<div class="nr-g"><h4 data-nteam="${ab}" style="cursor:pointer">${nLogo(ab,'tm-lg')}${esc(tFull(ab))} <small class="muted">${by[ab].length}</small></h4>${by[ab].map(card).join('')}</div>`).join('')}</div>`; }
-  else { list.sort(sort==='status' ? (a,b)=>(sev(b)-sev(a)) || impact(b)-impact(a) : (a,b)=>impact(b)-impact(a)); html = `<div class="inj-list">${list.map(card).join('')}</div>`; }
-  return `<div class="sec-head"><div><div class="kicker">${esc(lgName())} · ${all.length} players listed · ${teamsWith.length} teams</div><h2>Injuries</h2></div><p>The latest injury report. Players listed as out or doubtful are left out of the position matchups in each game breakdown${isFBs(sp)?', and a missing starting quarterback costs his team 4.5 points in the prediction':''}. ${src}</p></div>
+  else { list.sort(sort==='soon' ? soonest : (a,b)=>impact(b)-impact(a)); html = `<div class="inj-list">${list.map(card).join('')}</div>`; }
+  return `<div class="sec-head"><div><div class="kicker">${esc(lgName())} · ${all.length} players listed · ${teamsWith.length} teams</div><h2>Injuries</h2></div><p>The latest injury report, soonest expected return first and season-ending injuries last. Players listed as out or doubtful are left out of the position matchups in each game breakdown${isFBs(sp)?', and a missing starting quarterback costs his team 4.5 points in the prediction':''}. ${src}</p></div>
     ${ctrl}${html}`;
 }
 
@@ -5430,7 +5543,7 @@ async function lgPoll(){
   const SB = `https://site.api.espn.com/apis/site/v2/sports/${path}/scoreboard`, grp = isCollege(key) ? `&groups=${key==='mcbb'?50:key==='cfb'?80:26}&limit=300` : '';
   const urls = key==='nfl' ? [`${SB}?dates=${D.season}&seasontype=2&week=${(lgModel(key)||{}).curWeek||1}`] : [...new Set([-1,0,1].map(o => ymd(new Date(+today + o*864e5))).concat(D.games.filter(g => { const age = Date.now() - new Date(g[1]); return age > 3*3600e3 && (g[5]==='in' || (g[5]==='pre' && age < 14*864e5)); }).sort((a, b) => (+b[12]===3) - (+a[12]===3) || new Date(b[1]) - new Date(a[1])).slice(0, 8).map(g => ymd(new Date(g[1])))))].map(d => `${SB}?dates=${d}${grp}`);
   let live = false;
-  try{ const evs = []; for(const u of urls){ try{ const r = await fetch(u, {cache:'no-store'}); if(r.ok) evs.push(...((await r.json()).events||[])); }catch(e){} } const s = {events: evs}; let changed = false, fin = false, sitAny = false; const chg = [];
+  try{ const evs = []; (await Promise.all(urls.map(async u => { try{ const r = await fetch(u, {cache:'no-store'}); return r.ok ? ((await r.json()).events||[]) : []; }catch(e){ return []; } }))).forEach(x => evs.push(...x)); const s = {events: evs}; let changed = false, fin = false, sitAny = false; const chg = [];
     (s.events||[]).forEach(e => { const c = e.competitions[0], st = c.status.type; let row = D.games.find(x=>x[0]===String(e.id));
       // a playoff game the cached data never listed (a Game 5 added once the series went on): add it so its score lands and the series total updates
       if(!row && e.season && +e.season.type===3){ const hh = c.competitors.find(x=>x.homeAway==='home'), aa = c.competitors.find(x=>x.homeAway==='away'), ab = x => x && x.team && x.team.abbreviation;
@@ -5451,7 +5564,7 @@ async function lgPoll(){
       const m = LMC[key]; if(m) chg.forEach(row => { const g = m.games.find(x => x.id===row[0]); if(g){ const was = g.state; g.state = row[5]; g.hs = row[6]; g.as = row[7]; g.detail = row[10]; g.probH = row[13]||null; g.probA = row[14]||null; if(was!=='post' && g.state==='post' && g.hs!=null) recApply(m, g); } }); if(fin || !m) lgRebuildSoon(key);
       if(key==='mlb'){ WS_C = null; if(UI.sport==='mlb' && ['lg-live','lg-cups'].includes(CUR)) try{ evHero(CUR); }catch(e){} } NF = lgModel(LGK); if(UI.sport!=='nba' && key===LGK && !['lg-live','lg-cups'].includes(CUR)){ const y = scrollY; go(CUR, false); window.scrollTo(0, y); }
       const gm = document.querySelector('#ovGame.open [data-vvgame]'); if(gm && gm.dataset.vvlg===key){ const ov = document.getElementById('ovGame'), st = ov.scrollTop; openLgGame(gm.dataset.vvgame); ov.scrollTop = st; }
-      LS.set('cs27_raw', RAW); }
+      saveRaw([key]); }
   }catch(e){}
   clearTimeout(lgPollT); const soon = D.games.some(g => g[5]!=='post' && Math.abs(new Date(g[1]) - Date.now()) < 3*3600e3); lgPollT = setTimeout(lgPoll, live ? 30000 : soon ? 60000 : 5*60000);
 }
@@ -5463,7 +5576,7 @@ function lgRebuildSoon(key){ lgRebuildSoon.k = lgRebuildSoon.k || new Set(); lgR
 let lgLoading = {};
 async function lgEnsure(key){
   if(lgData(key) || STATIC || lgLoading[key]) return; lgLoading[key] = true;
-  try{ RAW.lg = RAW.lg || {}; RAW.lg[key] = await syncLeague(key); delete LMC[key]; if(key===LGK){ NF = lgModel(key); go(CUR, false); renderLgHero(); } LS.set('cs27_raw', RAW); }catch(e){ toast('Could not load '+key+' from ESPN'); }
+  try{ RAW.lg = RAW.lg || {}; RAW.lg[key] = await syncLeague(key); delete LMC[key]; if(key===LGK){ NF = lgModel(key); go(CUR, false); renderLgHero(); } saveRaw([key]); }catch(e){ toast('Could not load '+key+' from ESPN'); }
   lgLoading[key] = false;
 }
 
@@ -5535,18 +5648,19 @@ function nbaTeamStatsSection(){
   const srt = (UI.tsSort||{})['nba'+grp] || {i:0, d:cols[0][3] ? 1 : -1}; const c = cols[srt.i] || cols[0];
   const teams = ABS.slice().sort((a,b)=>{ const x = c[1](a), y = c[1](b); if(x==null) return 1; if(y==null) return -1; return srt.d*(x-y); });
   const ranks = cols.map(d => { const vs = ABS.map(a=>[a, d[1](a)]).filter(x=>x[1]!=null); return (v, a) => tierCls(vs, a, d[3], d[5]); });
+  const pcts = cols.map(d => { const vs = ABS.map(a=>d[1](a)).filter(x=>x!=null); return v => { if(v==null || vs.length < 2) return ''; const rk = vs.filter(x => d[3] && !d[5] ? x < v : x > v).length + 1; return `${ord(rk)} of ${vs.length} · ${ord(Math.round((1 - (rk-1)/(vs.length-1))*100))} percentile`; }; });
   const played = M.games.filter(g=>g.done).length;
   return `<div class="sec-head"><div><div class="kicker">2026–27 · from ${played} box scores</div><h2>Team stats</h2></div><p>Every team’s shooting, scoring and defense from this season’s box scores, with what opponents did against them. Click a column to sort. Green = top 10, red = bottom 10; style numbers (pace, 3-point rate) stay white.</p></div>
     <div class="filters"><div class="seg">${groups.map(g=>`<button class="${g===grp?'on':''}" data-tsgroupnba="${g}">${g}</button>`).join('')}</div>${tsRateSeg()}<div class="seg ts-arrows"><button data-tsscroll="-1" title="Scroll left">◀</button><button data-tsscroll="1" title="Scroll right">▶</button></div><button class="btn sm" data-th2hopen="">Compare two teams ⇄</button></div>
     <div class="tbl-wrap ts-wrap"><table class="ts-tbl"><thead><tr><th class="l">#</th><th class="l">Team</th>${cols.map((d,i)=>`<th class="srt ${i===srt.i?'on':''}" data-tssortnba="${grp}:${i}">${d[0]}${i===srt.i?(srt.d<0?' ▾':' ▴'):''}</th>`).join('')}</tr></thead><tbody>
-    ${teams.map((a,n)=>`<tr class="hov" data-team="${a}"><td class="l">${n+1}</td><td class="l"><div class="tn">${dot(a)}${T[a].n}</div></td>${cols.map((d,i)=>{ const v = d[1](a); return `<td class="${ranks[i](v, a)}">${v==null?'–':lgFmt(v, d[2])}</td>`; }).join('')}</tr>`).join('')}
+    ${teams.map((a,n)=>`<tr class="hov" data-team="${a}"><td class="l">${n+1}</td><td class="l"><div class="tn">${dot(a)}${T[a].n}</div></td>${cols.map((d,i)=>{ const v = d[1](a); return `<td class="${ranks[i](v, a)}" title="${esc(d[0])}: ${pcts[i](v)}">${v==null?'–':lgFmt(v, d[2])}</td>`; }).join('')}</tr>`).join('')}
     </tbody></table></div>`;
 }
 let NBA_LAB = null;
 function nbaLabState(){ UI.lab = UI.lab || {}; return UI.lab.nba = UI.lab.nba || {hfa:100, rand:100, roster:Math.round(K.ROSTER_W*100), form:100, adj:{}, N:2500}; }
 function runNbaLab(){
   const st = nbaLabState(); const N = +st.N; const w = st.roster/100; const SIG = K.SIG*st.rand/100;
-  const delta = {}; M.teams.forEach(t => delta[t.ab] = (w*t.rosterNet + (1-w)*t.priorNet) - t.base + (st.form/100-1)*t.form + (+(st.adj||{})[t.ab]||0));
+  const delta = {}; M.teams.forEach(t => delta[t.ab] = (pw => ((1-pw)*t.rosterNet + pw*t.priorNet))((1-w)*(t.priorW/K.PRIOR_W)) - t.base + (st.form/100-1)*t.form + (+(st.adj||{})[t.ab]||0));
   const rem = M.games.filter(g=>!g.done).map(g => [g.h, g.a, g.pred.margin + (st.hfa/100-1)*(g.pred.f ? g.pred.f.home : K.HCA) + delta[g.h] - delta[g.a]]);
   const gauss = () => { let u = 0; while(!u) u = Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*Math.random()); };
   const out = {}; ABS.forEach(a => out[a] = {w:0, top6:0, pin:0, seed1:0, best:0});
@@ -5942,6 +6056,7 @@ const LIVE_SRC = [
 const LH = {ev:{}, at:{}, open:new Set(), timer:null, busy:false};
 const sbTeam = c => { const t = c.team || {}; return {st:sbStats(c), color:t.color||'', alt:t.alternateColor||'', id:String(t.id||''), ab:t.abbreviation||'', n:t.shortDisplayName||t.displayName||t.name||'', full:t.displayName||'', logo:darkLogo(t.logo || (t.logos && t.logos[0] && t.logos[0].href) || ''), sc:c.score==null ? null : typeof c.score==='object' ? (c.score.displayValue ?? c.score.value) : c.score, win:!!c.winner, rec:((c.records||[])[0]||{}).summary||'', hits:c.hits, lead:(((c.leaders||[]).find(l => l.name==='points')||{}).leaders||[])[0] || null}; };
 function sbEvents(src, s){ return (s.events||[]).map(e => { const c = e.competitions[0], st = c.status.type, h = c.competitors.find(x=>x.homeAway==='home'), a = c.competitors.find(x=>x.homeAway==='away'); if(!h || !a) return null;
+  if(st.state!=='in' && ((c.series && c.series.completed && st.state==='pre') || /CANCEL/i.test(st.name||''))) return null;   // an "if necessary" game of a series that is already over
   const sit = c.situation || {}, lp = sit.lastPlay || {}; const pr = lp.probability || sit.probability || null;
   return {src:src.k, lbl:src.lbl, path:src.path, sp:src.sp, id:String(e.id), t:Date.parse(e.date), state:st.state, detail:otFix(st.shortDetail||st.detail||'', src.path), h:sbTeam(h), a:sbTeam(a), last:lp.text||'', ph:pr && pr.homeWinPercentage!=null ? pr.homeWinPercentage : null,
     note:(c.notes||[]).map(n=>n.headline).filter(Boolean).join(' · '), down:ddFix(sit, true), poss:sit.possession||'', outs:sit.outs, balls:sit.balls, strikes:sit.strikes, onb:[sit.onFirst, sit.onSecond, sit.onThird].map(Boolean), bat:(sit.batter&&sit.batter.athlete&&sit.batter.athlete.shortName)||'', pit:(sit.pitcher&&sit.pitcher.athlete&&sit.pitcher.athlete.shortName)||'',
@@ -6498,6 +6613,12 @@ function _fitRatings(games, HFA){
   return {o, d, lg};
 }
 
+// Poll rankings: AP Top 25 and (football, from November) the CFP committee's, each as {TEAM: [this week, last week]} (last week 0 = wasn't ranked)
+function _rkParse(r, idToAb){ const out = {at: new Date().toISOString()};
+  (r.rankings||[]).forEach(R => { const nm = [R.name, R.shortName, R.type].filter(Boolean).join(' '), kind = /cfp|playoff/i.test(nm) ? 'cfp' : /\bap\b/i.test(nm) ? 'ap' : null; if(!kind || out[kind]) return;
+    const m = {}; (R.ranks||[]).forEach(x => { const ab = idToAb[x.team && x.team.id]; if(ab && x.current > 0) m[ab] = [x.current, x.previous > 0 ? x.previous : 0]; });
+    if(Object.keys(m).length){ out[kind] = m; out[kind + 'Wk'] = R.shortHeadline || R.headline || (R.occurrence && R.occurrence.displayValue ? 'Week ' + R.occurrence.displayValue : ''); } });
+  return out; }
 async function syncCollege(key, prog, have){
   have = have || {};
   const p = m => prog && prog(m); const path = LG_PATH(key), B = `https://site.api.espn.com/apis/site/v2/sports/${path}`;
@@ -6526,7 +6647,7 @@ async function syncCollege(key, prog, have){
       const nm = g.shortName || g.abbreviation || g.name || ''; (tl.items||[]).forEach(x => { const id = ((x.$ref||'').match(/teams\/(\d+)/)||[])[1]; const ab = idToAb[id]; const t = ab && teams.find(y=>y[0]===ab); if(t) t[6] = nm.replace(/ Conference$/,''); }); });
   }catch(e){} }
   // AP Top 25
-  try{ const r = await _gj(`${B}/rankings`); const ap = (r.rankings||[])[0]; (ap && ap.ranks || []).forEach(x => { const ab = idToAb[x.team && x.team.id]; const t = ab && teams.find(y=>y[0]===ab); if(t) t[8] = x.current; }); }catch(e){}
+  let rk = null; try{ rk = _rkParse(await _gj(`${B}/rankings`), idToAb); Object.entries(rk.ap || {}).forEach(([ab, v]) => { const t = teams.find(y=>y[0]===ab); if(t) t[8] = v[0]; }); }catch(e){}
   // Games
   p(`${key}: schedule…`);
   const games = {};
@@ -6569,7 +6690,7 @@ async function syncCollege(key, prog, have){
     if(played < 50){ if(have.ts && have.tsSeason === SEASON-1){ keep.push('ts','tso','tsSeason'); } else { try{ r = await _byTeam(path, SEASON-1, TS_KEEP.cbb, idToAb); }catch(e){} tsSeason = SEASON-1; } }
     ts = r.ts; var tso = r.tso;
   }
-  return {asOf: new Date().toISOString(), season: SEASON, sport: bb ? 'cbb' : 'cba', teams: T2, games: gl, prev, roster, inj, stats, stats0, ts, tso: typeof tso==='undefined' ? {} : tso, tsSeason, keep, partial};
+  return {asOf: new Date().toISOString(), season: SEASON, sport: bb ? 'cbb' : 'cba', teams: T2, games: gl, prev, roster, inj, stats, stats0, ts, tso: typeof tso==='undefined' ? {} : tso, tsSeason, keep, partial, rk: rk && (rk.ap || rk.cfp) ? rk : undefined};
 }
 
 async function syncLeague(key, prog, have){
@@ -6662,7 +6783,7 @@ async function syncLines(out, have){ const known = new Set(have || []); try{ if(
   return res; }
 async function syncLeagues(prog, keys, have){
   const out = {}; have = have || {};
-  for(const k of (keys || LG_KEYS)){ try{ out[k] = await syncLeague(k, prog, have[k]); }catch(e){ prog && prog(`${k} failed: ${e.message||e}`); } }
+  await _pool((keys || LG_KEYS).slice(), 3, async k => { try{ out[k] = await syncLeague(k, prog, have[k]); }catch(e){ prog && prog(`${k} failed: ${e.message||e}`); } });
   return out;
 }
 
@@ -6678,7 +6799,7 @@ function lgHave(lg){ const out = {}; Object.entries(lg||{}).forEach(([k, d]) => 
   if(['eng.1','esp.1','ita.1','ger.1','fra.1','usa.1'].includes(k)){ o.tst = d.games.filter(g => g[15]).map(g => g[0]); o.ph = Object.keys(d.photos||{}); } out[k] = o; }); return out; }
 // Combine a fresh league pull with the copy on hand (fields the sync skipped, partial schedules, match stats)
 function lgMerge(old, nw){ if(!nw) return old; if(nw.keepAll) return old || null; if(!old) { delete nw.keep; delete nw.partial; return _boxMerge(null, nw); }
-  (nw.keep||[]).forEach(f => nw[f] = old[f]); delete nw.keep;
+  (nw.keep||[]).forEach(f => nw[f] = old[f]); delete nw.keep; if(!nw.rk && old.rk) nw.rk = old.rk;
   if(old.photos) nw.photos = Object.assign({}, old.photos, nw.photos||{});
   if(old.injSrc==='fpl' && !Object.keys(nw.inj||{}).length){ nw.inj = old.inj; nw.injSrc = 'fpl'; }
   const oldG = {}; (old.games||[]).forEach(g => oldG[g[0]] = g);
@@ -6704,7 +6825,7 @@ async function syncCFB(prog, have){
   const addTeam = (id, fcs) => { if(idToAb[id]) return idToAb[id]; const t = all[id] || {id}; let ab = t.abbreviation || (t.shortDisplayName||String(id)).slice(0,4).toUpperCase(); if(seen[ab]) ab = ab + '-' + id; seen[ab] = 1; idToAb[id] = ab;
     teams.push([ab, String(id), t.location || t.displayName || ab, t.name || t.shortDisplayName || '', '#'+(t.color||'333333'), '#'+(t.alternateColor||'ffffff'), fcs ? 'FCS' : (fbs[id] || ''), fcs ? 'FCS' : '', 0]); return ab; };
   Object.keys(fbs).forEach(id => addTeam(id, false));
-  try{ const r = await _gj(`${B}/rankings`); const ap = (r.rankings||[]).find(x => /AP/.test(x.name)) || (r.rankings||[])[0]; (ap && ap.ranks || []).forEach(x => { const ab = idToAb[x.team && x.team.id]; const t = ab && teams.find(y=>y[0]===ab); if(t) t[8] = x.current; }); }catch(e){}
+  let rk = null; try{ rk = _rkParse(await _gj(`${B}/rankings`), idToAb); Object.entries(rk.ap || {}).forEach(([ab, v]) => { const t = teams.find(y=>y[0]===ab); if(t) t[8] = v[0]; }); }catch(e){}
   p('cfb: schedule…');
   const games = {}; const fcsIds = new Set();
   const add = (e, wk, stype) => { const c = (e.competitions||[])[0]; if(!c) return; const h = c.competitors.find(x=>x.homeAway==='home'), a = c.competitors.find(x=>x.homeAway==='away'); if(!h || !a) return;
@@ -6736,7 +6857,7 @@ async function syncCFB(prog, have){
   const R2 = roster, stats = {};
   p('cfb: team stats…');
   let ts = {}, tso = {}; try{ ({ts, tso} = await _teamStats(path, fbsTeams, SEASON, TS_KEEP.nfl)); }catch(e){}
-  return {asOf: new Date().toISOString(), season: SEASON, sport: 'cfb', teams, games: gl, prev, roster: R2, inj: {}, stats, ts, tso, keep, boxDelta: box};
+  return {asOf: new Date().toISOString(), season: SEASON, sport: 'cfb', teams, games: gl, prev, roster: R2, inj: {}, stats, ts, tso, keep, boxDelta: box, rk: rk && (rk.ap || rk.cfp) ? rk : undefined};
 }
 
 /*SYNC-END*/
@@ -6774,7 +6895,7 @@ async function doSync(silent){
     RAW = nr; build(); try{ injWatch(); }catch(e){}   // a fresh injury report alerts starred players now
     const items = diffLog(oldRaw, nr, oldTeams);
     RAW.log = (oldRaw.log||[]).concat([{t: nr.asOf, items: items.length ? items : ['No changes since last sync.']}]).slice(-80);
-    if(!LS.set('cs27_raw', RAW)) say('Synced (too large to cache on this device; export to keep it).');
+    saveRaw();
     rerender(); toast(`Synced · ${items.length} change${items.length===1?'':'s'}`);
   }catch(err){ say('Sync failed: ' + (err.message||err) + '. Showing saved data.'); if(!silent) toast('Sync failed. Check your connection'); }
   finally{ const b = $('#syncBtn'); if(b) b.disabled = false; syncing = false; const nb = $('#syncNav'); if(nb){ nb.classList.remove('busy'); nb.textContent = '↻ Sync'; } }
@@ -6792,7 +6913,7 @@ function exportHTML(){
 function wireUpdates(){
   const s = $('#syncBtn'); if(s) s.onclick = () => doSync(false);
   const x = $('#exportBtn'); if(x) x.onclick = exportHTML;
-  const r = $('#resetBtn'); if(r) r.onclick = () => { LS.del('cs27_raw'); LS.del('cs27_edits'); RAW = readJSON('snapshot'); EDITS = readJSON('edits') || {}; build(); rerender(); toast('Reset to file data'); };
+  const r = $('#resetBtn'); if(r) r.onclick = () => { LS.del('cs27_raw'); RAWDB.keys().then(ks => RAWDB.put(ks.filter(k => typeof k==='string' && k.startsWith('raw:')).map(k => [k, undefined]))); LS.del('cs27_edits'); RAW = readJSON('snapshot'); EDITS = readJSON('edits') || {}; build(); rerender(); toast('Reset to file data'); };
 }
 
 /* ================= v17: logos on results, pace + projections on team pages, chart search, breakouts everywhere, soccer across leagues ================= */
@@ -8508,7 +8629,16 @@ function pctRank(vals, v, inv){ if(!vals || !vals.length || v==null || !isFinite
 /* ---- Rosters: NFL injured reserve gets its own group with an estimated return ---- */
 const IR_LBL = 'Injured reserve';
 function irRoster(ab, active){ if(sportOf(LGK)!=='nfl') return []; const on = new Set(active);
-  return (NF.byTeam[ab] || []).filter(p => !on.has(p) && (/injuredReserve|reserve/i.test(p.grp||'') || (p.inj && /reserve|physically unable|non-football/i.test(p.inj[0])))).sort((a, b) => a.name.localeCompare(b.name)); }
+  return (NF.byTeam[ab] || []).filter(p => !on.has(p) && (/injuredReserve|reserve/i.test(p.grp||'') || (p.inj && /reserve|physically unable|non-football/i.test(p.inj[0])))).sort((a, b) => { const x = retKey(a), y = retKey(b); return x===y ? a.name.localeCompare(b.name) : x < y ? -1 : 1; }); }
+// When a listed player is expected back, as a time: the report's date when it has one, else a read of the note ("4-6 weeks"), else a guess from the status. Infinity = out for the season.
+function retKey(p){ const i = p.inj || [], st = String(i[0]||''), note = String(i[2]||''), rd = i[3] ? Date.parse(i[3]) : NaN, now = Date.now(), D = 864e5;
+  if((/\b(season|year)\b/i.test(note) && /out|miss|end|ruled|done|remainder|rest of/i.test(note)) || /out for (the )?season|season.ending/i.test(st)) return Infinity;
+  if(isFinite(rd)) return Math.max(rd, now - D);
+  const m2 = /(\d+)\s*(?:-|to)\s*(\d+)\s*(week|month|day)s?/i.exec(note), m1 = m2 ? null : /(\d+)\s*(week|month)s?/i.exec(note);
+  if(m2 || m1){ const n = +(m2 ? m2[2] : m1[1]), u = (m2 ? m2[3] : m1[2]).toLowerCase(); return now + n*(u==='week' ? 7 : u==='month' ? 30 : 1)*D; }
+  if(/day.to.day|probable|game.?time/i.test(st)) return now + D; if(/questionable/i.test(st)) return now + 2*D; if(/doubtful|%/.test(st)) return now + 4*D;
+  if(/7-day/i.test(st)) return now + 7*D; if(/10-day/i.test(st)) return now + 10*D; if(/15-day/i.test(st)) return now + 15*D; if(/60-day/i.test(st)) return now + 60*D;
+  if(/suspen/i.test(st)) return now + 10*D; if(/reserve|physically|non-football/i.test(st + ' ' + (p.grp||''))) return now + 35*D; if(/out/i.test(st)) return now + 14*D; return now + 7*D; }
 function retEst(p){ const i = p.inj || [], note = String(i[2]||''), rd = i[3] ? Date.parse(i[3]) : NaN;
   if(isFinite(rd) && rd > Date.now() - 864e5) return `Est. return ${fmtDate(rd, {month:'short', day:'numeric'})}`;
   if(/\b(season|year)\b/i.test(note) && /out|miss|end|ruled|done/i.test(note)) return 'Out for the season';
@@ -8772,7 +8902,7 @@ const _notifAsk13 = notifAsk; notifAsk = function(){ _notifAsk13(); setTimeout(s
 (() => { const i = VIEWS.findIndex(v => v.k==='schedule'); if(i > 0) VIEWS.unshift(VIEWS.splice(i, 1)[0]); const t = VIEWS.findIndex(v => v.k==='tstats'); if(t >= 0) VIEWS.splice(t, 1);
   VIEWS.splice(VIEWS.findIndex(v => v.k==='breakouts') + 1, 0, {k:'alltime', label:'All-Time'}); })();
 function lgViews(){ const sp = sportOf(LGK);
-  const v = [{k:'lg-games',label:sp==='soc'?'Fixtures':'Schedule'},{k:'lg-leaders',label:'Leaders'},{k:'lg-teams',label:'Teams'},{k:'lg-playbook',label:'Playbook'},{k:'favs',label:'★ Favorites'},...(sp==='soc'?[{k:'lg-cups',label:'Cups & Europe'}]:[]),{k:'lg-standings',label:sp==='soc'?'Tables':'Standings'},{k:'lg-injuries',label:'Injuries'},{k:'lg-hot',label:'Breakouts'},{k:'lg-alltime',label:'All-Time'},...(sp==='soc'?[{k:'lg-global',label:'Across leagues'}]:[]),{k:'lg-lab',label:'Lab'},{k:'lg-method',label:'Method'}];
+  const v = [{k:'lg-games',label:sp==='soc'?'Fixtures':'Schedule'},{k:'lg-leaders',label:'Leaders'},{k:'lg-teams',label:'Teams'},{k:'lg-playbook',label:'Playbook'},{k:'favs',label:'★ Favorites'},...(sp==='soc'?[{k:'lg-cups',label:'Cups & Europe'}]:[]),{k:'lg-standings',label:sp==='soc'?'Tables':sp==='cfb'||sp==='cbb'?'Rankings':'Standings'},{k:'lg-injuries',label:'Injuries'},{k:'lg-hot',label:'Breakouts'},{k:'lg-alltime',label:'All-Time'},...(sp==='soc'?[{k:'lg-global',label:'Across leagues'}]:[]),{k:'lg-lab',label:'Lab'},{k:'lg-method',label:'Method'}];
   return v.filter(x => !((sp==='cba' || sp==='cfb') && x.k==='lg-injuries') && !(sp==='cba' && x.k==='lg-alltime')); }
 const ldToggle = () => { const t = UI.ldView==='teams'; return `<div class="filters ld-toggle"><div class="seg"><button class="${t?'':'on'}" data-ldview="players">Player leaders</button><button class="${t?'on':''}" data-ldview="teams">Team stats</button></div></div>`; };
 const _lgLeaders14 = lgLeaders; lgLeaders = function(){ if(sportOf(LGK)==='cba') return _lgLeaders14(); return ldToggle() + (UI.ldView==='teams' ? lgTeamStats() : _lgLeaders14()); };
@@ -8810,15 +8940,24 @@ function vvTallyHTML(){ return ''; }
 
 /* ---- Postseason series: finished series drop their unplayed "if necessary" games; eliminated teams say how it ended ---- */
 const mlbLgOf = (D, ab) => { const t = (D.teams||[]).find(r => r[0]===ab); return ((t && t[6]) || (Object.entries(MLB_DIVS).find(([d, x]) => x.includes(ab))||[''])[0]).slice(0, 2); };
-function purgeSeries(D){ const rows = D.games || [], by = {}; rows.forEach(r => { if(+r[12]!==3) return; const k = [r[3], r[4]].sort().join('|'); (by[k] = by[k] || []).push(r); });
+function purgeSeries(D){ const rows = D.games || [], by = {}, now = Date.now(), soc = /soc/.test(String(D.sport||'')); rows.forEach(r => { if(+r[12]!==3) return; const k = [r[3], r[4]].sort().join('|'); (by[k] = by[k] || []).push(r); });
   const drop = new Set(), series = [];
+  // a game that never happened: still "scheduled", or closed out by ESPN with no score (an "if necessary" game cancelled once the series ended)
+  const ghost = r => r[5]==='pre' || (r[5]==='post' && (r[6]==null || r[7]==null || (!soc && +r[6]===0 && +r[7]===0) || /cancel|postpon|necessary/i.test(String(r[10]||''))));
+  const played = r => r[5]==='post' && !ghost(r) && r[6]!==r[7];
   // games needed: ESPN lists every possible game while a series is on but drops the unplayed ones once it ends, so use the larger of half the listed games,
   // the most wins anyone has, and (baseball) the round: a club's first series is a best-of-3 Wild Card unless it had a bye
   const prior = {}; Object.entries(by).sort((a, b) => Math.min(...a[1].map(r => Date.parse(r[1]))) - Math.min(...b[1].map(r => Date.parse(r[1])))).forEach(([k, rs]) => { const [x, y] = k.split('|'); rs.round = Math.max(prior[x]||0, prior[y]||0); prior[x] = (prior[x]||0) + 1; prior[y] = (prior[y]||0) + 1; });
   Object.entries(by).forEach(([k, rs]) => { if(rs.length < 2) return; const [x, y] = k.split('|'); let wx = 0, wy = 0;
-    rs.forEach(r => { if(r[5]==='post' && r[6]!=null && r[6]!==r[7]){ (r[6] > r[7] ? r[3] : r[4])===x ? wx++ : wy++; } }); const need = Math.max(Math.ceil(rs.length/2), Math.max(wx, wy), D.sport==='mlb' ? (mlbLgOf(D, x) && mlbLgOf(D, y) && mlbLgOf(D, x)!==mlbLgOf(D, y) ? 4 : [2, 3, 4, 4][Math.min(3, rs.round)]) : 0);   // AL v NL is the World Series: always first to 4, even when the earlier rounds aren't in the data
-    if(rs.length < 3 && need < 2) return; const over = wx >= need || wy >= need;
-    if(over) rs.forEach(r => { if(r[5]==='pre') drop.add(r[0]); }); series.push({x, y, wx, wy, need, over, winner: over ? (wx > wy ? x : y) : null, t: Math.max(...rs.map(r => Date.parse(r[1])))}); });
+    rs.forEach(r => { if(played(r)){ (r[6] > r[7] ? r[3] : r[4])===x ? wx++ : wy++; } }); const need = Math.max(Math.ceil(rs.length/2), Math.max(wx, wy), D.sport==='mlb' ? (mlbLgOf(D, x) && mlbLgOf(D, y) && mlbLgOf(D, x)!==mlbLgOf(D, y) ? 4 : [2, 3, 4, 4][Math.min(3, rs.round)]) : 0);   // AL v NL is the World Series: always first to 4, even when the earlier rounds aren't in the data
+    if(rs.length < 3 && need < 2) return;
+    // over when someone has the wins. Also over when the data can't show that directly: one of the two clubs has since played a later series against
+    // someone else, or nothing has been played in this one for four days and every game still listed is past its date.
+    const tLast = Math.max(0, ...rs.filter(played).map(r => Date.parse(r[1]))), left = rs.filter(r => ghost(r) && r[5]!=='in');
+    const movedOn = tLast > 0 && [x, y].some(a => rows.some(r => +r[12]===3 && (r[3]===a || r[4]===a) && [r[3], r[4]].sort().join('|')!==k && (played(r) || r[5]==='in') && Date.parse(r[1]) > tLast));
+    const stale = tLast > 0 && now - tLast > 4*864e5 && left.length > 0 && left.every(r => Date.parse(r[1]) < now - 36*3600e3);
+    const over = wx >= need || wy >= need || ((movedOn || stale) && wx!==wy);
+    if(over) left.forEach(r => drop.add(r[0])); series.push({x, y, wx, wy, need, over, winner: over ? (wx > wy ? x : y) : null, t: Math.max(...rs.map(r => Date.parse(r[1])))}); });
   return {D: drop.size ? Object.assign({}, D, {games: rows.filter(r => !drop.has(r[0]))}) : D, series}; }
 const _buildLeague14 = buildLeague; buildLeague = function(key, D, opts){ const pr = purgeSeries(D || {}); const m = _buildLeague14(key, pr.D, opts); if(m) m.series = pr.series; return m; };
 function serRound(s){ if(NF.sp!=='mlb') return 'the playoffs'; if(s.need===2) return 'the Wild Card Series'; if(s.need===3) return 'the Division Series';
@@ -8833,11 +8972,14 @@ function serEndNote(g){ try{ const k = [g.h, g.a].sort().join('|'), s = (NF.seri
 
 /* ---- Team page: the space under the schedule shows where the team ranks in every key stat ---- */
 // Team stats with the league rank in each; `top` puts it first on the team page as the headline numbers
-function teamProfileHTML(ab, top, nba){ try{ const defs = (nba ? nbaStatDefs() : teamStatDefs()).filter(d => !d[5]).slice(0, 12), teams = nba ? ABS : NF.teams; if(!defs.length) return '';
+// NBA: both ends of the floor (the first dozen stats in the table are all offense, which left defensive rating, steals and blocks off the panel)
+const NBA_TP = ['Points/game','Off. rating','FG %','3P %','Assists/game','Turnovers/game','Opp points/game','Def. rating','Steals/game','Blocks/game','Forced TO/game','Opp FG %','Def. reb/game','Net rating'];
+function teamProfileHTML(ab, top, nba){ try{ const all = nba ? nbaStatDefs() : teamStatDefs(), defs = nba ? NBA_TP.map(l => all.find(d => d[0]===l)).filter(Boolean) : all.filter(d => !d[5]).slice(0, 12), teams = nba ? ABS : NF.teams; if(!defs.length) return '';
   const rows = defs.map(d => { const vs = teams.map(a => [a, d[1](a)]).filter(x => x[1]!=null && isFinite(x[1])); const me = d[1](ab); if(me==null || !isFinite(me) || vs.length < 6) return '';
     const sorted = vs.slice().sort((x, y) => d[3] ? x[1] - y[1] : y[1] - x[1]), rk = sorted.findIndex(x => x[0]===ab) + 1, pos = 1 - (rk - 1)/(vs.length - 1);
-    return `<div class="tp-row"><span>${esc(d[0])}</span><b>${lgFmt(me, d[2])}</b><em class="${tierCls(vs, ab, d[3], d[5])}">${ord(rk)}</em><i class="tp-bar"><u style="width:${Math.max(4, pos*100).toFixed(0)}%"></u></i></div>`; }).filter(Boolean);
-  return rows.length ? `<div class="sub-h"${top ? '' : ' style="margin-top:26px"'}>Team stats <small>Season numbers with the league rank in each · gold is 1st, crimson is last</small></div><div class="tp-list${top ? ' tp-top' : ''}">${rows.join('')}</div>` : ''; }catch(e){ return ''; } }
+    const pc = Math.round(pos*100);
+    return `<div class="tp-row tp5"><span>${esc(d[0])}</span><b>${lgFmt(me, d[2])}</b><em class="${tierCls(vs, ab, d[3], d[5])}">${ord(rk)}</em><i class="tp-pct" title="League percentile: better than or level with ${pc}% of the league">${ord(pc)} pct</i><i class="tp-bar"><u style="width:${Math.max(4, pos*100).toFixed(0)}%"></u></i></div>`; }).filter(Boolean);
+  return rows.length ? `<div class="sub-h"${top ? '' : ' style="margin-top:26px"'}>Team stats <small>Season numbers with the league rank and percentile in each · gold is 1st, crimson is last</small></div><div class="tp-list${top ? ' tp-top' : ''}">${rows.join('')}</div>` : ''; }catch(e){ return ''; } }
 
 /* ---- Team cards flip to show the club: home ground, history and titles ---- */
 const TEAM_HIST_NBA = {ATL:'1 title (1958, as the St. Louis Hawks).', BKN:'Two ABA titles as the New York Nets; still chasing a first NBA title.', BOS:'18 titles, the most in NBA history; latest in 2024.', CHA:'Since 1988; no title yet.', CHI:'6 titles, all in the Jordan era (1991–93, 1996–98).', CLE:'1 title: the 2016 comeback from 3–1 down.', DAL:'1 title (2011).', DEN:'1 title (2023).', DET:'3 titles (1989, 1990, 2004).', GSW:'7 titles, four of them between 2015 and 2022.', HOU:'2 titles (1994, 1995).', IND:'Three ABA titles; still chasing a first NBA title.', LAC:'No title yet.', LAL:'17 titles; latest in 2020.', MEM:'Since 1995; no title yet.', MIA:'3 titles (2006, 2012, 2013).', MIL:'2 titles (1971, 2021).', MIN:'Since 1989; no title yet.', NOP:'Since 2002; no title yet.', NYK:'2 titles (1970, 1973).', OKC:'2 titles: 1979 as the Seattle SuperSonics and 2025.', ORL:'Since 1989; no title yet.', PHI:'3 titles; latest in 1983.', PHX:'Since 1968; no title yet.', POR:'1 title (1977).', SAC:'1 title (1951, as the Rochester Royals).', SAS:'5 titles (1999, 2003, 2005, 2007, 2014).', TOR:'1 title (2019).', UTA:'Since 1974; no title yet.', WAS:'1 title (1978, as the Washington Bullets).'};
@@ -9037,7 +9179,11 @@ document.addEventListener('click', e => { const p = e.target.closest && e.target
 /* ---- Head-to-head: a "vs. Each Other" career comparison right under the controls ---- */
 const EO = {};
 function eoInsert(xa, xb){ const ctl = document.querySelector('#h2hPanel .h2h-ctl'); if(!ctl || document.getElementById('eoSec')) return; EO.a = xa; EO.b = xb;
-  ctl.insertAdjacentHTML('afterend', `<div class="eo-sec" id="eoSec"><div class="h4row"><h4>vs. Each Other <small class="muted">careers, side by side</small></h4><div class="seg"><button class="${AT.rate==='tot'?'on':''}" data-eorate="tot">Career totals</button><button class="${AT.rate==='pg'?'on':''}" data-eorate="pg">Per game</button></div></div><div class="eo-body"><p class="muted">Loading…</p></div></div>`); eoLoad(); }
+  // closed by default: the comparison opens on this season's numbers, and the career box loads only when its tab is tapped
+  ctl.insertAdjacentHTML('afterend', `<div class="eo-sec${EO.open ? '' : ' shut'}" id="eoSec"><div class="h4row"><button class="chip eo-tgl${EO.open ? ' on' : ''}" data-eotoggle aria-expanded="${!!EO.open}">Career stats <i>${EO.open ? '▴' : '▾'}</i></button><div class="seg eo-rate"${EO.open ? '' : ' hidden'}><button class="${AT.rate==='tot'?'on':''}" data-eorate="tot">Career totals</button><button class="${AT.rate==='pg'?'on':''}" data-eorate="pg">Per game</button></div></div><div class="eo-body"${EO.open ? '' : ' hidden'}>${EO.open ? '<p class="muted">Loading…</p>' : ''}</div></div>`); if(EO.open) eoLoad(); }
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-eotoggle]'); if(!b) return; e.stopPropagation(); EO.open = !EO.open; const sec = document.getElementById('eoSec'); if(!sec) return;
+  sec.classList.toggle('shut', !EO.open); b.classList.toggle('on', EO.open); b.setAttribute('aria-expanded', EO.open); b.querySelector('i').textContent = EO.open ? '▴' : '▾'; const body = sec.querySelector('.eo-body'), rate = sec.querySelector('.eo-rate'); rate.hidden = !EO.open; body.hidden = !EO.open;
+  if(EO.open){ body.innerHTML = '<p class="muted">Loading…</p>'; eoLoad(); } }, true);
 async function eoLoad(){ const [ja, jb] = await Promise.all([careerJ(EO.a), careerJ(EO.b)]); const b = document.querySelector('#eoSec .eo-body'); if(b) b.innerHTML = cmpBarsHTML(careerMap(ja, AT.rate), careerMap(jb, AT.rate), EO.a.name, EO.b.name, AT.rate, EO.a.c, EO.b.c && EO.b.c!==EO.a.c ? EO.b.c : null); }
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-eorate]'); if(!b) return; e.stopPropagation(); AT.rate = b.dataset.eorate; document.querySelectorAll('[data-eorate]').forEach(x => x.classList.toggle('on', x===b)); eoLoad(); }, true);
 const _openLgH2H15 = openLgH2H; openLgH2H = function(aId, bId){ _openLgH2H15(aId, bId); try{ const sp = sportOf(LGK); if(!bId || STATIC || sp==='soc' || sp==='cba') return; const [sport, lg] = LG_PATH(LGK).split('/');
@@ -9608,12 +9754,62 @@ document.addEventListener('mousemove', e => { const w = e.target.closest && e.ta
 document.addEventListener('click', e => { const w = e.target.closest && e.target.closest('.mc-spw'); if(!w){ document.querySelectorAll('.mc-spw.tipon').forEach(x => x.classList.remove('tipon')); return; }
   const d = e.target.closest('[data-wpi]'); wpShow(w, d ? +d.dataset.wpi : wpIdx(w, e.clientX)); e.stopPropagation(); }, true);
 
+/* ================= v18: live injury re-predictions, poll rankings ================= */
+/* ---- Pregame injuries: the league report is re-read every 3 minutes on game days (every 12 otherwise). Any change in who is in or out
+   rebuilds the NBA model at once, so scores and win chances on the schedule, the open game card and the team pages move before tip-off
+   instead of waiting for the next full sync. ---- */
+const INJLIVE = {t:null, at:0};
+function rebuildNba(){ const lr = lgReset; lgReset = () => {}; try{ build(); } finally { lgReset = lr; } PROFILES = null; }   // other sports' models are untouched
+async function injLivePoll(){ if(STATIC) return; clearTimeout(INJLIVE.t); const now = Date.now();
+  const soon = !!M && M.games.some(g => !g.done && g.t > now - 3*3600e3 && g.t < now + 18*3600e3); INJLIVE.t = setTimeout(injLivePoll, soon ? 3*60e3 : 12*60e3);
+  if(document.visibilityState==='hidden' || syncing || !M) return;
+  try{ const r = await fetch('https://site.api.espn.com/apis/site/v2/sports/basketball/nba/injuries', {cache:'no-store'}); if(!r.ok) return; const ij = await r.json(), got = {};
+    (ij.injuries||[]).forEach(t => (t.injuries||[]).forEach(i => { const id = (i.athlete?.links?.[0]?.href||'').match(/id\/(\d+)/)?.[1]; if(id) got[id] = [i.status||'', i.details?.type||'', i.details?.returnDate||'', (i.shortComment||'').slice(0,200)]; }));
+    if(Object.keys(got).length < 5 || syncing) return;   // an empty or broken report never clears anyone
+    INJLIVE.at = Date.now(); injApply(got); }catch(e){} }
+// Takes a fresh report ({playerId: [status, type, returnDate, note]}); returns how many upcoming predictions moved
+function injApply(got){ RAW.inj = RAW.inj || {}; const sig = v => v ? v[0] + '|' + v[1] + '|' + v[2] : '', onRoster = new Set((RAW.roster||[]).map(r => r[1])), ch = [];
+  new Set(Object.keys(RAW.inj).concat(Object.keys(got))).forEach(id => { if((EDITS[id]||{}).status) return; if(sig(RAW.inj[id])!==sig(got[id])) ch.push(id); else if(got[id]) RAW.inj[id][3] = got[id][3]; });
+  if(!ch.length) return 0;
+  const now = Date.now(), up = g => !g.done && g.t > now - 4*3600e3 && g.t < now + 36*3600e3 && !(LIVE[g.id] && LIVE[g.id].state!=='pre'), before = {}; M.games.filter(up).forEach(g => before[g.id] = g.pred.margin);
+  ch.forEach(id => { if(got[id]) RAW.inj[id] = got[id]; else delete RAW.inj[id]; }); if(!ch.some(id => onRoster.has(id))) return 0;
+  rebuildNba(); try{ injWatch(); }catch(e){} RAW_DIRTY.core = true; saveRaw([]);
+  const moved = M.games.filter(g => before[g.id]!=null && Math.abs(g.pred.margin - before[g.id]) >= 0.25).length;
+  if(!UI.sport || UI.sport==='nba'){ const y = scrollY; try{ go(CUR, false); renderHero(); }catch(e){} window.scrollTo(0, y);
+    const gm = document.querySelector('#ovGame.open [data-gid]'); if(gm && !(LIVE[gm.dataset.gid] && LIVE[gm.dataset.gid].state==='in')){ const ov = document.getElementById('ovGame'), st = ov.scrollTop; try{ openGame(gm.dataset.gid); }catch(e){} ov.scrollTop = st; }
+    if(moved) toast(`Injury report updated · ${moved} prediction${moved===1?'':'s'} adjusted`); }
+  return moved; }
+document.addEventListener('visibilitychange', () => { if(document.visibilityState==='visible' && !STATIC && Date.now() - INJLIVE.at > 3*60e3) injLivePoll(); });
+
+/* ---- College poll rankings. D.rk = {at, ap:{TEAM:[now, last week]}, cfp:{...}}. The active poll (CFP once the committee has published, else AP;
+   the other one is a tab away) is written onto each team as .rank, so every place a ranking shows follows the same poll. ---- */
+const rkHas = kind => { const D = NF && lgData(NF.key), rk = D && D.rk; return !!(rk && rk[kind]); };
+const rkPollOf = key => { const D = lgData(key), rk = D && D.rk; if(!rk) return 'ap'; const want = (UI.rkPoll||{})[key]; if(want && rk[want]) return want; return rk.cfp ? 'cfp' : 'ap'; };
+const rkSig = key => { const D = lgData(key); return rkPollOf(key) + '|' + ((D && D.rk && D.rk.at) || ''); };
+const rkWeek = () => { const D = NF && lgData(NF.key), rk = D && D.rk; return (rk && rk[(NF.rkPoll||'ap') + 'Wk']) || ''; };
+function rkApply(m){ const D = lgData(m.key), rk = D && D.rk; if(!rk || !(rk.ap || rk.cfp)) return m; const poll = rkPollOf(m.key), map = rk[poll] || {}; m.rkPoll = poll;
+  Object.keys(m.T).forEach(a => { const t = m.T[a], v = map[a]; t.ap = rk.ap ? (rk.ap[a] ? rk.ap[a][0] : 0) : (t.ap ?? t.rank ?? 0); t.cfp = rk.cfp && rk.cfp[a] ? rk.cfp[a][0] : 0; t.rank = v ? v[0] : 0; t.rkPrev = v ? v[1] : 0; t.rkKnown = !!v; }); return m; }
+// places moved since last week's poll: positive = climbed. null when unranked or unknown.
+const rkChg = a => { const t = NF.T[a]; return t && t.rkKnown ? (t.rkPrev ? t.rkPrev - t.rank : 99) : null; };
+function rkDelta(a){ const d = rkChg(a); if(d==null) return ''; const t = NF.T[a], tip = d===99 ? 'New to the rankings this week' : d===0 ? 'Same spot as last week' : `${d > 0 ? 'Up' : 'Down'} ${Math.abs(d)} from No. ${t.rkPrev} last week`;
+  return `<i class="rk-d ${d===99 ? 'new' : d > 0 ? 'up' : d < 0 ? 'dn' : 'eq'}" title="${tip}" data-tip="${tip}">${d===99 ? 'NEW' : d > 0 ? '+' + d : d < 0 ? '−' + (-d) : '–'}</i>`; }
+const RKL = {};
+async function rankLoad(key){ if(STATIC || !isCollege(key)) return; const D = lgData(key); if(!D || !/cfb|cbb/.test(sportOf(key))) return; const st = RKL[key] || (RKL[key] = {});
+  const age = D.rk && D.rk.at ? Date.now() - Date.parse(D.rk.at) : Infinity; if(st.busy || age < 3*3600e3 || Date.now() - (st.tried||0) < 10*60e3) return; st.busy = true; st.tried = Date.now();
+  try{ const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${LG_PATH(key)}/rankings`, {cache:'no-store'}); if(!r.ok) throw 0; const idToAb = {}; (D.teams||[]).forEach(t => idToAb[t[1]] = t[0]);
+    const rk = _rkParse(await r.json(), idToAb); if(rk.ap || rk.cfp){ const was = JSON.stringify([D.rk && D.rk.ap, D.rk && D.rk.cfp]); D.rk = rk; if(rk.ap) (D.teams||[]).forEach(t => { t[8] = rk.ap[t[0]] ? rk.ap[t[0]][0] : 0; }); saveRaw([key]);
+      if(was!==JSON.stringify([rk.ap, rk.cfp]) && key===LGK && UI.sport!=='nba' && LMC[key] && !document.querySelector('.overlay.open')){ NF = lgModel(key); LG_VIEWS = lgViews(); const y = scrollY; go(CUR, false); window.scrollTo(0, y); } } }catch(e){} st.busy = false; }
+const _lgModel21 = lgModel; lgModel = function(key){ const m = _lgModel21(key); if(m && m.college){ const s = rkSig(key); if(m.__rk!==s){ m.__rk = s; try{ rkApply(m); }catch(e){} } rankLoad(key); } return m; };
+// picking a poll tab: remembered per league; the filter click that follows redraws the page on it
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-rkpoll]'); if(!b) return; UI.rkPoll = UI.rkPoll || {}; UI.rkPoll[LGK] = b.dataset.rkpoll; }, true);
+
 /* ================= BOOT ================= */
 const stEl = document.getElementById('stars');
 for(let i=0;i<140;i++){const d=document.createElement('div');d.className='star';const s=Math.random()*1.6+.3; d.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;top:${Math.random()*70}%;opacity:${Math.random()*.7+.15}`;stEl.appendChild(d);}
 // Sport switch next to the brand
 (() => { const br = document.querySelector('#nav .brand'); if(br){ br.innerHTML = '<span class="brand-name">Clutch Matrix</span>'; br.insertAdjacentHTML('afterend', '<div class="sport-sw"><button data-sport="nba" class="on">NBA</button><button data-sport="nfl">NFL</button><button data-sport="mlb">MLB</button><button data-sport="soc">Soccer</button><button data-sport="ncaam">NCAAM</button><button data-sport="ncaaf">NCAAF</button></div>'); }
   const fb = document.querySelector('footer .brand'); if(fb) fb.innerHTML = '<span class="brand-name">Clutch Matrix</span>'; })();
+function bootApp(){
 build(); renderHero();
 const start = (location.hash||'').slice(1);
 if(!start) UI.sport = LS.get('cs_pinsport') || 'nba';   // launch on the pinned sport, NBA by default
@@ -9623,8 +9819,17 @@ if(start.startsWith('team-') && T[start.slice(5)]){ UI.team = start.slice(5); go
 else if(['pts','reb','ast','stl','blk'].includes(start)){ UI.stat = start; go('leaders', false); }
 else go(VIEWS.some(v=>v.k===start) ? start : 'schedule', false); }
 if(STATIC){ fetch('img.json').then(r=>r.json()).then(j=>{ IMG = Object.assign(IMG || {}, j); rerender(); }).catch(()=>{}); const sn = $('#syncNav'); if(sn) sn.remove(); }
-else if(autoOn() && Date.now() - Date.parse(RAW.asOf) > 2*3600*1000) doSync(true);
-if(!STATIC) pollLive();   // live scores as soon as the page opens
+if(!STATIC){ pollLive(); setTimeout(injLivePoll, 4000); }   // live scores as soon as the page opens; the injury report right behind them
+// the catch-up sync waits until the first screen is up and the browser is idle, so it never competes with the launch
+if(!STATIC && autoOn() && Date.now() - Date.parse(RAW.asOf) > 2*3600*1000) setTimeout(() => (window.requestIdleCallback || (f => setTimeout(f, 200)))(() => doSync(true), {timeout:5000}), 2500);
+}
+/* Launch: the copy saved on this device (IndexedDB) is read first, so records and scores from the last visit are on screen at once.
+   If the read is slow (over 1.2 s) the app opens on the file's snapshot and swaps the saved copy in as soon as it arrives. */
+{ let booted = false; const hyd = hydrateRaw().catch(() => false);
+  const late = () => hyd.then(ch => { if(!ch) return; try{ build(); rerender(); }catch(e){} });
+  Promise.race([hyd.then(() => 'ok'), new Promise(r => setTimeout(() => r('slow'), 1200))]).then(how => { booted = true; bootApp(); if(how==='slow') late(); }).catch(() => { if(!booted) bootApp(); }); }
+// A newer copy of the app was downloaded in the background (the service worker serves the saved one first, for speed)
+if(navigator.serviceWorker) try{ navigator.serviceWorker.addEventListener('message', e => { if(e.data && e.data.type==='cs-fresh') toast('Update downloaded · reopen the app to load it'); }); }catch(e){}
 
 /* ---- One banner order on every tab, every sport: a small "League · season" label on top ("EPL · 2026–27 season", "MLB · 2026 season"),
    and the sport's brand as the big title (Courtside, Sideline, Dugout, Touchline, Hardwood) ---- */

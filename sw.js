@@ -1,10 +1,17 @@
-// Network first so each daily update shows up; falls back to the last copy when offline
+// Saved copy first, so the app opens at once (the page is several MB); the network copy is fetched behind it and used on the next open.
+// With nothing saved yet, or for anything that isn't the page itself, it goes to the network and falls back to the saved copy offline.
 const C = 'clutch-matrix-v11';
 self.addEventListener('install', e => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k!==C).map(k => caches.delete(k)))).then(() => self.clients.claim())));
 self.addEventListener('fetch', e => {
   const u = new URL(e.request.url); if(e.request.method !== 'GET' || u.origin !== location.origin) return;
-  e.respondWith(fetch(e.request).then(r => { const cp = r.clone(); caches.open(C).then(c => c.put(e.request, cp)); return r; }).catch(() => caches.match(e.request).then(r => r || caches.match('./'))));
+  const page = e.request.mode==='navigate' || /\/(index\.html)?$/.test(u.pathname);
+  const sig = r => r ? [r.headers.get('etag'), r.headers.get('last-modified'), r.headers.get('content-length')].join('|') : '';
+  e.respondWith(caches.open(C).then(async c => { const hit = await c.match(e.request);
+    const net = fetch(e.request).then(async r => { if(r && r.ok){ const fresh = hit && sig(hit)!==sig(r) && sig(r)!=='||'; await c.put(e.request, r.clone());
+        if(page && fresh) (await self.clients.matchAll({type:'window'})).forEach(w => w.postMessage({type:'cs-fresh'})); } return r; });
+    if(page && hit){ e.waitUntil(net.catch(() => {})); return hit; }
+    return net.catch(() => hit || c.match('./')); }));
 });
 
 /* ---- Notifications: every alert goes out from here ----
